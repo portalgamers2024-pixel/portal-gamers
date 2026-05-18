@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 const fetch = require('node-fetch');
+const sheets = require('./sheets');
 
 const app = express();
 app.use(express.json());
@@ -32,8 +33,47 @@ function adminAuth(req, res, next) {
 
 // ─── Productos ────────────────────────────────────────────────────────────────
 
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
   const data = readData();
+  try {
+    const sheetPrices = await sheets.getPricesFromSheet();
+    if (sheetPrices) {
+      data.games = data.games.map(g => {
+        const gameData = sheetPrices[g.id];
+        if (!gameData) return g;
+
+        // Construir mapa server_prices usando el nombre de servidor de products.json como clave
+        // Soporta match exacto y parcial (ej. "Global" ↔ "Global (Todos los servidores)")
+        const serverPrices = {};
+        for (const productServer of g.servers) {
+          const exact = gameData[productServer];
+          if (exact) {
+            serverPrices[productServer] = exact;
+            continue;
+          }
+          // Match parcial (case-insensitive)
+          const match = Object.entries(gameData).find(([k]) =>
+            k !== '_meta' && (
+              productServer.toLowerCase().includes(k.toLowerCase()) ||
+              k.toLowerCase().includes(productServer.toLowerCase())
+            )
+          );
+          if (match) serverPrices[productServer] = match[1];
+        }
+
+        const meta = gameData._meta || {};
+        return {
+          ...g,
+          // Precio mostrado en card = precio mínimo de venta entre todos los servidores
+          price_per_million: meta.min_venta || g.price_per_million,
+          server_prices: serverPrices,
+        };
+      });
+      data.source = 'sheets';
+    }
+  } catch (err) {
+    console.error('[Sheets] Error leyendo precios, usando JSON local:', err.message);
+  }
   res.json(data);
 });
 
@@ -109,10 +149,51 @@ app.post('/api/payments/create', async (req, res) => {
 
 // Webhook MercadoPago (notificaciones de pago)
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const { type, data } = req.body;
-  console.log('[Webhook MP]', type, data);
-  // Aquí puedes procesar el pago confirmado y reducir stock automáticamente
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  const { type, data } = body;
+  console.log('[Webhook MP]', type, data?.id);
+
+  if (type === 'payment' && data?.id) {
+    try {
+      const r = await fetch(`https://api.mercadopago.com/v1/payments/${data.id}`, {
+        headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}` }
+      });
+      const pago = await r.json();
+      if (pago.status === 'approved' && pago.metadata?.items) {
+        for (const item of pago.metadata.items) {
+          const millions  = item.quantity || 1;
+          const precioM   = item.price_usd ? (item.price_usd / millions) : 0;
+          await sheets.logSale({
+            juego:     item.name,
+            servidor:  item.server || '',
+            cantidad:  millions,
+            moneda:    item.currencyName || '',
+            precio_m:  precioM,
+            total_usd: item.price_usd || pago.transaction_amount,
+            canal:     'MercadoPago',
+            asesor:    'Sistema',
+            pago_id:   pago.id,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[Webhook] Error registrando venta en Sheets:', err.message);
+    }
+  }
   res.sendStatus(200);
+});
+
+// Registro manual de venta (ventas por WhatsApp o fuera de MercadoPago)
+app.post('/api/sales/register', adminAuth, async (req, res) => {
+  const { juego, servidor, cantidad, moneda, precio_m, total_usd, canal, asesor } = req.body;
+  if (!juego || !cantidad) return res.status(400).json({ error: 'Faltan campos requeridos' });
+  try {
+    await sheets.logSale({ juego, servidor, cantidad, moneda, precio_m, total_usd, canal: canal || 'Manual', asesor: asesor || 'Admin' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[Sales] Error:', err.message);
+    res.status(500).json({ error: 'No se pudo registrar en Sheets' });
+  }
 });
 
 // ─── Admin login ──────────────────────────────────────────────────────────────

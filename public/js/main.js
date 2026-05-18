@@ -166,13 +166,14 @@ function renderServerCards() {
   const g = currentGame;
 
   grid.innerHTML = g.servers.map(server => {
-    const localRate = convertPrice(g.price_per_million);
+    const serverPrice = g.server_prices?.[server]?.venta ?? g.price_per_million;
+    const localRate   = convertPrice(serverPrice);
     return `
       <div class="server-card" data-game-id="${g.id}" onclick="selectServer('${server.replace(/'/g, "\\'")}')">
         <img class="sc-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
         <div class="sc-game-badge">${g.name}</div>
         <div class="sc-name">${server}</div>
-        <div class="sc-price">$${g.price_per_million.toFixed(2)}<span class="sc-unit"> / M ${g.currency_name}</span></div>
+        <div class="sc-price">$${serverPrice.toFixed(2)}<span class="sc-unit"> / M ${g.currency_name}</span></div>
         ${localRate ? `<div class="sc-local">&#8776; ${localRate} / M</div>` : ''}
         <div class="sc-delivery">&#9889; ${g.delivery}</div>
         <div class="sc-select-btn">Seleccionar &rarr;</div>
@@ -186,6 +187,11 @@ function renderServerCards() {
 function selectServer(serverName) {
   if (!currentGame) return;
   currentServer = serverName;
+  // Usar el precio específico del servidor si viene de Sheets
+  const serverData = currentGame.server_prices?.[serverName];
+  if (serverData?.venta) {
+    currentGame.price_per_million = serverData.venta;
+  }
   currentStep = 'purchase';
   renderPurchaseForm();
 }
