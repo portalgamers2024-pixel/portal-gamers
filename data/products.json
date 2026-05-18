@@ -1,0 +1,100 @@
+{
+  "games": [
+    {
+      "id": "dofus-retro",
+      "name": "Dofus Retro",
+      "icon": "⚔️",
+      "icon_img": "/images/icons/DOFUS_RETRO_Coin.png",
+      "currency_name": "Kamas",
+      "color": "#F5A623",
+      "price_per_million": 0.17,
+      "min_millions": 10,
+      "max_millions": 1000,
+      "stock_millions": 1000,
+      "delivery": "5-30 min",
+      "active": true,
+      "servers": [
+        "Allisteria",
+        "Bun",
+        "Fallanster"
+      ]
+    },
+    {
+      "id": "dofus-3",
+      "name": "Dofus 3.0",
+      "icon": "🐉",
+      "icon_img": "/images/icons/DOFUS_2.0_Coin.png",
+      "currency_name": "Kamas",
+      "color": "#29ABD4",
+      "price_per_million": 0.13,
+      "min_millions": 10,
+      "max_millions": 1000,
+      "stock_millions": 1000,
+      "delivery": "5-30 min",
+      "active": true,
+      "servers": [
+        "Talkasha",
+        "Brial",
+        "Rafal",
+        "Salar",
+        "Draconiros",
+        "Dakal",
+        "Mikhal",
+        "Kourial"
+      ]
+    },
+    {
+      "id": "dofus-touch",
+      "name": "Dofus Touch",
+      "icon": "📱",
+      "icon_img": "/images/icons/DOFUS_TOUCH_Coin.png",
+      "currency_name": "Kamas",
+      "color": "#25D366",
+      "price_per_million": 0.55,
+      "min_millions": 5,
+      "max_millions": 500,
+      "stock_millions": 500,
+      "delivery": "5-30 min",
+      "active": true,
+      "servers": [
+        "Blair",
+        "Talok"
+      ]
+    },
+    {
+      "id": "wakfu",
+      "name": "Wakfu",
+      "icon": "🌊",
+      "icon_img": "/images/icons/WAKFU_KAMAS_Coin.png",
+      "currency_name": "Kamas",
+      "color": "#F5A623",
+      "price_per_million": 0.7,
+      "min_millions": 5,
+      "max_millions": 200,
+      "stock_millions": 300,
+      "delivery": "5-30 min",
+      "active": true,
+      "servers": [
+        "Ogrest",
+        "Rubilax"
+      ]
+    },
+    {
+      "id": "albion",
+      "name": "Albion Online",
+      "icon": "🏰",
+      "icon_img": "/images/icons/ALBION_SILVER_Coin.png",
+      "currency_name": "Silver",
+      "color": "#29ABD4",
+      "price_per_million": 0.3,
+      "min_millions": 10,
+      "max_millions": 1000,
+      "stock_millions": 1000,
+      "delivery": "5-30 min",
+      "active": true,
+      "servers": [
+        "Global (Todos los servidores)"
+      ]
+    }
+  ]
+}

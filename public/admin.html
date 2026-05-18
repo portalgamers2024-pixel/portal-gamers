@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Portal Gamers</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { background: var(--bg); }
+    .admin-wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    .login-box { max-width: 360px; margin: 80px auto; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; text-align: center; }
+    .login-box h2 { margin-bottom: 6px; }
+    .login-box p { color: var(--text-m); font-size: 13px; margin-bottom: 24px; }
+    input[type="password"], input[type="number"] {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
+      outline: none; transition: var(--trans);
+    }
+    input[type="password"]:focus, input[type="number"]:focus { border-color: var(--gold); }
+    .btn-login { width: 100%; margin-top: 12px; padding: 12px; background: linear-gradient(135deg, var(--gold), #e6b800); color: #000; border-radius: var(--radius-sm); font-weight: 700; font-size: 15px; transition: var(--trans); }
+    .btn-login:hover { transform: translateY(-1px); }
+
+    /* Game cards */
+    .game-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+    .game-card-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+    .game-card-header img { width: 44px; height: 44px; object-fit: contain; }
+    .game-card-header h2 { font-size: 18px; font-weight: 700; color: var(--gold); flex: 1; }
+    .game-card-header .servers { font-size: 12px; color: var(--text-d); }
+    .game-card-body { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: end; }
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 12px; color: var(--text-d); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+    .field-unit { font-size: 11px; color: var(--text-d); margin-top: 3px; }
+    .field-group input { padding: 9px 12px; font-size: 15px; font-weight: 700; }
+    .toggle-row { display: flex; align-items: center; gap: 10px; }
+    .toggle-label { font-size: 13px; color: var(--text-m); }
+    .toggle-active { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle-active input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: .2s; }
+    .toggle-slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s; }
+    input:checked + .toggle-slider { background: var(--green); }
+    input:checked + .toggle-slider:before { transform: translateX(18px); }
+    .btn-save { width: 100%; padding: 10px; background: var(--gold); color: #000; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; transition: var(--trans); }
+    .btn-save:hover { background: var(--gold-d); }
+    .btn-save.saved { background: var(--green); color: #fff; }
+    .btn-logout { padding: 8px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-m); font-size: 13px; transition: var(--trans); }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+    .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center; }
+    .stat-card .num { font-size: 24px; font-weight: 800; color: var(--gold); }
+    .stat-card .lbl { font-size: 12px; color: var(--text-d); margin-top: 2px; }
+    #server-pills, .filters-row { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-view">
+  <div class="login-box">
+    <div style="font-size:40px;margin-bottom:12px">&#9881;&#65039;</div>
+    <h2>Panel de Administraci&#243;n</h2>
+    <p>Portal Gamers &mdash; Gesti&#243;n de precios y stock</p>
+    <input type="password" id="login-pwd" placeholder="Contrase&#241;a" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <p id="login-error" style="color:var(--red);font-size:12px;margin-top:10px;display:none">Contrase&#241;a incorrecta</p>
+  </div>
+</div>
+
+<!-- Admin Panel -->
+<div id="admin-view" style="display:none">
+  <nav style="background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:12px">
+    <span style="font-weight:700;color:var(--gold)">&#9881; Portal Gamers Admin</span>
+    <div style="flex:1"></div>
+    <a href="/" target="_blank" style="font-size:13px;color:var(--text-m)">Ver tienda &#8599;</a>
+    <button class="btn-logout" onclick="logout()">Cerrar sesi&#243;n</button>
+  </nav>
+
+  <div class="admin-wrap">
+    <div class="stat-cards" id="stat-cards"></div>
+    <div id="games-container"></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+let token = localStorage.getItem('pg_admin_token') || '';
+let allData = null;
+
+async function doLogin() {
+  const pwd = document.getElementById('login-pwd').value;
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    const data = await res.json();
+    if (data.success) {
+      token = data.token;
+      localStorage.setItem('pg_admin_token', token);
+      showAdmin();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  } catch {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+async function showAdmin() {
+  document.getElementById('login-view').style.display = 'none';
+  document.getElementById('admin-view').style.display = 'block';
+  await loadAdminData();
+}
+
+async function loadAdminData() {
+  const res = await fetch('/api/products');
+  allData = await res.json();
+  renderStats();
+  renderGames();
+}
+
+function renderStats() {
+  const games = allData.games || [];
+  const active = games.filter(g => g.active !== false).length;
+  const totalStock = games.reduce((s, g) => s + (g.stock_millions || 0), 0);
+  const minPrice = Math.min(...games.map(g => g.price_per_million || 0)).toFixed(2);
+  const maxPrice = Math.max(...games.map(g => g.price_per_million || 0)).toFixed(2);
+
+  document.getElementById('stat-cards').innerHTML = `
+    <div class="stat-card"><div class="num">${games.length}</div><div class="lbl">Juegos</div></div>
+    <div class="stat-card"><div class="num" style="color:${active<games.length?'var(--orange)':'var(--green)'}">${active}</div><div class="lbl">Activos</div></div>
+    <div class="stat-card"><div class="num">${totalStock.toLocaleString()}M</div><div class="lbl">Stock total</div></div>
+    <div class="stat-card"><div class="num">$${minPrice}</div><div class="lbl">Precio m&#237;n /M</div></div>
+    <div class="stat-card"><div class="num">$${maxPrice}</div><div class="lbl">Precio m&#225;x /M</div></div>
+  `;
+}
+
+function renderGames() {
+  const container = document.getElementById('games-container');
+  container.innerHTML = (allData.games || []).map(game => `
+    <div class="game-card">
+      <div class="game-card-header">
+        <img src="${game.icon_img}" alt="${game.name}" onerror="this.style.display='none'">
+        <h2>${game.icon} ${game.name}</h2>
+        <span class="servers">Servidores: ${game.servers.join(', ')}</span>
+      </div>
+      <div class="game-card-body">
+        <div class="field-group">
+          <div class="field-label">Precio / M (USD)</div>
+          <input type="number" id="ppm_${game.id}" value="${game.price_per_million}" step="0.01" min="0.01">
+          <div class="field-unit">Ej: 0.17 = $0.17 por millon</div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Min. millones</div>
+          <input type="number" id="min_${game.id}" value="${game.min_millions}" step="1" min="1">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Max. millones</div>
+          <input type="number" id="max_${game.id}" value="${game.max_millions}" step="10" min="1">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Stock (M)</div>
+          <input type="number" id="stock_${game.id}" value="${game.stock_millions}" step="50" min="0">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Estado</div>
+          <div class="toggle-row">
+            <label class="toggle-active">
+              <input type="checkbox" id="active_${game.id}" ${game.active !== false ? 'checked' : ''}
+                onchange="autoSave('${game.id}')">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" id="active-label_${game.id}">${game.active !== false ? 'Activo' : 'Oculto'}</span>
+          </div>
+        </div>
+        <div class="field-group" style="justify-content:flex-end">
+          <button class="btn-save" id="savebtn_${game.id}" onclick="saveGame('${game.id}')">
+            Guardar cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Update active label live
+  (allData.games || []).forEach(game => {
+    const chk = document.getElementById(`active_${game.id}`);
+    const lbl = document.getElementById(`active-label_${game.id}`);
+    if (chk && lbl) {
+      chk.addEventListener('change', () => {
+        lbl.textContent = chk.checked ? 'Activo' : 'Oculto';
+      });
+    }
+  });
+}
+
+async function saveGame(gameId) {
+  const price_per_million = parseFloat(document.getElementById(`ppm_${gameId}`).value);
+  const min_millions = parseInt(document.getElementById(`min_${gameId}`).value);
+  const max_millions = parseInt(document.getElementById(`max_${gameId}`).value);
+  const stock_millions = parseInt(document.getElementById(`stock_${gameId}`).value);
+  const active = document.getElementById(`active_${gameId}`).checked;
+
+  const btn = document.getElementById(`savebtn_${gameId}`);
+  btn.textContent = '...';
+
+  try {
+    const res = await fetch(`/api/admin/games/${gameId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-token': token
+      },
+      body: JSON.stringify({ price_per_million, min_millions, max_millions, stock_millions, active })
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.textContent = '&#10003; Guardado';
+      btn.classList.add('saved');
+      setTimeout(() => { btn.textContent = 'Guardar cambios'; btn.classList.remove('saved'); }, 2000);
+      showToast(`${gameId} actualizado: $${price_per_million}/M · Stock: ${stock_millions}M`, 'success');
+      await loadAdminData();
+    } else {
+      throw new Error(data.error);
+    }
+  } catch (e) {
+    btn.textContent = 'Guardar cambios';
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function autoSave(gameId) {
+  await saveGame(gameId);
+}
+
+function logout() {
+  localStorage.removeItem('pg_admin_token');
+  token = '';
+  document.getElementById('admin-view').style.display = 'none';
+  document.getElementById('login-view').style.display = 'block';
+  document.getElementById('login-pwd').value = '';
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+if (token) {
+  fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: token })
+  }).then(r => r.json()).then(d => {
+    if (d.success) showAdmin();
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>

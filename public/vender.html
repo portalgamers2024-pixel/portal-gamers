@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendenos tus Monedas | Portal Gamers LATAM</title>
+  <meta name="description" content="Vendenos tus Kamas de Dofus, Wakfu y Silver de Albion Online. Mejor precio del mercado, pago en 5 a 15 minutos.">
+  <link rel="icon" href="/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ─── Hero ────────────────────────────────────────── */
+    .vender-hero {
+      background: linear-gradient(135deg, #0A1535 0%, #0d1f45 55%, #112258 100%);
+      border-bottom: 1px solid rgba(245,166,35,.2);
+      padding: 64px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .vender-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 65% 40%, rgba(245,166,35,.08) 0%, transparent 65%),
+                  radial-gradient(ellipse at 20% 80%, rgba(41,171,212,.07) 0%, transparent 55%);
+    }
+    .vender-hero-inner { position: relative; max-width: 680px; margin: 0 auto; }
+    .vender-badge {
+      display: inline-block;
+      background: rgba(245,166,35,.1);
+      border: 1px solid rgba(245,166,35,.3);
+      color: var(--gold);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .8px; text-transform: uppercase;
+      padding: 5px 18px; border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .vender-title {
+      font-size: clamp(26px, 5vw, 46px);
+      font-weight: 900; color: var(--gold);
+      letter-spacing: -1px; line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .vender-sub { font-size: 16px; color: var(--cyan); font-weight: 600; margin: 0; }
+
+    /* ─── Condiciones ─────────────────────────────────── */
+    .cond-section { padding: 48px 24px 40px; }
+    .cond-grid {
+      max-width: 960px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;
+    }
+    .cond-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px 22px; text-align: center;
+      position: relative; overflow: hidden; transition: var(--trans);
+    }
+    .cond-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+    .cond-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--cyan));
+    }
+    .cond-icon { font-size: 34px; margin-bottom: 12px; display: block; }
+    .cond-title { font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+    .cond-desc { font-size: 13px; color: var(--text-m); margin: 0; }
+
+    /* ─── Formulario ──────────────────────────────────── */
+    .form-section { padding: 0 24px 56px; }
+    .form-wrap {
+      max-width: 680px; margin: 0 auto;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .form-header {
+      background: var(--bg2); border-bottom: 1px solid var(--border); padding: 20px 28px;
+    }
+    .form-header h2 { font-size: 18px; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+    .form-header p { font-size: 13px; color: var(--text-m); margin: 0; }
+    .form-body { padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; font-weight: 700; color: var(--text-d); text-transform: uppercase; letter-spacing: .5px; }
+    .field input, .field select {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text);
+      padding: 11px 14px; font-size: 14px; font-family: inherit;
+      outline: none; transition: var(--trans); width: 100%;
+    }
+    .field input:focus, .field select:focus { border-color: var(--gold); }
+    .field select option { background: var(--bg2); }
+
+    .field-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+    .field-section-label { font-size: 11px; font-weight: 700; color: var(--text-d); text-transform: uppercase; letter-spacing: 1px; }
+
+    .btn-submit-wa {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #25D366, #1da851);
+      color: #fff; font-size: 15px; font-weight: 800;
+      border-radius: var(--radius-sm); border: none; cursor: pointer;
+      transition: var(--trans);
+    }
+    .btn-submit-wa:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(37,211,102,.35); }
+    .btn-submit-wa svg { width: 20px; height: 20px; fill: white; flex-shrink: 0; }
+    .form-note { text-align: center; font-size: 12px; color: var(--text-d); margin-top: 6px; }
+
+    /* ─── Precios ─────────────────────────────────────── */
+    .prices-section { padding: 0 24px 64px; }
+    .prices-wrap { max-width: 960px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <span>&#9889; Pago en 5-15 minutos</span>
+  &nbsp;|&nbsp; Mejor precio del mercado &nbsp;|&nbsp;
+  <span>&#128176; Compramos desde 1 millon</span>
+</div>
+
+<!-- Navbar -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png" alt="Portal Gamers" onerror="this.style.display='none'">
+    <span class="nav-logo-text">Portal Gamers</span>
+  </a>
+
+  <ul class="nav-links" id="nav-links">
+    <li><a href="/#tienda"       class="nav-link" onclick="closeNav()">Juegos</a></li>
+    <li><a href="/#tienda"       class="nav-link" onclick="closeNav()">Ofertas</a></li>
+    <li><a href="/#como-comprar" class="nav-link" onclick="closeNav()">C&oacute;mo comprar</a></li>
+    <li><a href="/vender.html"   class="nav-link active" onclick="closeNav()">V&eacute;ndenos</a></li>
+    <li><a href="/"              class="nav-link nav-link-buy" onclick="closeNav()">Comprar monedas</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <button class="btn-region" id="btn-region" onclick="openRegionModal()" title="Cambiar región y moneda">
+      <span class="btn-region-flag" id="region-flag">&#127758;</span>
+      <span class="btn-region-currency" id="region-currency">USD</span>
+    </button>
+    <a href="https://wa.me/573223427456" target="_blank" class="btn-wa-nav">
+      &#128172; <span class="wa-nav-text">Cotiza por WhatsApp</span>
+    </a>
+  </div>
+
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Hero -->
+<section class="vender-hero">
+  <div class="vender-hero-inner">
+    <div class="vender-badge">&#128176; Compramos tus monedas</div>
+    <h1 class="vender-title">VENDENOS TUS MONEDAS</h1>
+    <p class="vender-sub">Compramos al mejor precio &middot; Pago en 5 a 15 minutos</p>
+  </div>
+</section>
+
+<!-- Condiciones -->
+<section class="cond-section">
+  <div class="cond-grid">
+    <div class="cond-card">
+      <span class="cond-icon">&#128176;</span>
+      <div class="cond-title">Sin minimo de envio</div>
+      <p class="cond-desc">Compramos desde 1 millon. No importa la cantidad, siempre tenemos precio para ti.</p>
+    </div>
+    <div class="cond-card">
+      <span class="cond-icon">&#9889;</span>
+      <div class="cond-title">Pago en 5 a 15 minutos</div>
+      <p class="cond-desc">Una vez recibimos las monedas en el juego, procesamos tu pago de inmediato.</p>
+    </div>
+    <div class="cond-card">
+      <span class="cond-icon">&#128179;</span>
+      <div class="cond-title">Multiples metodos de pago</div>
+      <p class="cond-desc">Nequi, Daviplata, Bancolombia, Binance Pay, USDT, PayPal, Skrill y mas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Formulario -->
+<section class="form-section">
+  <div class="form-wrap">
+    <div class="form-header">
+      <h2>&#128203; Formulario de Venta</h2>
+      <p>Completa los datos y te contactamos por WhatsApp en minutos</p>
+    </div>
+    <div class="form-body">
+
+      <div class="field-row">
+        <div class="field">
+          <label>Juego</label>
+          <select id="f-game" onchange="updateServers()">
+            <option value="">-- Selecciona juego --</option>
+            <option value="Dofus Touch">Dofus Touch</option>
+            <option value="Dofus 3.0">Dofus 3.0</option>
+            <option value="Dofus Retro">Dofus Retro</option>
+            <option value="Wakfu">Wakfu</option>
+            <option value="Albion Online">Albion Online</option>
+            <option value="WoW">World of Warcraft</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Servidor</label>
+          <select id="f-server">
+            <option value="">-- Primero elige juego --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Nombre del personaje</label>
+          <input type="text" id="f-char" placeholder="Tu nick en el juego">
+        </div>
+        <div class="field">
+          <label>Cantidad a vender (millones)</label>
+          <input type="number" id="f-qty" placeholder="Ej: 50" min="1" step="1">
+        </div>
+      </div>
+
+      <hr class="field-divider">
+      <div class="field-section-label">Datos de pago</div>
+
+      <div class="field">
+        <label>Metodo de pago preferido</label>
+        <select id="f-payment">
+          <option value="">-- Selecciona metodo --</option>
+          <option value="Nequi">Nequi</option>
+          <option value="Daviplata">Daviplata</option>
+          <option value="Bancolombia">Bancolombia (transferencia)</option>
+          <option value="Binance Pay">Binance Pay</option>
+          <option value="USDT TRC20">USDT TRC20</option>
+          <option value="PayPal">PayPal</option>
+          <option value="Skrill">Skrill</option>
+          <option value="Transferencia Venezuela">Transferencia Venezuela</option>
+          <option value="Transferencia Colombia">Transferencia Colombia</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Nombre completo</label>
+          <input type="text" id="f-name" placeholder="Tu nombre completo">
+        </div>
+        <div class="field">
+          <label>N&uacute;mero de cuenta / direcci&oacute;n de pago</label>
+          <input type="text" id="f-account" placeholder="Numero, correo o direccion">
+        </div>
+      </div>
+
+      <button class="btn-submit-wa" onclick="submitForm()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Enviar por WhatsApp
+      </button>
+      <p class="form-note">Al hacer clic se abrira WhatsApp con todos los datos precargados. Te responderemos en minutos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Tabla de Precios -->
+<section class="prices-section">
+  <div class="prices-wrap">
+    <h2 class="section-title" style="text-align:center;margin-bottom:8px">&#128200; Precios de Compra</h2>
+    <p class="section-sub" style="text-align:center;margin-bottom:36px">Precios por millon &middot; Actualizados diariamente</p>
+
+    <!-- Dofus Retro -->
+    <div class="price-game-block">
+      <div class="price-game-header pgb-gold">
+        <img src="/images/icons/DOFUS_RETRO_Coin.png" alt="" onerror="this.style.display='none'">
+        <span>&#9876;&#65039; Dofus Retro &mdash; Kamas</span>
+      </div>
+      <div class="price-table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Servidor</th><th>COP / M</th><th>USDT / M</th><th>VES / M</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Allisteria</td><td class="price-val">$546</td><td class="price-usdt">$0.13</td><td class="price-ves">Bs. 6.5</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Bun</td><td class="price-val">$546</td><td class="price-usdt">$0.13</td><td class="price-ves">Bs. 6.5</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Fallanster</td><td class="price-val">$546</td><td class="price-usdt">$0.13</td><td class="price-ves">Bs. 6.5</td><td><span class="badge-buying">Comprando</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Dofus 3.0 -->
+    <div class="price-game-block">
+      <div class="price-game-header pgb-cyan">
+        <img src="/images/icons/DOFUS_2.0_Coin.png" alt="" onerror="this.style.display='none'">
+        <span>&#128009; Dofus 3.0 &mdash; Kamas</span>
+      </div>
+      <div class="price-table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Servidor</th><th>COP / M</th><th>USDT / M</th><th>VES / M</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Talkasha</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Brial</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Rafal</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Salar</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Draconiros</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Dakal</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Mikhal</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Kourial</td><td class="price-val">$420</td><td class="price-usdt">$0.10</td><td class="price-ves">Bs. 5.0</td><td><span class="badge-buying">Comprando</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Dofus Touch -->
+    <div class="price-game-block">
+      <div class="price-game-header pgb-green">
+        <img src="/images/icons/DOFUS_TOUCH_Coin.png" alt="" onerror="this.style.display='none'">
+        <span>&#128241; Dofus Touch &mdash; Kamas</span>
+      </div>
+      <div class="price-table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Servidor</th><th>COP / M</th><th>USDT / M</th><th>VES / M</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Blair</td><td class="price-val">$1.764</td><td class="price-usdt">$0.42</td><td class="price-ves">Bs. 21</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Talok</td><td class="price-val">$1.764</td><td class="price-usdt">$0.42</td><td class="price-ves">Bs. 21</td><td><span class="badge-buying">Comprando</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Wakfu -->
+    <div class="price-game-block">
+      <div class="price-game-header pgb-gold">
+        <img src="/images/icons/WAKFU_KAMAS_Coin.png" alt="" onerror="this.style.display='none'">
+        <span>&#127754; Wakfu &mdash; Kamas</span>
+      </div>
+      <div class="price-table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Servidor</th><th>COP / M</th><th>USDT / M</th><th>VES / M</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Ogrest</td><td class="price-val">$2.184</td><td class="price-usdt">$0.52</td><td class="price-ves">Bs. 26</td><td><span class="badge-buying">Comprando</span></td></tr>
+            <tr><td>Rubilax</td><td class="price-val">$2.184</td><td class="price-usdt">$0.52</td><td class="price-ves">Bs. 26</td><td><span class="badge-buying">Comprando</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Albion Online -->
+    <div class="price-game-block">
+      <div class="price-game-header pgb-cyan">
+        <img src="/images/icons/ALBION_SILVER_Coin.png" alt="" onerror="this.style.display='none'">
+        <span>&#127963; Albion Online &mdash; Silver</span>
+      </div>
+      <div class="price-table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Servidor</th><th>COP / M</th><th>USDT / M</th><th>VES / M</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Global (Todos)</td><td class="price-val">$882</td><td class="price-usdt">$0.21</td><td class="price-ves">Bs. 10.5</td><td><span class="badge-buying">Comprando</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WoW -->
+    <div class="price-game-block">
+      <div class="price-game-header pgb-gold">
+        <span style="font-size:26px">&#9876;</span>
+        <span>&#9876; World of Warcraft &mdash; Oro</span>
+      </div>
+      <div class="price-table-wrap">
+        <table class="price-table">
+          <thead><tr><th>Servidor</th><th>COP / M</th><th>USDT / M</th><th>VES / M</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr>
+              <td colspan="5" style="text-align:center;color:var(--text-d);padding:20px 16px">
+                Contactanos por WhatsApp para precio segun tu servidor
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p style="text-align:center;font-size:12px;color:var(--text-d);margin-top:8px">
+      Precios en COP orientativos segun TRM del dia &middot;
+      <span class="badge-full" style="font-size:11px">Stock Completo</span> = no compramos en ese servidor temporalmente
+    </p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:12px">
+          <img src="/images/logo.png" alt="Portal Gamers" style="width:40px;height:40px;border-radius:8px;object-fit:contain" onerror="this.style.display='none'">
+          <span class="nav-logo-text">Portal Gamers</span>
+        </div>
+        <p class="footer-desc">Tu tienda de confianza para Kamas de Dofus y Wakfu, y Silver de Albion Online. Entrega rapida y soporte 24/7.</p>
+        <div class="footer-socials">
+          <a href="https://www.facebook.com/share/18P3NJ7ne3/?mibextid=wwXIfr" target="_blank" class="social-btn" title="Facebook">f</a>
+          <a href="https://www.instagram.com/portalgamerslatam" target="_blank" class="social-btn" title="Instagram">ig</a>
+          <a href="https://wa.me/573223427456" target="_blank" class="social-btn" title="WhatsApp">wa</a>
+          <a href="https://discord.gg/GnkfWQP8" target="_blank" class="social-btn social-btn-discord" title="Discord">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.054a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4>Juegos</h4>
+        <ul>
+          <li><a href="/#tienda">Dofus Retro</a></li>
+          <li><a href="/#tienda">Dofus 3.0</a></li>
+          <li><a href="/#tienda">Dofus Touch</a></li>
+          <li><a href="/#tienda">Wakfu</a></li>
+          <li><a href="/#tienda">Albion Online</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Info</h4>
+        <ul>
+          <li><a href="/">Tienda</a></li>
+          <li><a href="/vender.html">Vendenos monedas</a></li>
+          <li><a href="/#pagos">Metodos de pago</a></li>
+          <li><a href="https://wa.me/573223427456" target="_blank">Soporte</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 Portal Gamers LATAM &mdash; Todos los derechos reservados</p>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/573223427456?text=Hola!+Quiero+vender+monedas" target="_blank" class="wa-float">
+  &#128172; WhatsApp
+</a>
+
+<!-- Region Modal -->
+<div class="modal-overlay" id="region-modal" onclick="if(event.target===this)closeRegionModal()">
+  <div class="modal">
+    <div class="region-modal-head">
+      <h3>&#127760; Regi&oacute;n y Moneda</h3>
+      <button class="region-modal-close" onclick="closeRegionModal()">&#10005;</button>
+    </div>
+    <p class="modal-sub">Personaliza los precios en tu moneda local</p>
+
+    <div class="region-field">
+      <label class="region-label">Regi&oacute;n</label>
+      <select id="modal-region" class="region-select" onchange="onRegionChange()">
+        <option value="CO">&#127464;&#127476; Colombia</option>
+        <option value="MX">&#127474;&#127485; M&eacute;xico</option>
+        <option value="VE">&#127483;&#127466; Venezuela</option>
+        <option value="AR">&#127462;&#127479; Argentina</option>
+        <option value="CL">&#127464;&#127473; Chile</option>
+        <option value="PE">&#127477;&#127466; Per&uacute;</option>
+        <option value="BR">&#127463;&#127479; Brasil</option>
+        <option value="UY">&#127482;&#127486; Uruguay</option>
+      </select>
+    </div>
+
+    <div class="region-field">
+      <label class="region-label">Idioma</label>
+      <select class="region-select" disabled>
+        <option>Espa&ntilde;ol Latinoamericano</option>
+      </select>
+    </div>
+
+    <div class="region-field">
+      <label class="region-label">Moneda asignada autom&aacute;ticamente</label>
+      <div class="region-currency-display" id="modal-currency-display">COP &mdash; Peso Colombiano</div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:24px">
+      <button class="btn-modal-cancel" onclick="closeRegionModal()">Cancelar</button>
+      <button class="btn-modal-confirm" onclick="saveRegion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+const REGIONS_V = {
+  CO:{name:'Colombia',flag:'🇨🇴',currency:'COP'},
+  MX:{name:'México',flag:'🇲🇽',currency:'MXN'},
+  VE:{name:'Venezuela',flag:'🇻🇪',currency:'VES'},
+  AR:{name:'Argentina',flag:'🇦🇷',currency:'ARS'},
+  CL:{name:'Chile',flag:'🇨🇱',currency:'CLP'},
+  PE:{name:'Perú',flag:'🇵🇪',currency:'PEN'},
+  BR:{name:'Brasil',flag:'🇧🇷',currency:'BRL'},
+  UY:{name:'Uruguay',flag:'🇺🇾',currency:'USD'},
+};
+const CURRENCY_NAMES_V = {
+  COP:'Peso Colombiano',MXN:'Peso Mexicano',VES:'Bolívar Venezolano',
+  ARS:'Peso Argentino',CLP:'Peso Chileno',PEN:'Sol Peruano',
+  BRL:'Real Brasileño',USD:'Dólar USD',
+};
+
+(function initRegion() {
+  const code = localStorage.getItem('pg_region');
+  if (code && REGIONS_V[code]) {
+    document.getElementById('region-flag').textContent = REGIONS_V[code].flag;
+    document.getElementById('region-currency').textContent = REGIONS_V[code].currency;
+  }
+})();
+
+function openRegionModal() {
+  const saved = localStorage.getItem('pg_region') || 'CO';
+  const sel = document.getElementById('modal-region');
+  if (sel) sel.value = REGIONS_V[saved] ? saved : 'CO';
+  onRegionChange();
+  document.getElementById('region-modal').classList.add('open');
+}
+function closeRegionModal() {
+  document.getElementById('region-modal').classList.remove('open');
+}
+function onRegionChange() {
+  const code = document.getElementById('modal-region')?.value;
+  const r = REGIONS_V[code];
+  const el = document.getElementById('modal-currency-display');
+  if (el && r) el.textContent = `${r.currency} — ${CURRENCY_NAMES_V[r.currency] || r.currency}`;
+}
+function saveRegion() {
+  const code = document.getElementById('modal-region')?.value;
+  const r = REGIONS_V[code];
+  if (!r) return;
+  localStorage.setItem('pg_region', code);
+  localStorage.setItem('pg_currency', r.currency);
+  document.getElementById('region-flag').textContent = r.flag;
+  document.getElementById('region-currency').textContent = r.currency;
+  closeRegionModal();
+  showToast(`${r.flag} ${r.name} · ${r.currency}`, 'success');
+}
+</script>
+
+<script>
+const SERVERS = {
+  'Dofus Touch':   ['Blair', 'Talok'],
+  'Dofus 3.0':     ['Talkasha', 'Brial', 'Rafal', 'Salar', 'Draconiros', 'Dakal', 'Mikhal', 'Kourial'],
+  'Dofus Retro':   ['Allisteria', 'Bun', 'Fallanster'],
+  'Wakfu':         ['Ogrest', 'Rubilax'],
+  'Albion Online': ['Global (Todos los servidores)'],
+  'WoW':           ['Lordaeron', 'Selune', 'Ragnaros', 'Illidan', 'Otro']
+};
+
+function updateServers() {
+  const game = document.getElementById('f-game').value;
+  const sel  = document.getElementById('f-server');
+  sel.innerHTML = '';
+  if (!game || !SERVERS[game]) {
+    sel.innerHTML = '<option value="">-- Primero elige juego --</option>';
+    return;
+  }
+  SERVERS[game].forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
+}
+
+function submitForm() {
+  const game    = document.getElementById('f-game').value;
+  const server  = document.getElementById('f-server').value;
+  const char    = document.getElementById('f-char').value.trim();
+  const qty     = document.getElementById('f-qty').value.trim();
+  const payment = document.getElementById('f-payment').value;
+  const name    = document.getElementById('f-name').value.trim();
+  const account = document.getElementById('f-account').value.trim();
+
+  if (!game || !server || !char || !qty || !payment || !name || !account) {
+    showToast('Completa todos los campos antes de continuar', 'error');
+    return;
+  }
+
+  const msg = [
+    '🟡 *QUIERO VENDER MONEDAS*',
+    '',
+    `🎮 *Juego:* ${game}`,
+    `🌐 *Servidor:* ${server}`,
+    `👤 *Personaje:* ${char}`,
+    `💰 *Cantidad:* ${qty} millones`,
+    '',
+    `💳 *Metodo de pago:* ${payment}`,
+    `📛 *Nombre:* ${name}`,
+    `🏦 *Cuenta / Direccion:* ${account}`,
+  ].join('\n');
+
+  window.open('https://wa.me/573223427456?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+function toggleNav() {
+  document.getElementById('nav-links').classList.toggle('open');
+  document.getElementById('nav-toggle').classList.toggle('open');
+}
+function closeNav() {
+  document.getElementById('nav-links').classList.remove('open');
+  document.getElementById('nav-toggle').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const nav = document.querySelector('nav');
+  if (!nav.contains(e.target)) closeNav();
+});
+</script>
+</body>
+</html>
