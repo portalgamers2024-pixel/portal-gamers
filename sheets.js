@@ -2,7 +2,6 @@ const { google } = require('googleapis');
 const path = require('path');
 
 const SHEET_ID = process.env.SHEET_ID;
-const KEY_FILE = path.join(__dirname, 'sheets-key.json');
 const SCOPES   = ['https://www.googleapis.com/auth/spreadsheets'];
 
 // Pestaña "💰 Precios": datos desde fila 6
@@ -28,7 +27,18 @@ function parseNum(str) {
 
 let _auth;
 function getAuth() {
-  if (!_auth) _auth = new google.auth.GoogleAuth({ keyFile: KEY_FILE, scopes: SCOPES });
+  if (_auth) return _auth;
+  // En Railway: credenciales como JSON en variable de entorno
+  // En local:   leer sheets-key.json como fallback
+  if (process.env.GOOGLE_CREDENTIALS) {
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+    _auth = new google.auth.GoogleAuth({ credentials, scopes: SCOPES });
+  } else {
+    _auth = new google.auth.GoogleAuth({
+      keyFile: path.join(__dirname, 'sheets-key.json'),
+      scopes: SCOPES,
+    });
+  }
   return _auth;
 }
 async function api() {
