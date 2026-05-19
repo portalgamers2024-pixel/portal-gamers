@@ -74,6 +74,8 @@ app.get('/api/products', async (req, res) => {
   } catch (err) {
     console.error('[Sheets] Error leyendo precios, usando JSON local:', err.message);
   }
+  // Evitar que navegadores móviles cacheen precios desactualizados
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.json(data);
 });
 

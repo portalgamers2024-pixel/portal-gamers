@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ─── Productos ────────────────────────────────────────────
 async function loadProducts() {
   try {
-    const res = await fetch('/api/products');
+    const res = await fetch('/api/products?_=' + Date.now());
     const data = await res.json();
     allGames = (data.games || []).filter(g => g.active !== false);
     if (allGames.length) {

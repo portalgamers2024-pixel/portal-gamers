@@ -212,7 +212,12 @@ nav {
   .hs-arrow { width: 36px; height: 36px; font-size: 24px; }
   .hs-prev  { left: 8px; }
   .hs-next  { right: 8px; }
-  .hero-slider { height: 300px; }
+  .hero-slider { height: 210px; }
+  .hs-slide img {
+    object-fit: cover;
+    object-position: center center;
+    filter: brightness(1.08);
+  }
 }
 
 /* ─── Server Ticker ──────────────────────────────── */
