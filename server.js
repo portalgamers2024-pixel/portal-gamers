@@ -117,6 +117,20 @@ app.post('/api/payments/create', async (req, res) => {
   const { items, payer } = req.body;
   if (!items || !items.length) return res.status(400).json({ error: 'Sin items' });
 
+  // Obtener tasa COP/USD (cache del endpoint /api/currency, fallback conservador)
+  let copRate = currencyCache.rates?.COP;
+  if (!copRate) {
+    try {
+      const r = await fetch('https://open.er-api.com/v6/latest/USD');
+      const d = await r.json();
+      currencyCache = { rates: d.rates, timestamp: Date.now() };
+      copRate = d.rates.COP;
+    } catch { copRate = 4200; }
+  }
+
+  // Detectar modo sandbox (token TEST- → usar sandbox_init_point)
+  const isSandbox = (process.env.MP_ACCESS_TOKEN || '').startsWith('TEST-');
+
   try {
     const preference = new Preference(mpClient);
     const result = await preference.create({
@@ -126,8 +140,9 @@ app.post('/api/payments/create', async (req, res) => {
           title: item.name,
           description: `Servidor: ${item.server}`,
           quantity: Number(item.quantity),
-          unit_price: parseFloat(item.price_usd),
-          currency_id: 'USD'
+          // MP Colombia requiere COP — convertimos desde USD
+          unit_price: Math.round(parseFloat(item.price_usd) * copRate),
+          currency_id: 'COP'
         })),
         payer: payer || {},
         back_urls: {
@@ -135,15 +150,22 @@ app.post('/api/payments/create', async (req, res) => {
           failure: `${process.env.SITE_URL}/?error=pago`,
           pending: `${process.env.SITE_URL}/?status=pendiente`
         },
-        auto_return: 'approved',
+        // auto_return solo funciona con URLs públicas, no localhost
+        ...(process.env.SITE_URL?.includes('localhost') ? {} : { auto_return: 'approved' }),
         statement_descriptor: 'PORTAL GAMERS',
         metadata: { items }
       }
     });
-    res.json({ init_point: result.init_point, preference_id: result.id });
+
+    const initPoint = isSandbox
+      ? (result.sandbox_init_point || result.init_point)
+      : result.init_point;
+
+    res.json({ init_point: initPoint, preference_id: result.id, sandbox: isSandbox });
   } catch (err) {
-    console.error('[MP Error]', err.message);
-    res.status(500).json({ error: 'Error al crear preferencia de pago' });
+    const detail = err.cause ?? err.error_response ?? err.message;
+    console.error('[MP Error]', JSON.stringify(detail, null, 2));
+    res.status(500).json({ error: 'Error al crear preferencia de pago', detail });
   }
 });
 
