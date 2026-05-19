@@ -147,13 +147,15 @@ app.post('/api/payments/create', async (req, res) => {
           currency_id: 'COP'
         })),
         payer: payer || {},
-        back_urls: {
-          success: `${process.env.SITE_URL}/gracias.html`,
-          failure: `${process.env.SITE_URL}/?error=pago`,
-          pending: `${process.env.SITE_URL}/?status=pendiente`
-        },
-        // auto_return solo funciona con URLs públicas, no localhost
-        ...(process.env.SITE_URL?.includes('localhost') ? {} : { auto_return: 'approved' }),
+        // back_urls y auto_return solo con URLs públicas HTTPS — localhost causa ERR_TOO_MANY_REDIRECTS
+        ...(process.env.SITE_URL?.includes('localhost') ? {} : {
+          back_urls: {
+            success: `${process.env.SITE_URL}/gracias.html`,
+            failure: `${process.env.SITE_URL}/?error=pago`,
+            pending: `${process.env.SITE_URL}/?status=pendiente`
+          },
+          auto_return: 'approved',
+        }),
         statement_descriptor: 'PORTAL GAMERS',
         metadata: { items }
       }
