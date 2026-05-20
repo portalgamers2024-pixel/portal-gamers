@@ -7,7 +7,7 @@ const fetch = require('node-fetch');
 const sheets = require('./sheets');
 
 const app = express();
-app.use(express.json());
+app.use(express.json());app.use("/images, express.static(path.join(__dirname, public, images)));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const DATA_FILE = path.join(__dirname, 'data', 'products.json');
