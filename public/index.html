@@ -285,7 +285,7 @@
     <div class="buysell-card">
       <div class="buysell-icon">&#128722;</div>
       <h3>Comprar Monedas</h3>
-      <p>Selecciona el juego, servidor y cantidad que necesitas. Paga con MercadoPago o transferencia directa.</p>
+      <p>Selecciona el juego, servidor y cantidad que necesitas. Paga con Nequi, transferencia bancaria, Binance y mas.</p>
       <button class="btn-primary" onclick="document.getElementById('tienda').scrollIntoView({behavior:'smooth'})">Ver Productos</button>
     </div>
     <div class="buysell-card sell">
@@ -317,7 +317,7 @@
     <div class="step-card">
       <div class="step-num">3</div>
       <div class="step-title">Elige como pagar</div>
-      <p class="step-desc">MercadoPago (tarjeta, PSE, Nequi) o transferencia directa (Binance, Skrill, etc).</p>
+      <p class="step-desc">Segun tu pais: Nequi, Pago Movil, Cuenta bancaria, Binance, Skrill y mas.</p>
     </div>
     <div class="step-card">
       <div class="step-num">4</div>
@@ -334,21 +334,34 @@
     <p class="section-sub">Multiples opciones — los metodos disponibles se muestran segun tu pais</p>
     <div class="payment-grid" id="payment-grid">
       <div class="payment-group">
-        <h4>Con MercadoPago</h4>
+        <h4>&#127464;&#127476; Colombia</h4>
         <div class="payment-badges">
-          <span class="payment-badge">&#128179; Tarjeta Credito/Debito</span>
-          <span class="payment-badge">&#127968; PSE / Transferencia</span>
           <span class="payment-badge">&#128241; Nequi / Daviplata</span>
-          <span class="payment-badge">&#128176; Efecty</span>
+          <span class="payment-badge">&#127968; Banco Uni&#243;n</span>
+          <span class="payment-badge">&#128184; Remitly</span>
         </div>
       </div>
       <div class="payment-group">
-        <h4>Transferencia Internacional</h4>
+        <h4>&#127483;&#127466; Venezuela</h4>
+        <div class="payment-badges">
+          <span class="payment-badge">&#128241; Pago M&#243;vil</span>
+          <span class="payment-badge">&#128273; Llave Colombia</span>
+          <span class="payment-badge">&#8383; Binance</span>
+        </div>
+      </div>
+      <div class="payment-group">
+        <h4>&#127464;&#127473; Chile &amp; &#127474;&#127485; M&#233;xico</h4>
+        <div class="payment-badges">
+          <span class="payment-badge">&#127968; Banco Estado (RUT)</span>
+          <span class="payment-badge">&#127968; Santander</span>
+        </div>
+      </div>
+      <div class="payment-group">
+        <h4>&#127758; Internacional</h4>
         <div class="payment-badges">
           <span class="payment-badge">&#8383; Binance Pay</span>
-          <span class="payment-badge">&#127758; Western Union</span>
-          <span class="payment-badge">&#127968; Banco Union</span>
           <span class="payment-badge">&#128156; Skrill</span>
+          <span class="payment-badge">&#128184; Remitly</span>
         </div>
       </div>
     </div>
@@ -425,38 +438,96 @@
   </div>
 </div>
 
-<!-- Checkout Modal -->
-<div class="modal-overlay" id="checkout-modal">
-  <div class="modal">
-    <h3>Selecciona tu metodo de pago</h3>
-    <p class="modal-sub" id="checkout-summary"></p>
-    <div class="payment-options">
-      <label class="payment-option selected">
-        <input type="radio" name="payment" value="mercadopago" checked>
-        <span class="payment-opt-icon">&#128179;</span>
-        <div>
-          <div class="payment-opt-name">MercadoPago</div>
-          <div class="payment-opt-desc">Tarjeta, PSE, Nequi, Daviplata, Efecty</div>
+<!-- Checkout Modal — 3 pasos -->
+<div class="modal-overlay" id="checkout-modal" onclick="if(event.target===this)closeCheckout()">
+  <div class="modal checkout-modal-wide">
+
+    <!-- Encabezado fijo -->
+    <div class="checkout-modal-header">
+      <div class="checkout-header-top">
+        <span class="checkout-modal-title">&#127873; Realizar pedido</span>
+        <button class="btn-close-modal" onclick="closeCheckout()">&#10005;</button>
+      </div>
+      <div class="checkout-steps-indicator">
+        <div class="csi-step active" id="csi-1">
+          <div class="csi-num">1</div>
+          <span>Tus datos</span>
         </div>
-      </label>
-      <label class="payment-option">
-        <input type="radio" name="payment" value="whatsapp">
-        <span class="payment-opt-icon">&#128172;</span>
-        <div>
-          <div class="payment-opt-name">Transferencia directa</div>
-          <div class="payment-opt-desc">Binance, Western Union, Banco Union, Skrill</div>
+        <div class="csi-divider"></div>
+        <div class="csi-step" id="csi-2">
+          <div class="csi-num">2</div>
+          <span>Pagar</span>
         </div>
-      </label>
+        <div class="csi-divider"></div>
+        <div class="csi-step" id="csi-3">
+          <div class="csi-num">3</div>
+          <span>Confirmar</span>
+        </div>
+      </div>
     </div>
-    <div class="checkout-email-row">
-      <label class="checkout-email-label" for="checkout-email">Tu email (para recibir confirmación)</label>
-      <input type="email" id="checkout-email" class="checkout-email-input"
-             placeholder="ejemplo@correo.com" autocomplete="email">
+
+    <!-- Barra de resumen -->
+    <div class="checkout-summary-bar" id="checkout-summary"></div>
+
+    <!-- PASO 1: Datos del cliente -->
+    <div class="checkout-step-content" id="checkout-step-1">
+      <h3 class="checkout-step-title">&#128101; Datos del pedido</h3>
+      <div class="checkout-form">
+        <div class="cf-field">
+          <label class="cf-label">Nombre completo <span class="cf-req">*</span></label>
+          <input type="text" id="cf-name" class="cf-input" placeholder="Tu nombre completo" autocomplete="name">
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">Usuario en el juego <span class="cf-req">*</span></label>
+          <input type="text" id="cf-username" class="cf-input" placeholder="Tu nick / usuario en el juego">
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">Pa&#237;s <span class="cf-req">*</span></label>
+          <select id="cf-country" class="cf-select">
+            <option value="">-- Selecciona tu pa&#237;s --</option>
+            <option value="Colombia">&#127464;&#127476; Colombia</option>
+            <option value="Venezuela">&#127483;&#127466; Venezuela</option>
+            <option value="Chile">&#127464;&#127473; Chile</option>
+            <option value="Mexico">&#127474;&#127485; M&#233;xico</option>
+            <option value="Otro">&#127758; Otro pa&#237;s</option>
+          </select>
+        </div>
+        <div class="cf-field">
+          <label class="cf-label">Email <span class="cf-opt">(opcional)</span></label>
+          <input type="email" id="cf-email" class="cf-input" placeholder="tu@email.com" autocomplete="email">
+        </div>
+      </div>
+      <div class="checkout-step-actions">
+        <button class="btn-modal-cancel" onclick="closeCheckout()">Cancelar</button>
+        <button class="btn-modal-confirm" onclick="nextToPayment()">Ver m&#233;todos de pago &rarr;</button>
+      </div>
     </div>
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeCheckout()">Cancelar</button>
-      <button class="btn-modal-confirm" onclick="processPayment()">Continuar &rarr;</button>
+
+    <!-- PASO 2: Métodos de pago por país -->
+    <div class="checkout-step-content" id="checkout-step-2" style="display:none">
+      <h3 class="checkout-step-title">&#128179; M&#233;todo de pago</h3>
+      <div class="payment-methods-container" id="payment-methods-container"></div>
+      <div class="checkout-confirm-instruction">
+        Una vez realizado el pago, haz clic en <strong>Confirmar</strong>
+      </div>
+      <div class="checkout-step-actions">
+        <button class="btn-modal-cancel" onclick="backToForm()">&#8592; Volver</button>
+        <button class="btn-confirm-payment" id="btn-confirm-payment" onclick="confirmOrder()">&#10003; Ya pagu&#233; &mdash; Confirmar pedido</button>
+      </div>
     </div>
+
+    <!-- PASO 3: Pedido confirmado -->
+    <div class="checkout-step-content" id="checkout-step-3" style="display:none">
+      <div class="order-confirmed">
+        <div class="oc-icon">&#10003;</div>
+        <h3 class="oc-title">&#161;Pedido recibido!</h3>
+        <p class="oc-text">Te entregaremos tus monedas en m&#225;ximo <strong>5 minutos</strong><br>despu&#233;s de verificar tu pago.</p>
+        <p class="oc-sub">&#191;Tienes dudas? Cont&#225;ctanos por WhatsApp</p>
+        <a href="https://wa.me/573016008994" target="_blank" class="btn-wa-support">&#128172; Contactar soporte</a>
+        <button class="btn-modal-cancel" style="margin-top:12px;width:100%" onclick="closeCheckout()">Cerrar</button>
+      </div>
+    </div>
+
   </div>
 </div>
 

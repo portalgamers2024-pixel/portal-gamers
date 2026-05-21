@@ -483,80 +483,279 @@ function closeCart() {
 }
 
 // ─── Checkout ─────────────────────────────────────────────
+const PAYMENT_METHODS = {
+  Colombia: [
+    {
+      icon: '📱',
+      name: 'Nequi / Daviplata',
+      fields: [
+        { label: 'Número', value: '3016008994' }
+      ]
+    },
+    {
+      icon: '🏦',
+      name: 'Banco Unión Colombia',
+      fields: [
+        { label: 'Cuenta Ahorros', value: '01735600000529916' },
+        { label: 'A nombre de', value: 'Leandro Jose Acosta Garcia', copyable: false },
+        { label: 'Cédula', value: '1082985969' }
+      ]
+    },
+    {
+      icon: '💸',
+      name: 'Remitly',
+      fields: [
+        { label: 'Nombre', value: 'Leandro Jose Acosta Garcia', copyable: false },
+        { label: 'Cta. Bancolombia', value: '77903852944' },
+        { label: 'Celular', value: '3016008994' }
+      ]
+    }
+  ],
+  Venezuela: [
+    {
+      icon: '📱',
+      name: 'Pago Móvil',
+      fields: [
+        { label: 'Número', value: '04126275407' },
+        { label: 'Cédula', value: '23642839' }
+      ]
+    },
+    {
+      icon: '🔑',
+      name: 'Llave Colombia',
+      fields: [
+        { label: 'Número', value: '3016008994' }
+      ]
+    },
+    {
+      icon: '₿',
+      name: 'Binance',
+      fields: [
+        { label: 'Email', value: 'andressuperlano@gmail.com' }
+      ]
+    }
+  ],
+  Chile: [
+    {
+      icon: '🏦',
+      name: 'Cuenta RUT Banco Estado',
+      fields: [
+        { label: 'Titular', value: 'Felipe Ignacio Muñoz Pontigo', copyable: false },
+        { label: 'RUT', value: '17342378-0' }
+      ]
+    }
+  ],
+  Mexico: [
+    {
+      icon: '🏦',
+      name: 'Santander',
+      fields: [
+        { label: 'Número tarjeta', value: '5579 0900 4324 8252' },
+        { label: 'Titular', value: 'Carlos Heredia', copyable: false }
+      ]
+    }
+  ],
+  Otro: [
+    {
+      icon: '₿',
+      name: 'Binance',
+      fields: [
+        { label: 'Email', value: 'andressuperlano@gmail.com' },
+        { label: 'Email 2', value: 'leandro.acosta940614@outlook.com' }
+      ]
+    },
+    {
+      icon: '💳',
+      name: 'Skrill',
+      fields: [
+        { label: 'Email', value: 'leandro.acosta940614@outlook.com' }
+      ]
+    },
+    {
+      icon: '💸',
+      name: 'Remitly',
+      fields: [
+        { label: 'Email', value: 'leandro.acosta940614@gmail.com' }
+      ]
+    }
+  ]
+};
+
+let checkoutOrderData = {};
+let selectedPaymentMethod = '';
+
 function openCheckout() {
   if (!cart.length) return;
   const total = cartTotal();
   const local = convertPrice(total);
   const summaryEl = document.getElementById('checkout-summary');
-  if (summaryEl) summaryEl.textContent = `Total: $${total.toFixed(2)} USD${local ? ` (aprox. ${local})` : ''} · ${cart.length} producto(s)`;
-
-  document.querySelectorAll('.payment-option').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.payment-option').forEach(e => e.classList.remove('selected'));
-      el.classList.add('selected');
-    });
-  });
+  if (summaryEl) {
+    summaryEl.textContent = `Total: $${total.toFixed(2)} USD${local ? ` (aprox. ${local})` : ''} · ${cart.length} producto(s)`;
+  }
+  showCheckoutStep(1);
   document.getElementById('checkout-modal')?.classList.add('open');
 }
 
-function closeCheckout() { document.getElementById('checkout-modal')?.classList.remove('open'); }
-
-async function processPayment() {
-  const method = document.querySelector('input[name="payment"]:checked')?.value;
-  if (!method) return;
-  method === 'mercadopago' ? await payWithMercadoPago() : payWithWhatsApp();
+function closeCheckout() {
+  document.getElementById('checkout-modal')?.classList.remove('open');
 }
 
-async function payWithMercadoPago() {
-  const btn = document.querySelector('.btn-modal-confirm');
-  btn.textContent = 'Procesando...';
-  btn.disabled = true;
+function showCheckoutStep(step) {
+  [1, 2, 3].forEach(n => {
+    const el  = document.getElementById(`checkout-step-${n}`);
+    const ind = document.getElementById(`csi-${n}`);
+    if (el)  el.style.display = n === step ? 'block' : 'none';
+    if (ind) {
+      ind.classList.toggle('active', n === step);
+      ind.classList.toggle('done',   n < step);
+    }
+  });
+}
+
+function nextToPayment() {
+  const name     = document.getElementById('cf-name')?.value?.trim();
+  const username = document.getElementById('cf-username')?.value?.trim();
+  const country  = document.getElementById('cf-country')?.value;
+  const email    = document.getElementById('cf-email')?.value?.trim();
+
+  if (!name)     { showToast('Por favor ingresa tu nombre completo', 'error'); return; }
+  if (!username) { showToast('Por favor ingresa tu usuario en el juego', 'error'); return; }
+  if (!country)  { showToast('Por favor selecciona tu país', 'error'); return; }
+
+  checkoutOrderData = { name, username, country, email };
+
+  const methods = PAYMENT_METHODS[country] || PAYMENT_METHODS['Otro'];
+  selectedPaymentMethod = methods.length > 0 ? methods[0].name : '';
+
+  const container = document.getElementById('payment-methods-container');
+  if (container) container.innerHTML = getPaymentMethodsHTML(country);
+
+  showCheckoutStep(2);
+}
+
+function backToForm() { showCheckoutStep(1); }
+
+function getPaymentMethodsHTML(country) {
+  const methods = PAYMENT_METHODS[country] || PAYMENT_METHODS['Otro'];
+  return methods.map((method, mi) => `
+    <div class="pm-card${mi === 0 ? ' selected' : ''}"
+         onclick="selectPaymentCard(this, '${method.name.replace(/'/g, '&#39;')}')"
+         data-method-name="${method.name.replace(/"/g, '&quot;')}">
+      <div class="pm-card-header">
+        <span class="pm-icon">${method.icon}</span>
+        <div class="pm-name">${method.name}</div>
+      </div>
+      <div class="pm-fields">
+        ${method.fields.map(f => `
+          <div class="pm-data-row">
+            <span class="pm-data-label">${f.label}</span>
+            <span class="pm-data-value">${f.value}</span>
+            ${f.copyable !== false
+              ? `<button class="pm-copy-btn" data-copy="${f.value.replace(/"/g, '&quot;')}" onclick="event.stopPropagation();copyFromBtn(this)">&#128203;</button>`
+              : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectPaymentCard(el, methodName) {
+  document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPaymentMethod = methodName;
+}
+
+function copyFromBtn(btn) {
+  const text = btn.getAttribute('data-copy');
+  if (!text) return;
+  const doFeedback = () => {
+    const orig = btn.innerHTML;
+    btn.textContent = '✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(doFeedback).catch(() => fallbackCopy(text, doFeedback));
+  } else {
+    fallbackCopy(text, doFeedback);
+  }
+}
+
+function fallbackCopy(text, callback) {
+  const el = document.createElement('textarea');
+  el.value = text;
+  el.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+  document.body.appendChild(el);
+  el.select();
+  try { document.execCommand('copy'); if (callback) callback(); } catch (e) {}
+  document.body.removeChild(el);
+}
+
+async function confirmOrder() {
+  const btn = document.getElementById('btn-confirm-payment');
+  if (btn) { btn.textContent = 'Procesando...'; btn.disabled = true; }
+
+  const total     = cartTotal();
+  const local     = convertPrice(total);
+  const { name, username, country, email } = checkoutOrderData;
+  const payMethod = selectedPaymentMethod || 'No especificado';
+
+  const itemsSummary = cart.map(i => {
+    const m = (i.millions || 0) * i.quantity;
+    return `${i.gameName} (${i.serverLabel}): ${m}M ${i.currencyName}`;
+  }).join(', ');
+
+  const juegosList  = [...new Set(cart.map(i => i.gameName))].join(', ');
+  const serversList = [...new Set(cart.map(i => i.serverLabel))].join(', ');
+
   try {
-    const emailInput = document.getElementById('checkout-email');
-    const email = emailInput?.value?.trim() || '';
-    const res = await fetch('/api/payments/create', {
+    await fetch('/api/payments/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items: cart.map(i => ({
-          productId: i.cartKey || i.gameId,
-          gameId: i.gameId,
-          name: `${i.name} - ${i.gameName}`,
-          server: i.serverLabel,
-          price_usd: i.price_usd,
-          quantity: i.quantity
+          productId:    i.cartKey || i.gameId,
+          gameId:       i.gameId,
+          name:         i.name,
+          gameName:     i.gameName,
+          server:       i.serverLabel,
+          price_usd:    i.price_usd,
+          quantity:     i.quantity,
+          millions:     i.millions,
+          currencyName: i.currencyName,
         })),
-        payer: email ? { email } : undefined,
+        customer:      { name, gameUsername: username, country, email },
+        paymentMethod: payMethod,
+        totalUsd:      total.toFixed(2),
+        totalLocal:    local || '',
       })
     });
-    const data = await res.json();
-    if (data.init_point) {
-      const url = data.init_point;
-      cart = []; saveCart(); updateCartUI(); closeCheckout(); closeCart();
-      window.open(url, '_blank');
-    } else throw new Error(data.error || 'Error desconocido');
-  } catch (e) {
-    showToast('Error al procesar: ' + e.message, 'error');
-  } finally {
-    btn.textContent = 'Continuar →';
-    btn.disabled = false;
+  } catch (err) {
+    console.warn('[Checkout] Error registrando en Sheets:', err.message);
   }
-}
 
-function payWithWhatsApp() {
-  const items = cart.map(i => {
-    const totalM = (i.millions || 0) * i.quantity;
-    const totalPrice = (i.price_usd * i.quantity).toFixed(2);
-    const label = totalM ? `${totalM}M ${i.currencyName || ''}` : i.name;
-    return `• ${i.gameIcon || ''} ${label} (${i.gameName}, Servidor: ${i.serverLabel}) = $${totalPrice} USD`;
-  }).join('\n');
-  const total = cartTotal();
-  const msg = encodeURIComponent(
-    `Hola Portal Gamers! Quiero hacer un pedido:\n\n${items}\n\nTotal: $${total.toFixed(2)} USD\nMetodo de pago: Transferencia directa\n\nPueden confirmar disponibilidad?`
+  const fecha    = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
+  const localLine = local ? `\n💴 *Total local:* ${local}` : '';
+  const emailLine = email ? `\n📧 *Email:* ${email}` : '';
+
+  const waMsg = encodeURIComponent(
+    `🎮 *NUEVO PEDIDO - Portal Gamers LATAM*\n\n` +
+    `👤 *Cliente:* ${name}\n` +
+    `🎯 *Usuario en juego:* ${username}\n` +
+    `🌍 *País:* ${country}` + emailLine + `\n\n` +
+    `🎮 *Pedido:* ${itemsSummary}\n\n` +
+    `💵 *Total USD:* $${total.toFixed(2)}` + localLine + `\n\n` +
+    `💳 *Método de pago:* ${payMethod}\n\n` +
+    `⏰ *Fecha:* ${fecha}\n\n` +
+    `✅ Cliente confirmó el pago - Verificar y entregar`
   );
-  closeCheckout(); closeCart();
-  cart = []; saveCart(); updateCartUI();
-  window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, '_blank');
+
+  cart = []; saveCart(); updateCartUI(); closeCart();
+  window.open(`https://wa.me/573016008994?text=${waMsg}`, '_blank');
+
+  if (btn) { btn.textContent = '✓ Confirmar pedido'; btn.disabled = false; }
+  showCheckoutStep(3);
 }
 
 // ─── Currency ─────────────────────────────────────────────

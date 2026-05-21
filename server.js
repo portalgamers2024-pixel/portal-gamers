@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const { MercadoPagoConfig, Preference } = require('mercadopago');
 const fetch = require('node-fetch');
 const sheets = require('./sheets');
 
@@ -12,14 +11,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const DATA_FILE = path.join(__dirname, 'data', 'products.json');
 
-const TEST_MODE = process.env.TEST_MODE === 'true';
-const activeToken = TEST_MODE && process.env.TEST_ACCESS_TOKEN
-  ? process.env.TEST_ACCESS_TOKEN
-  : process.env.MP_ACCESS_TOKEN;
-
-if (TEST_MODE) console.log('[MP] ⚠️  TEST_MODE activo — usando token de prueba');
-
-const mpClient = new MercadoPagoConfig({ accessToken: activeToken });
 
 let currencyCache = { rates: null, timestamp: 0 };
 
@@ -121,119 +112,39 @@ app.get('/api/currency', async (req, res) => {
   }
 });
 
-// ─── Pagos MercadoPago ────────────────────────────────────────────────────────
+// ─── Pagos Manuales ───────────────────────────────────────────────────────────
 
 app.post('/api/payments/create', async (req, res) => {
-  const { items, payer } = req.body;
+  const { items, customer, paymentMethod, totalUsd, totalLocal } = req.body;
   if (!items || !items.length) return res.status(400).json({ error: 'Sin items' });
 
-  // Obtener tasa COP/USD (cache del endpoint /api/currency, fallback conservador)
-  let copRate = currencyCache.rates?.COP;
-  if (!copRate) {
-    try {
-      const r = await fetch('https://open.er-api.com/v6/latest/USD');
-      const d = await r.json();
-      currencyCache = { rates: d.rates, timestamp: Date.now() };
-      copRate = d.rates.COP;
-    } catch { copRate = 4200; }
-  }
-
-  // Detectar modo sandbox: TEST_MODE activo o token empieza con TEST-
-  const isSandbox = TEST_MODE || (activeToken || '').startsWith('TEST-');
-  if (isSandbox) console.log('[MP] X-Test-Mode: true — se usará sandbox_init_point');
+  const juegosList  = [...new Set(items.map(i => i.gameName || i.name).filter(Boolean))].join(', ');
+  const serversList = [...new Set(items.map(i => i.server).filter(Boolean))].join(', ');
+  const cantidadTot = items.reduce((s, i) => s + ((i.millions || 0) * (i.quantity || 1)), 0);
+  const totalCalc   = items.reduce((s, i) => s + parseFloat(i.price_usd || 0) * (i.quantity || 1), 0);
 
   try {
-    const preference = new Preference(mpClient);
-    const isLocalhost = process.env.SITE_URL?.includes('localhost');
-    const externalRef = `orden-${Date.now()}`;
-
-    const prefBody = {
-      items: items.map(item => ({
-        id: item.productId,
-        title: item.name,
-        description: `Servidor: ${item.server}`,
-        quantity: Number(item.quantity),
-        // MP Colombia requiere COP — convertimos desde USD
-        unit_price: Math.round(parseFloat(item.price_usd) * copRate),
-        currency_id: 'COP'
-      })),
-      payer: (payer && payer.email) ? payer : { email: 'comprador@portalgamerslatam.com' },
-      statement_descriptor: 'PORTAL GAMERS',
-      external_reference: externalRef,
-      metadata: { items },
-      // back_urls y notification_url solo con URLs públicas HTTPS
-      ...(!isLocalhost ? {
-        back_urls: {
-          success: `${process.env.SITE_URL}/gracias.html`,
-          failure: `${process.env.SITE_URL}/?error=pago`,
-          pending: `${process.env.SITE_URL}/gracias.html`
-        },
-        auto_return: 'approved',
-        notification_url: `${process.env.SITE_URL}/api/payments/webhook`,
-      } : {}),
-    };
-
-    console.log('[MP] Creando preferencia:', JSON.stringify(prefBody, null, 2));
-    const result = await preference.create({ body: prefBody });
-    console.log('[MP] Respuesta:', JSON.stringify({
-      id: result.id,
-      init_point: result.init_point,
-      sandbox_init_point: result.sandbox_init_point,
-    }, null, 2));
-
-    const initPoint = isSandbox
-      ? (result.sandbox_init_point || result.init_point)
-      : result.init_point;
-
-    res.json({
-      init_point: initPoint,
-      sandbox_init_point: result.sandbox_init_point || null,
-      preference_id: result.id,
-      external_reference: externalRef,
-      sandbox: isSandbox,
+    await sheets.logOrder({
+      nombre:        customer?.name        || 'Cliente',
+      usuario_juego: customer?.gameUsername || '',
+      pais:          customer?.country      || '',
+      email:         customer?.email        || '',
+      juego:         juegosList,
+      servidor:      serversList,
+      cantidad:      cantidadTot,
+      total_usd:     totalUsd || totalCalc.toFixed(2),
+      total_local:   totalLocal || '',
+      metodo_pago:   paymentMethod || '',
     });
   } catch (err) {
-    const detail = err.cause ?? err.error_response ?? err.message;
-    console.error('[MP Error]', JSON.stringify(detail, null, 2));
-    res.status(500).json({ error: 'Error al crear preferencia de pago', detail });
+    console.error('[Order] Error en Sheets:', err.message);
   }
+
+  res.json({ success: true });
 });
 
-// Webhook MercadoPago (notificaciones de pago)
-app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  const { type, data } = body;
-  console.log('[Webhook MP]', type, data?.id);
-
-  if (type === 'payment' && data?.id) {
-    try {
-      const r = await fetch(`https://api.mercadopago.com/v1/payments/${data.id}`, {
-        headers: { Authorization: `Bearer ${activeToken}` }
-      });
-      const pago = await r.json();
-      if (pago.status === 'approved' && pago.metadata?.items) {
-        for (const item of pago.metadata.items) {
-          const millions  = item.quantity || 1;
-          const precioM   = item.price_usd ? (item.price_usd / millions) : 0;
-          await sheets.logSale({
-            juego:     item.name,
-            servidor:  item.server || '',
-            cantidad:  millions,
-            moneda:    item.currencyName || '',
-            precio_m:  precioM,
-            total_usd: item.price_usd || pago.transaction_amount,
-            canal:     'MercadoPago',
-            asesor:    'Sistema',
-            pago_id:   pago.id,
-          });
-        }
-      }
-    } catch (err) {
-      console.error('[Webhook] Error registrando venta en Sheets:', err.message);
-    }
-  }
-  res.sendStatus(200);
-});
+// Webhook legacy (no-op)
+app.post('/api/payments/webhook', (req, res) => res.sendStatus(200));
 
 // Registro manual de venta (ventas por WhatsApp o fuera de MercadoPago)
 app.post('/api/sales/register', adminAuth, async (req, res) => {

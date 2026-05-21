@@ -142,4 +142,33 @@ async function logSale({ juego, servidor, cantidad, precio_m, total_usd, moneda,
   invalidateCache();
 }
 
-module.exports = { getPricesFromSheet, logSale, invalidateCache };
+async function logOrder({ nombre, usuario_juego, pais, email, juego, servidor, cantidad, total_usd, total_local, metodo_pago }) {
+  if (!SHEET_ID) return;
+  const sheets = await api();
+  const fecha = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SHEET_ID,
+    range: `${TAB_VENTAS}!A:L`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: [[
+        fecha,
+        nombre        || '',
+        usuario_juego || '',
+        pais          || '',
+        email         || '',
+        juego         || '',
+        servidor      || '',
+        cantidad      || '',
+        total_usd     ? `$${Number(total_usd).toFixed(2)}` : '',
+        total_local   || '',
+        metodo_pago   || '',
+        'PENDIENTE VERIFICACION',
+      ]],
+    },
+  });
+  invalidateCache();
+}
+
+module.exports = { getPricesFromSheet, logSale, logOrder, invalidateCache };
