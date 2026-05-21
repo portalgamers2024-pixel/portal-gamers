@@ -202,7 +202,7 @@ function renderPurchaseForm() {
   if (!grid) return;
 
   const g = currentGame;
-  const defaultM = g.min_millions || 10;
+  const defaultM = g.min_millions || 1;
   const presets = getPresets(g.min_millions, g.max_millions);
   const initTotal = (defaultM * g.price_per_million).toFixed(2);
   const initLocal = convertPrice(defaultM * g.price_per_million) || '';
@@ -237,7 +237,7 @@ function renderPurchaseForm() {
           <button class="pf-adj" onclick="adjustMillions(-10)">&#8722;10</button>
           <button class="pf-adj" onclick="adjustMillions(-1)">&#8722;1</button>
           <input type="number" id="millions-input" class="pf-input"
-                 value="${defaultM}" min="${g.min_millions}" max="${g.max_millions}" step="1"
+                 value="${defaultM}" min="1" max="${g.max_millions}" step="1"
                  oninput="updateLivePrice()">
           <button class="pf-adj" onclick="adjustMillions(+1)">+1</button>
           <button class="pf-adj" onclick="adjustMillions(+10)">+10</button>
@@ -261,7 +261,7 @@ function renderPurchaseForm() {
 }
 
 function getPresets(min, max) {
-  return [5, 10, 25, 50, 100, 200, 500, 1000].filter(p => p >= min && p <= max).slice(0, 6);
+  return [1, 2, 5, 10, 25, 50, 100, 200, 500, 1000].filter(p => p >= min && p <= max).slice(0, 6);
 }
 
 function goBack() {
