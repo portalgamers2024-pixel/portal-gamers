@@ -7,7 +7,7 @@ const fetch = require('node-fetch');
 const sheets = require('./sheets');
 
 const app = express();
-app.use(express.json());app.use("/images, express.static(path.join(__dirname, public, images)));
+app.use(express.json());app.use("/images", express.static(path.join(__dirname, 'public', 'images')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const DATA_FILE = path.join(__dirname, 'data', 'products.json');
@@ -238,7 +238,11 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/gracias.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'gracias.html')));
 
-app.get("/dofus-kamas.html, (req, res) => res.sendFile(path.join(__dirname, public, dofus-kamas.html)));`napp.get(/albion-silver.html, (req, res) => res.sendFile(path.join(__dirname, public, albion-silver.html)));`napp.get(/wow-gold.html, (req, res) => res.sendFile(path.join(__dirname, public, wow-gold.html)));`napp.get(/vender.html, (req, res) => res.sendFile(path.join(__dirname, public, vender.html)));`nconst PORT = process.env.PORT || 3000;
+app.get("/dofus-kamas.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'dofus-kamas.html')));
+app.get("/albion-silver.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'albion-silver.html')));
+app.get("/wow-gold.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'wow-gold.html')));
+app.get("/vender.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'vender.html')));
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`\n🎮  Portal Gamers → http://localhost:${PORT}`);
   console.log(`⚙️   Panel Admin  → http://localhost:${PORT}/admin\n`);
