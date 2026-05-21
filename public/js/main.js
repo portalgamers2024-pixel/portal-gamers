@@ -493,6 +493,13 @@ const PAYMENT_METHODS = {
       ]
     },
     {
+      icon: '🔑',
+      name: 'Llave Colombia',
+      fields: [
+        { label: 'Número', value: '3016008994' }
+      ]
+    },
+    {
       icon: '🏦',
       name: 'Banco Unión Colombia',
       fields: [
