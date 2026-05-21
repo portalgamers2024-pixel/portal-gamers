@@ -512,6 +512,8 @@ async function payWithMercadoPago() {
   btn.textContent = 'Procesando...';
   btn.disabled = true;
   try {
+    const emailInput = document.getElementById('checkout-email');
+    const email = emailInput?.value?.trim() || '';
     const res = await fetch('/api/payments/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -523,7 +525,8 @@ async function payWithMercadoPago() {
           server: i.serverLabel,
           price_usd: i.price_usd,
           quantity: i.quantity
-        }))
+        })),
+        payer: email ? { email } : undefined,
       })
     });
     const data = await res.json();

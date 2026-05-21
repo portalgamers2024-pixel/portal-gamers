@@ -135,37 +135,48 @@ app.post('/api/payments/create', async (req, res) => {
 
   try {
     const preference = new Preference(mpClient);
-    const result = await preference.create({
-      body: {
-        items: items.map(item => ({
-          id: item.productId,
-          title: item.name,
-          description: `Servidor: ${item.server}`,
-          quantity: Number(item.quantity),
-          // MP Colombia requiere COP — convertimos desde USD
-          unit_price: Math.round(parseFloat(item.price_usd) * copRate),
-          currency_id: 'COP'
-        })),
-        payer: payer || {},
-        // back_urls y auto_return solo con URLs públicas HTTPS — localhost causa ERR_TOO_MANY_REDIRECTS
-        ...(process.env.SITE_URL?.includes('localhost') ? {} : {
-          back_urls: {
-            success: `${process.env.SITE_URL}/gracias.html`,
-            failure: `${process.env.SITE_URL}/?error=pago`,
-            pending: `${process.env.SITE_URL}/?status=pendiente`
-          },
-          auto_return: 'approved',
-        }),
-        statement_descriptor: 'PORTAL GAMERS',
-        metadata: { items }
-      }
-    });
+    const isLocalhost = process.env.SITE_URL?.includes('localhost');
+    const externalRef = `orden-${Date.now()}`;
+
+    const prefBody = {
+      items: items.map(item => ({
+        id: item.productId,
+        title: item.name,
+        description: `Servidor: ${item.server}`,
+        quantity: Number(item.quantity),
+        // MP Colombia requiere COP — convertimos desde USD
+        unit_price: Math.round(parseFloat(item.price_usd) * copRate),
+        currency_id: 'COP'
+      })),
+      payer: (payer && payer.email) ? payer : { email: 'comprador@portalgamerslatam.com' },
+      statement_descriptor: 'PORTAL GAMERS',
+      external_reference: externalRef,
+      metadata: { items },
+      // back_urls y notification_url solo con URLs públicas HTTPS
+      ...(!isLocalhost ? {
+        back_urls: {
+          success: `${process.env.SITE_URL}/gracias.html`,
+          failure: `${process.env.SITE_URL}/?error=pago`,
+          pending: `${process.env.SITE_URL}/gracias.html`
+        },
+        auto_return: 'approved',
+        notification_url: `${process.env.SITE_URL}/api/payments/webhook`,
+      } : {}),
+    };
+
+    console.log('[MP] Creando preferencia:', JSON.stringify(prefBody, null, 2));
+    const result = await preference.create({ body: prefBody });
+    console.log('[MP] Respuesta:', JSON.stringify({
+      id: result.id,
+      init_point: result.init_point,
+      sandbox_init_point: result.sandbox_init_point,
+    }, null, 2));
 
     const initPoint = isSandbox
       ? (result.sandbox_init_point || result.init_point)
       : result.init_point;
 
-    res.json({ init_point: initPoint, preference_id: result.id, sandbox: isSandbox });
+    res.json({ init_point: initPoint, preference_id: result.id, external_reference: externalRef, sandbox: isSandbox });
   } catch (err) {
     const detail = err.cause ?? err.error_response ?? err.message;
     console.error('[MP Error]', JSON.stringify(detail, null, 2));
