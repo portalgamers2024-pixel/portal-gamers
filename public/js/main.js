@@ -623,13 +623,11 @@ function nextToPayment() {
   const name     = document.getElementById('cf-name')?.value?.trim();
   const username = document.getElementById('cf-username')?.value?.trim();
   const country  = document.getElementById('cf-country')?.value;
-  const email    = document.getElementById('cf-email')?.value?.trim();
 
-  if (!name)     { showToast('Por favor ingresa tu nombre completo', 'error'); return; }
   if (!username) { showToast('Por favor ingresa tu usuario en el juego', 'error'); return; }
   if (!country)  { showToast('Por favor selecciona tu país', 'error'); return; }
 
-  checkoutOrderData = { name, username, country, email };
+  checkoutOrderData = { name, username, country };
 
   const methods = PAYMENT_METHODS[country] || PAYMENT_METHODS['Otro'];
   selectedPaymentMethod = methods.length > 0 ? methods[0].name : '';
@@ -699,13 +697,27 @@ function fallbackCopy(text, callback) {
   document.body.removeChild(el);
 }
 
+function toggleTooltip(icon) {
+  const tip = icon.nextElementSibling;
+  if (!tip) return;
+  const isOpen = tip.classList.contains('visible');
+  document.querySelectorAll('.cf-tooltip.visible').forEach(t => t.classList.remove('visible'));
+  if (!isOpen) tip.classList.add('visible');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('cf-info-icon')) {
+    document.querySelectorAll('.cf-tooltip.visible').forEach(t => t.classList.remove('visible'));
+  }
+});
+
 async function confirmOrder() {
   const btn = document.getElementById('btn-confirm-payment');
   if (btn) { btn.textContent = 'Procesando...'; btn.disabled = true; }
 
   const total     = cartTotal();
   const local     = convertPrice(total);
-  const { name, username, country, email } = checkoutOrderData;
+  const { name, username, country } = checkoutOrderData;
   const payMethod = selectedPaymentMethod || 'No especificado';
 
   const itemsSummary = cart.map(i => {
@@ -732,7 +744,7 @@ async function confirmOrder() {
           millions:     i.millions,
           currencyName: i.currencyName,
         })),
-        customer:      { name, gameUsername: username, country, email },
+        customer:      { name, gameUsername: username, country },
         paymentMethod: payMethod,
         totalUsd:      total.toFixed(2),
         totalLocal:    local || '',
@@ -744,13 +756,12 @@ async function confirmOrder() {
 
   const fecha    = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
   const localLine = local ? `\n💴 *Total local:* ${local}` : '';
-  const emailLine = email ? `\n📧 *Email:* ${email}` : '';
 
   const waMsg = encodeURIComponent(
     `🎮 *NUEVO PEDIDO - Portal Gamers LATAM*\n\n` +
-    `👤 *Cliente:* ${name}\n` +
+    `👤 *Cliente:* ${name || 'No indicado'}\n` +
     `🎯 *Usuario en juego:* ${username}\n` +
-    `🌍 *País:* ${country}` + emailLine + `\n\n` +
+    `🌍 *País:* ${country}\n\n` +
     `🎮 *Pedido:* ${itemsSummary}\n\n` +
     `💵 *Total USD:* $${total.toFixed(2)}` + localLine + `\n\n` +
     `💳 *Método de pago:* ${payMethod}\n\n` +

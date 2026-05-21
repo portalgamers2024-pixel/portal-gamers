@@ -474,11 +474,23 @@
       <h3 class="checkout-step-title">&#128101; Datos del pedido</h3>
       <div class="checkout-form">
         <div class="cf-field">
-          <label class="cf-label">Nombre completo <span class="cf-req">*</span></label>
-          <input type="text" id="cf-name" class="cf-input" placeholder="Tu nombre completo" autocomplete="name">
+          <label class="cf-label">
+            Nombre completo <span class="cf-opt">(opcional)</span>
+            <span class="cf-tooltip-wrap">
+              <span class="cf-info-icon" onclick="toggleTooltip(this)">i</span>
+              <span class="cf-tooltip">El pago ser&#225; verificado con el nombre que registres aqu&#237;. Aseg&#250;rate que coincida con el titular de la cuenta.</span>
+            </span>
+          </label>
+          <input type="text" id="cf-name" class="cf-input" placeholder="Tu nombre completo (opcional)" autocomplete="name">
         </div>
         <div class="cf-field">
-          <label class="cf-label">Usuario en el juego <span class="cf-req">*</span></label>
+          <label class="cf-label">
+            Usuario en el juego <span class="cf-req">*</span>
+            <span class="cf-tooltip-wrap">
+              <span class="cf-info-icon" onclick="toggleTooltip(this)">i</span>
+              <span class="cf-tooltip">Tu nick o nombre de personaje en el juego. Lo usamos para entregarte las Kamas directamente.</span>
+            </span>
+          </label>
           <input type="text" id="cf-username" class="cf-input" placeholder="Tu nick / usuario en el juego">
         </div>
         <div class="cf-field">
@@ -491,10 +503,6 @@
             <option value="Mexico">&#127474;&#127485; M&#233;xico</option>
             <option value="Otro">&#127758; Otro pa&#237;s</option>
           </select>
-        </div>
-        <div class="cf-field">
-          <label class="cf-label">Email <span class="cf-opt">(opcional)</span></label>
-          <input type="email" id="cf-email" class="cf-input" placeholder="tu@email.com" autocomplete="email">
         </div>
       </div>
       <div class="checkout-step-actions">

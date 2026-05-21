@@ -1436,3 +1436,83 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
   .checkout-step-content { padding: 16px; }
   .pm-data-label         { min-width: 72px; }
 }
+
+/* ═══════════════════════════════════════════════════
+   Tooltips de campo
+   ═══════════════════════════════════════════════════ */
+
+.cf-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cf-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+.cf-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 800;
+  font-style: normal;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  transition: var(--trans);
+  line-height: 1;
+}
+.cf-info-icon:hover { background: rgba(245,166,35,.15); }
+
+.cf-tooltip {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0d1b2a;
+  border: 1px solid #f59e0b;
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 240px;
+  width: max-content;
+  white-space: normal;
+  text-transform: none;
+  font-weight: 400;
+  letter-spacing: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.5);
+}
+
+/* Flecha hacia abajo del tooltip */
+.cf-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #f59e0b;
+}
+
+/* Hover en desktop */
+.cf-tooltip-wrap:hover .cf-tooltip { opacity: 1; }
+
+/* Clic en móvil */
+.cf-tooltip.visible { opacity: 1; }
