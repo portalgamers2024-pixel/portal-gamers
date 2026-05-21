@@ -253,8 +253,11 @@ function renderPurchaseForm() {
         </div>
 
         <div class="pf-actions">
-          <button class="pf-btn-cart" onclick="addCustomToCart()">+ Agregar al carrito</button>
-          <button class="pf-btn-wa" onclick="orderViaWhatsApp()">&#128172; Pedir por WhatsApp</button>
+          <button class="pf-btn-buy" onclick="buyNow()">🛒 Comprar ahora</button>
+          <div class="pf-actions-secondary">
+            <button class="pf-btn-cart" onclick="addCustomToCart()">+ Agregar al carrito</button>
+            <button class="pf-btn-wa" onclick="orderViaWhatsApp()">&#128172; Pedir por WhatsApp</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -343,6 +346,47 @@ function addCustomToCart() {
   saveCart();
   updateCartUI();
   openCart();
+}
+
+function buyNow() {
+  if (!currentGame) return;
+  const input = document.getElementById('millions-input');
+  if (!input) return;
+  let millions = parseInt(input.value) || currentGame.min_millions;
+  millions = Math.max(currentGame.min_millions, Math.min(currentGame.max_millions, millions));
+
+  if (millions > currentGame.stock_millions) {
+    showToast('Stock insuficiente para esa cantidad', 'error');
+    return;
+  }
+
+  const g = currentGame;
+  const priceUsd = parseFloat((millions * g.price_per_million).toFixed(2));
+  const cartKey = `${g.id}__${currentServer}__${millions}`;
+
+  if (!cart.find(c => c.cartKey === cartKey)) {
+    cart.push({
+      cartKey,
+      gameId: g.id,
+      server: currentServer,
+      millions,
+      currencyName: g.currency_name,
+      name: `${millions}M ${g.currency_name}`,
+      gameName: g.name,
+      gameIcon: g.icon,
+      iconImg: g.icon_img,
+      serverLabel: currentServer,
+      price_usd: priceUsd,
+      price_per_million: g.price_per_million,
+      quantity: 1,
+      stock: g.stock_millions,
+      delivery: g.delivery
+    });
+    saveCart();
+    updateCartUI();
+  }
+
+  openCheckout();
 }
 
 function orderViaWhatsApp() {

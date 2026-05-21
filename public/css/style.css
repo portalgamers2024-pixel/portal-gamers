@@ -864,7 +864,22 @@ nav span:last-child,
 .pf-total-local { font-size: 14px; color: var(--cyan); text-align: right; margin-top: 4px; }
 .pf-stock-info { font-size: 12px; color: var(--text-d); margin-top: 8px; }
 
-.pf-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.pf-actions { display: flex; flex-direction: column; gap: 10px; }
+.pf-actions-secondary { display: flex; gap: 12px; }
+.pf-btn-buy {
+  width: 100%;
+  padding: 16px 20px;
+  background: #f59e0b;
+  color: #0a0e1a;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--trans);
+  letter-spacing: .4px;
+}
+.pf-btn-buy:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,.4); }
 .pf-btn-cart {
   flex: 1;
   padding: 14px 20px;
@@ -896,6 +911,7 @@ nav span:last-child,
   .pf-total-usd { font-size: 26px; }
   .pf-adj { min-width: 44px; padding: 8px 10px; font-size: 13px; }
   .pf-input { font-size: 20px; }
+  .pf-actions-secondary { flex-direction: column; }
 }
 
 /* ═══════════════════════════════════════════════════
