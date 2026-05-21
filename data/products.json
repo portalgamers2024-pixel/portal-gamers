@@ -95,6 +95,42 @@
       "servers": [
         "Global (Todos los servidores)"
       ]
+    },
+    {
+      "id": "wow-retail",
+      "name": "WoW Gold - The War Within",
+      "icon": "⚔️",
+      "icon_img": "/images/banner-wow-gold.png",
+      "currency_name": "Gold",
+      "unit_label": "0.1M (100k Gold)",
+      "unit_size": 0.1,
+      "color": "#f59e0b",
+      "price_per_million": 5,
+      "min_millions": 1,
+      "max_millions": 100,
+      "stock_millions": 500,
+      "delivery": "5-30 min",
+      "active": true,
+      "servers": [
+        "Americas",
+        "Europe",
+        "Latin America",
+        "Oceania"
+      ],
+      "local_prices": {
+        "sell": {
+          "COP": 20000,
+          "VES": 3650,
+          "CLP": 5550,
+          "MXN": 110
+        }
+      },
+      "extras": {
+        "expansion_base": { "USD": 40, "COP": 160000, "VES": 29200, "CLP": 44400, "MXN": 880 },
+        "expansion_epica": { "USD": 73, "COP": 292000, "VES": 53290, "CLP": 81030, "MXN": 1606 }
+      },
+      "price_reference": "https://undermine.exchange",
+      "note": "Precio por cada 100k Gold (0.1M). Minimo: 1 unidad = 100k Gold"
     }
   ]
 }
