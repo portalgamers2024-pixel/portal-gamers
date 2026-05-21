@@ -208,7 +208,7 @@ app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), asy
   if (type === 'payment' && data?.id) {
     try {
       const r = await fetch(`https://api.mercadopago.com/v1/payments/${data.id}`, {
-        headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}` }
+        headers: { Authorization: `Bearer ${activeToken}` }
       });
       const pago = await r.json();
       if (pago.status === 'approved' && pago.metadata?.items) {
