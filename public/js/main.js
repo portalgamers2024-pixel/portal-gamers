@@ -531,8 +531,9 @@ async function payWithMercadoPago() {
     });
     const data = await res.json();
     if (data.init_point) {
+      const url = data.sandbox_init_point && data.sandbox ? data.sandbox_init_point : data.init_point;
       cart = []; saveCart(); updateCartUI(); closeCheckout(); closeCart();
-      window.open(data.init_point, '_blank');
+      window.open(url, '_blank');
     } else throw new Error(data.error || 'Error desconocido');
   } catch (e) {
     showToast('Error al procesar: ' + e.message, 'error');

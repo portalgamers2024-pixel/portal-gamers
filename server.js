@@ -11,7 +11,15 @@ app.use(express.json());app.use("/images", express.static(path.join(__dirname, '
 app.use(express.static(path.join(__dirname, 'public')));
 
 const DATA_FILE = path.join(__dirname, 'data', 'products.json');
-const mpClient = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+
+const TEST_MODE = process.env.TEST_MODE === 'true';
+const activeToken = TEST_MODE && process.env.TEST_ACCESS_TOKEN
+  ? process.env.TEST_ACCESS_TOKEN
+  : process.env.MP_ACCESS_TOKEN;
+
+if (TEST_MODE) console.log('[MP] ⚠️  TEST_MODE activo — usando token de prueba');
+
+const mpClient = new MercadoPagoConfig({ accessToken: activeToken });
 
 let currencyCache = { rates: null, timestamp: 0 };
 
@@ -130,8 +138,9 @@ app.post('/api/payments/create', async (req, res) => {
     } catch { copRate = 4200; }
   }
 
-  // Detectar modo sandbox (token TEST- → usar sandbox_init_point)
-  const isSandbox = (process.env.MP_ACCESS_TOKEN || '').startsWith('TEST-');
+  // Detectar modo sandbox: TEST_MODE activo o token empieza con TEST-
+  const isSandbox = TEST_MODE || (activeToken || '').startsWith('TEST-');
+  if (isSandbox) console.log('[MP] X-Test-Mode: true — se usará sandbox_init_point');
 
   try {
     const preference = new Preference(mpClient);
@@ -176,7 +185,13 @@ app.post('/api/payments/create', async (req, res) => {
       ? (result.sandbox_init_point || result.init_point)
       : result.init_point;
 
-    res.json({ init_point: initPoint, preference_id: result.id, external_reference: externalRef, sandbox: isSandbox });
+    res.json({
+      init_point: initPoint,
+      sandbox_init_point: result.sandbox_init_point || null,
+      preference_id: result.id,
+      external_reference: externalRef,
+      sandbox: isSandbox,
+    });
   } catch (err) {
     const detail = err.cause ?? err.error_response ?? err.message;
     console.error('[MP Error]', JSON.stringify(detail, null, 2));
