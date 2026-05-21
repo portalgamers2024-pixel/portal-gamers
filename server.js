@@ -4,6 +4,8 @@ const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
 const sheets = require('./sheets');
+const { handleMessage } = require('./whatsapp/bot');
+const { sendDailySummary } = require('./whatsapp/sender');
 
 const app = express();
 app.use(express.json());app.use("/images", express.static(path.join(__dirname, 'public', 'images')));
@@ -146,6 +148,47 @@ app.post('/api/payments/create', async (req, res) => {
 // Webhook legacy (no-op)
 app.post('/api/payments/webhook', (req, res) => res.sendStatus(200));
 
+// ─── WhatsApp Webhook ─────────────────────────────────────────────────────────
+
+app.get('/webhook/whatsapp', (req, res) => {
+  const mode      = req.query['hub.mode'];
+  const token     = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    console.log('[WA] Webhook verificado');
+    return res.status(200).send(challenge);
+  }
+  res.sendStatus(403);
+});
+
+app.post('/webhook/whatsapp', (req, res) => {
+  res.sendStatus(200); // responder inmediatamente a Meta
+
+  try {
+    const entry   = req.body?.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const value   = changes?.value;
+
+    if (value?.statuses) return; // ignorar status (sent, delivered, read)
+
+    const messages = value?.messages;
+    if (!messages?.length) return;
+
+    for (const msg of messages) {
+      if (msg.type !== 'text') continue;
+      const phone   = msg.from;
+      const body    = msg.text?.body || '';
+      const contact = value?.contacts?.find(c => c.wa_id === phone);
+      const name    = contact?.profile?.name || '';
+      handleMessage(phone, body, name).catch(err =>
+        console.error('[WA] Error en handleMessage:', err.message)
+      );
+    }
+  } catch (err) {
+    console.error('[WA] Error procesando webhook:', err.message);
+  }
+});
+
 // Registro manual de venta (ventas por WhatsApp o fuera de MercadoPago)
 app.post('/api/sales/register', adminAuth, async (req, res) => {
   const { juego, servidor, cantidad, moneda, precio_m, total_usd, canal, asesor } = req.body;
@@ -179,6 +222,25 @@ app.get("/dofus-kamas.html", (req, res) => res.sendFile(path.join(__dirname, 'pu
 app.get("/albion-silver.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'albion-silver.html')));
 app.get("/wow-gold.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'wow-gold.html')));
 app.get("/vender.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'vender.html')));
+// ─── Resumen diario (22:00 hora Colombia) ────────────────────────────────────
+
+function scheduleDailySummary() {
+  const now   = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }));
+  const next  = new Date(now);
+  next.setHours(22, 0, 0, 0);
+  if (next <= now) next.setDate(next.getDate() + 1);
+  const delay = next - now;
+  setTimeout(() => {
+    sendDailySummary().catch(err => console.error('[Cron] Error resumen diario:', err.message));
+    setInterval(() => {
+      sendDailySummary().catch(err => console.error('[Cron] Error resumen diario:', err.message));
+    }, 24 * 60 * 60 * 1000);
+  }, delay);
+  console.log(`[Cron] Resumen diario programado en ${Math.round(delay / 60000)} min`);
+}
+
+scheduleDailySummary();
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`\n🎮  Portal Gamers → http://localhost:${PORT}`);
