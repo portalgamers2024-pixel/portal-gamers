@@ -100,6 +100,63 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSpotlightStatic();
 });
 
+// ─── Info por juego (Tarea 2) ─────────────────────────────
+const GAME_INFO = {
+  'dofus-retro': [
+    '📦 Entrega inmediata en servidor seleccionado',
+    '⚡ Tiempo: 5 minutos o menos',
+    '🛡️ 100% seguro — miles de entregas realizadas',
+    '💡 Mínimo de compra: 1M Kamas',
+    '🔄 También compramos tus Kamas',
+  ],
+  'dofus-3': [
+    '📦 Entrega inmediata en servidor seleccionado',
+    '⚡ Tiempo: 5 minutos o menos',
+    '🛡️ 100% seguro — miles de entregas realizadas',
+    '💡 Mínimo de compra: 1M Kamas',
+    '🔄 También compramos tus Kamas',
+  ],
+  'dofus-touch': [
+    '📦 Entrega inmediata en servidor seleccionado',
+    '⚡ Tiempo: 5 minutos o menos',
+    '🛡️ 100% seguro',
+    '💡 Mínimo de compra: según servidor',
+    '💰 Desde $6.800 COP el millón',
+  ],
+  'albion': [
+    '📦 Entrega inmediata en servidor seleccionado',
+    '⚡ Tiempo: 5-10 minutos',
+    '🛡️ 100% seguro',
+    '💡 Silver entregado en ciudad principal',
+    '🔄 También compramos tu Silver',
+  ],
+  'wakfu': [
+    '📦 Entrega inmediata',
+    '⚡ Tiempo: 5 minutos o menos',
+    '🛡️ 100% seguro',
+    '💡 Mínimo de compra: 1M Kamas',
+  ],
+  'wow-retail': [
+    '📦 Entrega en buzón del juego',
+    '⚡ Tiempo: 5-30 minutos',
+    '🛡️ 100% seguro',
+    '💡 Mínimo de compra: 100k Gold (0.1M)',
+    '💰 Precio por 100k según servidor y región',
+  ],
+};
+
+function renderGameInfoPanel(gameId) {
+  const panel = document.getElementById('game-info-panel');
+  if (!panel) return;
+  const lines = GAME_INFO[gameId];
+  if (!lines) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div class="gi-title">Información</div>
+    <ul class="gi-list">${lines.map(l => `<li>${l}</li>`).join('')}</ul>
+  `;
+}
+
 // ─── Productos ────────────────────────────────────────────
 async function loadProducts() {
   try {
@@ -154,6 +211,7 @@ function setGame(gameId) {
   const tiendaEl = document.getElementById('tienda');
   if (tiendaEl) tiendaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  renderGameInfoPanel(gameId);
   renderServerCards();
 }
 
@@ -165,16 +223,24 @@ function renderServerCards() {
   currentStep = 'servers';
   const g = currentGame;
 
+  const unitLabel = g.unit_label || `M ${g.currency_name}`;
+  const isWow = !!g.unit_label;
   grid.innerHTML = g.servers.map(server => {
     const serverPrice = g.server_prices?.[server]?.venta ?? g.price_per_million;
-    const localRate   = convertPrice(serverPrice);
+    const localRate   = isWow ? getWowLocalPrice(g, server) : convertPrice(serverPrice);
+    const priceDisplay = isWow
+      ? `$${serverPrice.toFixed(2)}<span class="sc-unit"> / ${unitLabel}</span>`
+      : `$${serverPrice.toFixed(2)}<span class="sc-unit"> / M ${g.currency_name}</span>`;
+    const localDisplay = isWow
+      ? (localRate ? `<div class="sc-local">${localRate} / ${unitLabel}</div>` : '')
+      : (localRate ? `<div class="sc-local">&#8776; ${localRate} / M</div>` : '');
     return `
       <div class="server-card" data-game-id="${g.id}" onclick="selectServer('${server.replace(/'/g, "\\'")}')">
         <img class="sc-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
         <div class="sc-game-badge">${g.name}</div>
         <div class="sc-name">${server}</div>
-        <div class="sc-price">$${serverPrice.toFixed(2)}<span class="sc-unit"> / M ${g.currency_name}</span></div>
-        ${localRate ? `<div class="sc-local">&#8776; ${localRate} / M</div>` : ''}
+        <div class="sc-price">${priceDisplay}</div>
+        ${localDisplay}
         <div class="sc-delivery">&#9889; ${g.delivery}</div>
         <div class="sc-select-btn">Seleccionar &rarr;</div>
       </div>`;
@@ -202,11 +268,24 @@ function renderPurchaseForm() {
   if (!grid) return;
 
   const g = currentGame;
+  const isWow = !!g.unit_label;
+  const unitLabel = g.unit_label || `M ${g.currency_name}`;
   const defaultM = g.min_millions || 1;
   const presets = getPresets(g.min_millions, g.max_millions);
   const initTotal = (defaultM * g.price_per_million).toFixed(2);
-  const initLocal = convertPrice(defaultM * g.price_per_million) || '';
-  const rateLocal = convertPrice(g.price_per_million);
+  const initLocal = isWow
+    ? (getWowLocalPrice(g, currentServer) || '')
+    : (convertPrice(defaultM * g.price_per_million) || '');
+  const rateLocal = isWow
+    ? getWowLocalPrice(g, currentServer)
+    : convertPrice(g.price_per_million);
+  const qtyLabel = isWow
+    ? `Cantidad de unidades (1 unidad = ${unitLabel})`
+    : `Cantidad de ${g.currency_name} (en Millones)`;
+  const presetLabel = isWow ? '' : 'M';
+  const wowNote = isWow
+    ? `<div class="pf-wow-note">&#128279; Precio de referencia: <a href="${g.price_reference || 'https://undermine.exchange'}" target="_blank" rel="noopener">undermine.exchange</a></div>`
+    : '';
 
   grid.innerHTML = `
     <div class="purchase-form" style="grid-column:1/-1">
@@ -216,22 +295,23 @@ function renderPurchaseForm() {
       </div>
 
       <div class="pf-header">
-        <img class="pf-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
+        <img class="pf-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'" style="${isWow ? 'border-radius:8px;object-fit:cover' : ''}">
         <div class="pf-game-info">
           <div class="pf-game-name">${g.name}</div>
           <div class="pf-server">&#127758; ${currentServer}</div>
+          ${g.note ? `<div class="pf-note">${g.note}</div>` : ''}
         </div>
         <div class="pf-rate-box">
-          <div class="pf-rate-label">Precio por millon</div>
-          <div class="pf-rate">$${g.price_per_million.toFixed(2)}<span> USD / M</span></div>
-          ${rateLocal ? `<div class="pf-rate-local">&#8776; ${rateLocal} / M</div>` : ''}
+          <div class="pf-rate-label">Precio por ${unitLabel}</div>
+          <div class="pf-rate">$${g.price_per_million.toFixed(2)}<span> USD</span></div>
+          ${rateLocal ? `<div class="pf-rate-local">&#8776; ${rateLocal}</div>` : ''}
         </div>
       </div>
 
       <div class="pf-body">
-        <div class="pf-section-label">Cantidad de ${g.currency_name} (en Millones)</div>
+        <div class="pf-section-label">${qtyLabel}</div>
         <div class="pf-presets">
-          ${presets.map(p => `<button class="pf-preset" onclick="setMillions(${p})">${p}M</button>`).join('')}
+          ${presets.map(p => `<button class="pf-preset" onclick="setMillions(${p})">${p}${presetLabel}</button>`).join('')}
         </div>
         <div class="pf-qty-row">
           <button class="pf-adj" onclick="adjustMillions(-10)">&#8722;10</button>
@@ -249,7 +329,8 @@ function renderPurchaseForm() {
             <span class="pf-total-usd" id="live-total">$${initTotal} USD</span>
           </div>
           <div class="pf-total-local" id="live-local">${initLocal}</div>
-          <div class="pf-stock-info">&#128230; Stock disponible: ~${g.stock_millions.toLocaleString()}M ${g.currency_name}</div>
+          <div class="pf-stock-info">&#128230; Stock disponible: ~${g.stock_millions.toLocaleString()} ${isWow ? 'unidades' : `M ${g.currency_name}`}</div>
+          ${wowNote}
         </div>
 
         <div class="pf-actions">
@@ -298,7 +379,21 @@ function updateLivePrice() {
   const totalEl = document.getElementById('live-total');
   const localEl = document.getElementById('live-local');
   if (totalEl) totalEl.textContent = `$${total.toFixed(2)} USD`;
-  if (localEl) localEl.textContent = convertPrice(total) || '';
+  if (localEl) {
+    const isWow = !!currentGame.unit_label;
+    let lp;
+    if (isWow && currentGame.local_prices?.sell) {
+      const lps = currentGame.local_prices.sell;
+      const rate = lps[selectedCurrency];
+      if (rate) {
+        const sym = selectedCurrency === 'VES' ? 'Bs.' : '$';
+        lp = `${sym}${(rate * millions).toLocaleString('es-CO')} ${selectedCurrency}`;
+      }
+    } else {
+      lp = convertPrice(total);
+    }
+    localEl.textContent = lp || '';
+  }
 }
 
 function addCustomToCart() {
@@ -324,13 +419,15 @@ function addCustomToCart() {
     return;
   }
 
+  const unitLabel = g.unit_label || `M ${g.currency_name}`;
   cart.push({
     cartKey,
     gameId: g.id,
     server: currentServer,
     millions,
     currencyName: g.currency_name,
-    name: `${millions}M ${g.currency_name}`,
+    unitLabel,
+    name: `${millions} ${unitLabel}`,
     gameName: g.name,
     gameIcon: g.icon,
     iconImg: g.icon_img,
@@ -342,7 +439,7 @@ function addCustomToCart() {
     delivery: g.delivery
   });
 
-  showToast(`${millions}M ${g.currency_name} agregado al carrito!`, 'success');
+  showToast(`${millions} ${unitLabel} agregado al carrito!`, 'success');
   saveCart();
   updateCartUI();
   openCart();
@@ -371,7 +468,8 @@ function buyNow() {
       server: currentServer,
       millions,
       currencyName: g.currency_name,
-      name: `${millions}M ${g.currency_name}`,
+      unitLabel: g.unit_label || `M ${g.currency_name}`,
+      name: `${millions} ${g.unit_label || `M ${g.currency_name}`}`,
       gameName: g.name,
       gameIcon: g.icon,
       iconImg: g.icon_img,
@@ -803,6 +901,16 @@ function convertPrice(usd) {
   const converted = usd * rates[selectedCurrency];
   const sym = SYMBOLS[selectedCurrency] || (selectedCurrency + ' ');
   return `${sym}${converted >= 1000 ? Math.round(converted).toLocaleString('es-CO') : converted.toFixed(2)} ${selectedCurrency}`;
+}
+
+function getWowLocalPrice(game, server) {
+  if (!game?.local_prices?.sell) return null;
+  const lp = game.local_prices.sell;
+  if (selectedCurrency === 'COP' && lp.COP) return `$${lp.COP.toLocaleString('es-CO')} COP`;
+  if (selectedCurrency === 'VES' && lp.VES) return `Bs.${lp.VES.toLocaleString('es-CO')} VES`;
+  if (selectedCurrency === 'CLP' && lp.CLP) return `$${lp.CLP.toLocaleString('es-CO')} CLP`;
+  if (selectedCurrency === 'MXN' && lp.MXN) return `$${lp.MXN} MXN`;
+  return null;
 }
 
 // ─── Toast ────────────────────────────────────────────────

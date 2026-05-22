@@ -84,25 +84,25 @@
 <section class="hero-slider" id="hero-slider">
 
   <div class="hs-track" id="hs-track">
-    <a class="hs-slide" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+    <a class="hs-slide" href="#tienda" onclick="event.preventDefault();setGame('dofus-retro')">
       <img src="/images/banner_dofus.png" alt="Kamas Dofus — Portal Gamers">
     </a>
-    <a class="hs-slide" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+    <a class="hs-slide" href="#tienda" onclick="event.preventDefault();setGame('albion')">
       <img src="/images/banner_albion.png" alt="Silver Albion Online — Portal Gamers">
     </a>
     <a class="hs-slide" href="https://wa.me/573223427456" target="_blank" rel="noopener">
       <img src="/images/banner-reclutamiento.png" alt="Reclutamiento — Portal Gamers">
     </a>
-    <a class="hs-slide" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+    <a class="hs-slide" href="#tienda" onclick="event.preventDefault();setGame('wow-retail')">
       <img src="/images/banner-wow-gold.png" alt="WoW Gold — Portal Gamers">
     </a>
-    <a class="hs-slide" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+    <a class="hs-slide" href="#compra-venta" onclick="event.preventDefault();document.getElementById('compra-venta').scrollIntoView({behavior:'smooth'})">
       <img src="/images/banner-proveedores.png" alt="Proveedores — Portal Gamers">
     </a>
-    <a class="hs-slide" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+    <a class="hs-slide" href="#tienda" onclick="event.preventDefault();setGame('dofus-touch')">
       <img src="/images/banner-dofus-touch.png" alt="Dofus Touch — Portal Gamers">
     </a>
-    <a class="hs-slide" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+    <a class="hs-slide" href="#tienda" onclick="event.preventDefault();setGame('wakfu')">
       <img src="/images/banner-wakfu.png" alt="Wakfu — Portal Gamers">
     </a>
   </div>
@@ -143,7 +143,7 @@
 
   function autoPlay() {
     clearInterval(timer);
-    timer = setInterval(next, 5000);
+    timer = setInterval(next, 6000);
   }
 
   document.getElementById('hs-next').addEventListener('click', function(){ next(); autoPlay(); });
@@ -258,6 +258,67 @@
   </div>
 </div>
 
+<!-- Ofertas Hot -->
+<div class="hot-offers-section section" id="ofertas">
+  <div class="container">
+    <div class="ho-header">
+      <div>
+        <h2 class="section-title" style="margin-bottom:4px">&#128293; Ofertas del Momento</h2>
+        <p class="section-sub">Aprovecha antes que se agoten</p>
+      </div>
+    </div>
+    <div class="ho-track-wrap">
+      <div class="ho-track" id="ho-track">
+        <div class="ho-card" onclick="setGame('dofus-retro')">
+          <div class="ho-badge">HOT</div>
+          <img class="ho-icon" src="/images/icons/DOFUS_RETRO_Coin.png" alt="Dofus Retro" onerror="this.style.display='none'">
+          <div class="ho-game">Dofus Retro</div>
+          <div class="ho-server">Servidor Allisteria</div>
+          <div class="ho-price-old">$0.23 USD/M</div>
+          <div class="ho-price">$0.17 USD/M</div>
+          <button class="ho-btn">Comprar ahora</button>
+        </div>
+        <div class="ho-card" onclick="setGame('dofus-retro')">
+          <div class="ho-badge ho-badge-offer">OFERTA</div>
+          <img class="ho-icon" src="/images/icons/DOFUS_RETRO_Coin.png" alt="Dofus Retro" onerror="this.style.display='none'">
+          <div class="ho-game">Dofus Retro</div>
+          <div class="ho-server">Servidor Bun</div>
+          <div class="ho-price-old">$10.00 USD/M</div>
+          <div class="ho-price">$7.60 USD/M</div>
+          <button class="ho-btn">Comprar ahora</button>
+        </div>
+        <div class="ho-card" onclick="setGame('dofus-retro')">
+          <div class="ho-badge">HOT</div>
+          <img class="ho-icon" src="/images/icons/DOFUS_RETRO_Coin.png" alt="Dofus Retro" onerror="this.style.display='none'">
+          <div class="ho-game">Dofus Retro</div>
+          <div class="ho-server">Servidor Fallanster</div>
+          <div class="ho-price-old">$0.80 USD/M</div>
+          <div class="ho-price">$0.58 USD/M</div>
+          <button class="ho-btn">Comprar ahora</button>
+        </div>
+        <div class="ho-card" onclick="setGame('dofus-touch')">
+          <div class="ho-badge ho-badge-new">NUEVO</div>
+          <img class="ho-icon" src="/images/icons/DOFUS_TOUCH_Coin.png" alt="Dofus Touch" onerror="this.style.display='none'">
+          <div class="ho-game">Dofus Touch</div>
+          <div class="ho-server">Servidor Blair</div>
+          <div class="ho-price-old">$2.50 USD/M</div>
+          <div class="ho-price">$1.96 USD/M</div>
+          <button class="ho-btn">Comprar ahora</button>
+        </div>
+        <div class="ho-card" onclick="setGame('wow-retail')">
+          <div class="ho-badge ho-badge-offer">OFERTA</div>
+          <img class="ho-icon" src="/images/banner-wow-gold.png" alt="WoW Gold" onerror="this.style.display='none'" style="border-radius:6px">
+          <div class="ho-game">WoW Gold</div>
+          <div class="ho-server">Americas &amp; Europe</div>
+          <div class="ho-price-old">$6.00 USD/100k</div>
+          <div class="ho-price">$5.00 USD/100k</div>
+          <button class="ho-btn">Comprar ahora</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Tienda -->
 <div class="container section" id="tienda">
   <h2 class="section-title">&#127978; Tienda</h2>
@@ -272,8 +333,11 @@
     <span class="filter-label">Servidor:</span>
     <select class="server-select" id="server-select"></select>
   </div>
-  <div class="products-grid" id="products-grid">
-    <div class="loader"><span></span><span></span><span></span></div>
+  <div class="tienda-layout">
+    <div class="products-grid" id="products-grid">
+      <div class="loader"><span></span><span></span><span></span></div>
+    </div>
+    <div class="game-info-panel" id="game-info-panel" style="display:none"></div>
   </div>
 </div>
 
@@ -286,7 +350,7 @@
       <div class="buysell-icon">&#128722;</div>
       <h3>Comprar Monedas</h3>
       <p>Selecciona el juego, servidor y cantidad que necesitas. Paga con Nequi, transferencia bancaria, Binance y mas.</p>
-      <button class="btn-primary" onclick="document.getElementById('tienda').scrollIntoView({behavior:'smooth'})">Ver Productos</button>
+      <button class="btn-contact" onclick="document.getElementById('tienda').scrollIntoView({behavior:'smooth'})">Ver Productos</button>
     </div>
     <div class="buysell-card sell">
       <div class="buysell-icon">&#128176;</div>
@@ -295,6 +359,88 @@
       <a href="/vender.html" class="btn-contact">
         Véndenos tus monedas
       </a>
+    </div>
+  </div>
+</div>
+
+<!-- Reseñas de clientes -->
+<div class="reviews-section section" id="resenas">
+  <div class="container">
+    <h2 class="section-title">Lo que dicen nuestros clientes &#11088;</h2>
+    <p class="section-sub">M&aacute;s de 1.000 jugadores satisfechos en toda LATAM</p>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="rv-header">
+          <div class="rv-avatar" style="background:#F5A623">C</div>
+          <div class="rv-meta">
+            <div class="rv-name">Carlos M.</div>
+            <div class="rv-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          </div>
+        </div>
+        <p class="rv-text">"Excelente servicio, recib&iacute; mis kamas en menos de 3 minutos. 100% recomendado, los mejores de LATAM sin duda."</p>
+        <div class="rv-game">&#128184; Dofus Retro</div>
+        <div class="rv-date">Mayo 2025</div>
+      </div>
+      <div class="review-card">
+        <div class="rv-header">
+          <div class="rv-avatar" style="background:#29ABD4">M</div>
+          <div class="rv-meta">
+            <div class="rv-name">Mar&iacute;a G.</div>
+            <div class="rv-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          </div>
+        </div>
+        <p class="rv-text">"Muy confiables, llevan meses atiendi&eacute;ndome. Los mejores precios de LATAM y siempre tienen stock disponible."</p>
+        <div class="rv-game">&#128241; Dofus Touch</div>
+        <div class="rv-date">Abril 2025</div>
+      </div>
+      <div class="review-card">
+        <div class="rv-header">
+          <div class="rv-avatar" style="background:#25D366">D</div>
+          <div class="rv-meta">
+            <div class="rv-name">Diego R.</div>
+            <div class="rv-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          </div>
+        </div>
+        <p class="rv-text">"Primera vez comprando y qued&eacute; sorprendido por la rapidez. En 4 minutos ya ten&iacute;a mi Silver. Volver&eacute; pronto."</p>
+        <div class="rv-game">&#127968; Albion Online</div>
+        <div class="rv-date">Mayo 2025</div>
+      </div>
+      <div class="review-card">
+        <div class="rv-header">
+          <div class="rv-avatar" style="background:#a855f7">V</div>
+          <div class="rv-meta">
+            <div class="rv-name">Valentina P.</div>
+            <div class="rv-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          </div>
+        </div>
+        <p class="rv-text">"Super r&aacute;pido y seguro. El soporte por WhatsApp es excelente, resolvieron mi consulta al instante."</p>
+        <div class="rv-game">&#127754; Wakfu</div>
+        <div class="rv-date">Marzo 2025</div>
+      </div>
+      <div class="review-card">
+        <div class="rv-header">
+          <div class="rv-avatar" style="background:#ef4444">A</div>
+          <div class="rv-meta">
+            <div class="rv-name">Andr&eacute;s T.</div>
+            <div class="rv-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          </div>
+        </div>
+        <p class="rv-text">"Compro aqu&iacute; siempre, nunca han fallado. Precios imbatibles y entrega instant&aacute;nea. Mi tienda de confianza."</p>
+        <div class="rv-game">&#128184; Dofus Retro</div>
+        <div class="rv-date">Abril 2025</div>
+      </div>
+      <div class="review-card">
+        <div class="rv-header">
+          <div class="rv-avatar" style="background:#f59e0b">L</div>
+          <div class="rv-meta">
+            <div class="rv-name">Luisa C.</div>
+            <div class="rv-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          </div>
+        </div>
+        <p class="rv-text">"Atenci&oacute;n perfecta, muy profesionales. Compr&eacute; WoW Gold y lleg&oacute; en menos de 10 minutos. Totalmente recomendado."</p>
+        <div class="rv-game">&#128142; WoW Gold</div>
+        <div class="rv-date">Mayo 2025</div>
+      </div>
     </div>
   </div>
 </div>
@@ -350,10 +496,17 @@
         </div>
       </div>
       <div class="payment-group">
-        <h4>&#127464;&#127473; Chile &amp; &#127474;&#127485; M&#233;xico</h4>
+        <h4>&#127464;&#127473; Chile</h4>
         <div class="payment-badges">
           <span class="payment-badge">&#127968; Banco Estado (RUT)</span>
+          <span class="payment-badge">Titular: Felipe Ignacio Mu&ntilde;oz</span>
+        </div>
+      </div>
+      <div class="payment-group">
+        <h4>&#127474;&#127485; M&#233;xico</h4>
+        <div class="payment-badges">
           <span class="payment-badge">&#127968; Santander</span>
+          <span class="payment-badge">Titular: Carlos Heredia</span>
         </div>
       </div>
       <div class="payment-group">

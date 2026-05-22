@@ -1516,3 +1516,142 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
 
 /* Clic en móvil */
 .cf-tooltip.visible { opacity: 1; }
+
+/* ─── Tienda layout (grid + info panel) ────────────── */
+.tienda-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.tienda-layout .products-grid { flex: 1; min-width: 0; }
+
+/* ─── Game Info Panel (Tarea 2) ─────────────────────── */
+.game-info-panel {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  position: sticky;
+  top: 80px;
+}
+.gi-title {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.gi-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gi-list li {
+  font-size: 13px;
+  color: var(--text-m);
+  line-height: 1.4;
+}
+@media (max-width: 900px) {
+  .tienda-layout { flex-direction: column; }
+  .game-info-panel { width: 100%; position: static; }
+}
+
+/* ─── Hot Offers (Tarea 3) ──────────────────────────── */
+.hot-offers-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.ho-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.ho-track-wrap { overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.ho-track {
+  display: flex;
+  gap: 16px;
+  padding: 4px 2px;
+  width: max-content;
+}
+.ho-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  width: 200px;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  transition: var(--trans);
+  text-align: center;
+}
+.ho-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(245,166,35,.15); }
+.ho-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .05em;
+}
+.ho-badge-offer { background: var(--gold); color: #000; }
+.ho-badge-new { background: var(--cyan); color: #000; }
+.ho-icon { width: 56px; height: 56px; object-fit: contain; margin: 8px auto 10px; display: block; }
+.ho-game { font-size: 11px; color: var(--text-d); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+.ho-server { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 10px; }
+.ho-price-old { font-size: 12px; color: var(--text-d); text-decoration: line-through; margin-bottom: 2px; }
+.ho-price { font-size: 18px; font-weight: 800; color: var(--gold); margin-bottom: 14px; }
+.ho-btn {
+  width: 100%;
+  padding: 8px 0;
+  background: var(--gold);
+  color: #000;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  transition: var(--trans);
+}
+.ho-btn:hover { background: var(--gold-d); }
+
+/* ─── Reviews (Tarea 10) ────────────────────────────── */
+.reviews-section { background: var(--bg3); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.review-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: var(--trans);
+}
+.review-card:hover { border-color: var(--gold); }
+.rv-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.rv-avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 18px; color: #000;
+  flex-shrink: 0;
+}
+.rv-name { font-weight: 700; font-size: 15px; }
+.rv-stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; }
+.rv-text { font-size: 13px; color: var(--text-m); line-height: 1.6; margin-bottom: 10px; font-style: italic; }
+.rv-game { font-size: 12px; color: var(--cyan); font-weight: 600; }
+.rv-date { font-size: 11px; color: var(--text-d); margin-top: 4px; }
+@media (max-width: 900px) {
+  .reviews-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .reviews-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── WoW purchase form extras ──────────────────────── */
+.pf-wow-note { font-size: 12px; color: var(--text-d); margin-top: 8px; }
+.pf-wow-note a { color: var(--cyan); }
+.pf-note { font-size: 12px; color: var(--text-d); margin-top: 4px; }
