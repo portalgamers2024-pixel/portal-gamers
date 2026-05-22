@@ -148,6 +148,12 @@ app.post('/api/payments/create', async (req, res) => {
 // Webhook legacy (no-op)
 app.post('/api/payments/webhook', (req, res) => res.sendStatus(200));
 
+// ─── Offers (estáticas por ahora, listas para leer de Sheets OFERTAS) ─────────
+
+app.get('/api/offers', (req, res) => {
+  res.json({ offers: [] });
+});
+
 // ─── WhatsApp Webhook ─────────────────────────────────────────────────────────
 
 app.get('/webhook/whatsapp', (req, res) => {
