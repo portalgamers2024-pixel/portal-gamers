@@ -34,10 +34,13 @@ function adminAuth(req, res, next) {
 
 // ─── Productos ────────────────────────────────────────────────────────────────
 
+const withTimeout = (promise, ms) =>
+  Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
 app.get('/api/products', async (req, res) => {
   const data = readData();
   try {
-    const sheetPrices = await sheets.getPricesFromSheet();
+    const sheetPrices = await withTimeout(sheets.getPricesFromSheet(), 5000);
     if (sheetPrices) {
       data.games = data.games.map(g => {
         const gameData = sheetPrices[g.id];
