@@ -127,7 +127,8 @@ const GAME_INFO = {
     '📦 Entrega inmediata en servidor seleccionado',
     '⚡ Tiempo: 5-10 minutos',
     '🛡️ 100% seguro',
-    '💡 Silver entregado en ciudad principal',
+    '🏙️ Silver entregado en ciudad principal',
+    '💡 Mínimo de compra: 10M Silver',
     '🔄 También compramos tu Silver',
   ],
   'wakfu': [
