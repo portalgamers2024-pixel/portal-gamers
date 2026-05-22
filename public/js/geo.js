@@ -1,5 +1,5 @@
 ﻿// Geolocalización por IP - Portal Gamers LATAM
-const PAYMENT_METHODS = {
+const GEO_PAYMENT_METHODS = {
   CO: { name: "Colombia", flag: "🇨🇴", currency: "COP", symbol: "$", methods: ["MercadoPago", "Nequi", "Daviplata", "Bancolombia", "Efecty", "BBVA", "PSE"] },
   MX: { name: "México", flag: "🇲🇽", currency: "MXN", symbol: "$", methods: ["MercadoPago", "OXXO", "SPEI", "Transferencia bancaria"] },
   VE: { name: "Venezuela", flag: "🇻🇪", currency: "USD", symbol: "$", methods: ["Binance Pay", "Tether USDT", "Skrill", "Transferencia internacional"] },
@@ -37,7 +37,7 @@ async function initGeo() {
 }
 
 function changeCountry(code) {
-  const country = PAYMENT_METHODS[code] || PAYMENT_METHODS.DEFAULT;
+  const country = GEO_PAYMENT_METHODS[code] || GEO_PAYMENT_METHODS.DEFAULT;
   const paymentSections = document.querySelectorAll(".payment-methods, .metodos-pago, div[class*='payment']");
   paymentSections.forEach(section => {
     const badges = country.methods.map(m =>
