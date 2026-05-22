@@ -597,24 +597,6 @@ const PAYMENT_METHODS = {
       fields: [
         { label: 'Número', value: '3016008994' }
       ]
-    },
-    {
-      icon: '🏦',
-      name: 'Banco Unión Colombia',
-      fields: [
-        { label: 'Cuenta Ahorros', value: '01735600000529916' },
-        { label: 'A nombre de', value: 'Leandro Jose Acosta Garcia', copyable: false },
-        { label: 'Cédula', value: '1082985969' }
-      ]
-    },
-    {
-      icon: '💸',
-      name: 'Remitly',
-      fields: [
-        { label: 'Nombre', value: 'Leandro Jose Acosta Garcia', copyable: false },
-        { label: 'Cta. Bancolombia', value: '77903852944' },
-        { label: 'Celular', value: '3016008994' }
-      ]
     }
   ],
   Venezuela: [
@@ -663,6 +645,15 @@ const PAYMENT_METHODS = {
   ],
   Otro: [
     {
+      icon: '🏦',
+      name: 'Banco Unión Colombia',
+      fields: [
+        { label: 'Cuenta Ahorros', value: '01735600000529916' },
+        { label: 'A nombre de', value: 'Leandro Jose Acosta Garcia', copyable: false },
+        { label: 'Cédula', value: '1082985969' }
+      ]
+    },
+    {
       icon: '₿',
       name: 'Binance',
       fields: [
@@ -681,7 +672,9 @@ const PAYMENT_METHODS = {
       icon: '💸',
       name: 'Remitly',
       fields: [
-        { label: 'Email', value: 'leandro.acosta940614@gmail.com' }
+        { label: 'Nombre', value: 'Leandro Jose Acosta Garcia', copyable: false },
+        { label: 'Cta. Bancolombia', value: '77903852944' },
+        { label: 'Celular', value: '3016008994' }
       ]
     }
   ]
