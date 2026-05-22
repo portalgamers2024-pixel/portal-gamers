@@ -607,20 +607,6 @@ const PAYMENT_METHODS = {
         { label: 'Número', value: '04126275407' },
         { label: 'Cédula', value: '23642839' }
       ]
-    },
-    {
-      icon: '🔑',
-      name: 'Llave Colombia',
-      fields: [
-        { label: 'Número', value: '3016008994' }
-      ]
-    },
-    {
-      icon: '₿',
-      name: 'Binance',
-      fields: [
-        { label: 'Email', value: 'andressuperlano@gmail.com' }
-      ]
     }
   ],
   Chile: [
@@ -628,7 +614,6 @@ const PAYMENT_METHODS = {
       icon: '🏦',
       name: 'Cuenta RUT Banco Estado',
       fields: [
-        { label: 'Titular', value: 'Felipe Ignacio Muñoz Pontigo', copyable: false },
         { label: 'RUT', value: '17342378-0' }
       ]
     }
@@ -638,8 +623,7 @@ const PAYMENT_METHODS = {
       icon: '🏦',
       name: 'Santander',
       fields: [
-        { label: 'Número tarjeta', value: '5579 0900 4324 8252' },
-        { label: 'Titular', value: 'Carlos Heredia', copyable: false }
+        { label: 'Número tarjeta', value: '5579 0900 4324 8252' }
       ]
     }
   ],
