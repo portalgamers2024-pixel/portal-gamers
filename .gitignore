@@ -8,3 +8,8 @@ npm-debug.log*
 Thumbs.db
 sheets-key.json
 scripts/test-users.json
+setup_discord.py
+check-domains.js
+api-response.json
+server-out.txt
+server-err.txt
