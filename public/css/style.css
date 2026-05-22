@@ -1651,6 +1651,22 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
   .reviews-grid { grid-template-columns: 1fr; }
 }
 
+/* ─── Game tab badge (TEMPORAL, NUEVO) ─────────────── */
+.game-tab { position: relative; }
+.game-tab-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #a855f7;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  letter-spacing: .04em;
+  line-height: 1.2;
+}
+
 /* ─── WoW purchase form extras ──────────────────────── */
 .pf-wow-note { font-size: 12px; color: var(--text-d); margin-top: 8px; }
 .pf-wow-note a { color: var(--cyan); }

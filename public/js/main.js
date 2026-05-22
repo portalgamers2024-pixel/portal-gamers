@@ -193,6 +193,7 @@ function renderGameTabs() {
     <button class="game-tab" data-game="${g.id}" onclick="setGame('${g.id}')">
       <img src="${g.icon_img}" alt="${g.name}" style="width:40px;height:40px;object-fit:contain" onerror="this.style.display='none'">
       ${g.name}
+      ${g.badge ? `<span class="game-tab-badge">${g.badge}</span>` : ''}
     </button>
   `).join('');
 }

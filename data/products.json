@@ -97,6 +97,22 @@
       ]
     },
     {
+      "id": "dofus-temporal",
+      "name": "Servidores Temporales",
+      "icon": "⏳",
+      "icon_img": "/images/icons/DOFUS_RETRO_Coin.png",
+      "currency_name": "Kamas",
+      "color": "#a855f7",
+      "price_per_million": 0.5,
+      "min_millions": 1,
+      "max_millions": 500,
+      "stock_millions": 100,
+      "delivery": "5-30 min",
+      "active": false,
+      "badge": "TEMPORAL",
+      "servers": []
+    },
+    {
       "id": "wow-retail",
       "name": "WoW Gold - The War Within",
       "icon": "⚔️",
