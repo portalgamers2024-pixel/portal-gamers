@@ -171,4 +171,33 @@ async function logOrder({ nombre, usuario_juego, pais, email, juego, servidor, c
   invalidateCache();
 }
 
-module.exports = { getPricesFromSheet, logSale, logOrder, invalidateCache };
+let resenasCache = { data: null, ts: 0 };
+
+async function getResenas() {
+  if (!SHEET_ID) return [];
+  const now = Date.now();
+  if (resenasCache.data && now - resenasCache.ts < TTL) return resenasCache.data;
+
+  const sheetsApi = await api();
+  const res = await sheetsApi.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: 'RESEÑAS!A2:E100',
+  });
+
+  const rows = res.data.values || [];
+  const data = rows
+    .filter(row => row[0] && row[1])
+    .map(row => ({
+      nombre:   row[0] || '',
+      resena:   row[1] || '',
+      juego:    row[2] || 'Portal Gamers',
+      fecha:    row[3] || '',
+      estrellas: parseInt(row[4]) || 5,
+      inicial:  (row[0] || 'U')[0].toUpperCase(),
+    }));
+
+  resenasCache = { data, ts: now };
+  return data;
+}
+
+module.exports = { getPricesFromSheet, getResenas, logSale, logOrder, invalidateCache };

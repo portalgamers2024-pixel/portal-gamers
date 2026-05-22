@@ -87,6 +87,17 @@ app.get('/api/products', async (req, res) => {
   res.json(data);
 });
 
+app.get('/api/resenas', async (req, res) => {
+  try {
+    const data = await withTimeout(sheets.getResenas(), 5000);
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[Sheets] Error leyendo reseñas:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Actualizar configuracion de un juego (precio/millon, stock, etc.)
 app.put('/api/admin/games/:gameId', adminAuth, (req, res) => {
   const data = readData();

@@ -95,10 +95,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  await Promise.all([loadCurrency(), loadProducts()]);
+  await Promise.all([loadCurrency(), loadProducts(), cargarResenas()]);
   updateCartUI();
   initSpotlightStatic();
 });
+
+async function cargarResenas() {
+  try {
+    const response = await fetch('/api/resenas');
+    const data = await response.json();
+    if (!data.success || !data.data || !data.data.length) return;
+    const colores = ['#7c4dff','#00b0ff','#00e676','#ff6d00','#ff4081','#ffea00'];
+    const track = document.querySelector('.reviews-track');
+    if (!track) return;
+    const html = data.data.map((r, i) => `
+      <div class="review-card">
+        <div class="rv-header">
+          <div class="rv-avatar" style="background:${colores[i % colores.length]}">${r.inicial}</div>
+          <div><div class="rv-name">${r.nombre}</div><div class="rv-stars">${'★'.repeat(r.estrellas)}${'☆'.repeat(5 - r.estrellas)}</div></div>
+        </div>
+        <p class="rv-text">"${r.resena}"</p>
+        <div class="rv-game">🎮 ${r.juego}</div>
+        <div class="rv-date">${r.fecha}</div>
+      </div>`).join('');
+    track.innerHTML = html + html;
+  } catch (err) {
+    console.error('Error cargando reseñas:', err);
+  }
+}
 
 // ─── Info por juego (Tarea 2) ─────────────────────────────
 const GAME_INFO = {
