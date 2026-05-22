@@ -318,7 +318,7 @@ function renderPurchaseForm() {
           <button class="pf-adj" onclick="adjustMillions(-10)">&#8722;10</button>
           <button class="pf-adj" onclick="adjustMillions(-1)">&#8722;1</button>
           <input type="number" id="millions-input" class="pf-input"
-                 value="${defaultM}" min="1" max="${g.max_millions}" step="1"
+                 value="${defaultM}" min="${g.min_millions || 1}" max="${g.max_millions}" step="1"
                  oninput="updateLivePrice()">
           <button class="pf-adj" onclick="adjustMillions(+1)">+1</button>
           <button class="pf-adj" onclick="adjustMillions(+10)">+10</button>
