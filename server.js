@@ -8,7 +8,11 @@ const { handleMessage } = require('./whatsapp/bot');
 const { sendDailySummary } = require('./whatsapp/sender');
 
 const app = express();
-app.use(express.json());app.use("/images", express.static(path.join(__dirname, 'public', 'images')));
+app.use(express.json());
+app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
+const noCache = { setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate') };
+app.use('/js',  express.static(path.join(__dirname, 'public', 'js'),  noCache));
+app.use('/css', express.static(path.join(__dirname, 'public', 'css'), noCache));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const DATA_FILE = path.join(__dirname, 'data', 'products.json');
