@@ -129,9 +129,7 @@
       "active": true,
       "servers": [
         "Americas",
-        "Europe",
-        "Latin America",
-        "Oceania"
+        "Europe"
       ],
       "local_prices": {
         "sell": {
