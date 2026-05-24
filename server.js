@@ -246,6 +246,7 @@ app.get("/dofus-kamas.html", (req, res) => res.sendFile(path.join(__dirname, 'pu
 app.get("/albion-silver.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'albion-silver.html')));
 app.get("/wow-gold.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'wow-gold.html')));
 app.get("/vender.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'vender.html')));
+app.get("/como-pagar-binance.html", (req, res) => res.sendFile(path.join(__dirname, 'public', 'como-pagar-binance.html')));
 // ─── Resumen diario (22:00 hora Colombia) ────────────────────────────────────
 
 function scheduleDailySummary() {

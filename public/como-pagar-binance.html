@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-99LC8VQ37X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-99LC8VQ37X');
+  </script>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1339150608114505');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1339150608114505&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C&oacute;mo pagar con Binance Pay | Portal Gamers LATAM</title>
+  <meta name="description" content="Gu&iacute;a paso a paso para crear tu cuenta Binance y pagar con Binance Pay en Portal Gamers LATAM. F&aacute;cil, r&aacute;pido y seguro.">
+  <meta property="og:title" content="C&oacute;mo pagar con Binance Pay — Portal Gamers LATAM">
+  <meta property="og:description" content="Tutorial completo: crea tu cuenta, verifica tu identidad, compra USDT y paga con Binance Pay.">
+  <meta property="og:url" content="https://portalgamerslatam.com/como-pagar-binance.html">
+  <meta property="og:type" content="article">
+  <link rel="icon" href="/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="/css/style.css?v=20260524">
+  <style>
+    /* ─── Hero ───────────────────────────────────────────── */
+    .bp-hero {
+      background: linear-gradient(135deg, #0A1535 0%, #0d1f45 55%, #112258 100%);
+      border-bottom: 1px solid rgba(245,166,35,.2);
+      padding: 72px 24px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .bp-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 70% 30%, rgba(245,166,35,.10) 0%, transparent 60%),
+                  radial-gradient(ellipse at 20% 80%, rgba(41,171,212,.08) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .bp-hero-inner { position: relative; max-width: 700px; margin: 0 auto; }
+    .bp-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(245,166,35,.1);
+      border: 1px solid rgba(245,166,35,.35);
+      color: var(--gold);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .8px; text-transform: uppercase;
+      padding: 6px 20px; border-radius: 20px;
+      margin-bottom: 22px;
+    }
+    .bp-title {
+      font-size: clamp(28px, 5.5vw, 52px);
+      font-weight: 900; color: var(--gold);
+      letter-spacing: -1px; line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .bp-subtitle {
+      font-size: clamp(15px, 2.2vw, 19px);
+      color: var(--cyan); font-weight: 600; margin-bottom: 24px;
+    }
+    .bp-time {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(41,171,212,.1);
+      border: 1px solid rgba(41,171,212,.25);
+      color: var(--cyan); font-size: 14px; font-weight: 600;
+      padding: 8px 22px; border-radius: 24px;
+    }
+
+    /* ─── Timeline ───────────────────────────────────────── */
+    .bp-timeline {
+      max-width: 760px; margin: 0 auto;
+      padding: 64px 24px 48px;
+      position: relative;
+    }
+    /* línea vertical */
+    .bp-timeline::before {
+      content: '';
+      position: absolute;
+      left: 50px;
+      top: 80px; bottom: 80px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--gold), rgba(245,166,35,.15));
+    }
+    @media (max-width: 600px) {
+      .bp-timeline::before { left: 28px; }
+    }
+
+    /* ─── Step card ──────────────────────────────────────── */
+    .bp-step {
+      display: flex; gap: 28px;
+      margin-bottom: 40px;
+      opacity: 0; transform: translateY(28px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .bp-step.visible { opacity: 1; transform: translateY(0); }
+
+    .bp-step-num-wrap {
+      flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+    .bp-step-num {
+      width: 56px; height: 56px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 900; color: #0A1535;
+      position: relative; z-index: 1;
+      box-shadow: 0 0 0 4px rgba(245,166,35,.2), 0 4px 16px rgba(0,0,0,.4);
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      .bp-step-num { width: 40px; height: 40px; font-size: 16px; }
+    }
+
+    .bp-step-body {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 28px 24px;
+      flex: 1;
+      transition: border-color .2s;
+    }
+    .bp-step-body:hover { border-color: rgba(245,166,35,.4); }
+
+    .bp-step-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 20px;
+    }
+    .bp-step-emoji { font-size: 32px; line-height: 1; }
+    .bp-step-title {
+      font-size: clamp(17px, 2.5vw, 22px);
+      font-weight: 800; color: var(--gold); margin: 0;
+    }
+
+    .bp-list {
+      list-style: none; margin: 0 0 20px; padding: 0;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .bp-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      color: var(--text-m); font-size: 15px; line-height: 1.5;
+    }
+    .bp-list-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      background: rgba(245,166,35,.12);
+      border: 1px solid rgba(245,166,35,.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--gold);
+      margin-top: 1px;
+    }
+
+    .bp-tip {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: rgba(41,171,212,.08);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      font-size: 14px; color: var(--cyan);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    .bp-badge-lock {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(37,211,102,.08);
+      border: 1px solid rgba(37,211,102,.2);
+      color: var(--green); font-size: 13px; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px;
+      margin-top: 12px;
+    }
+
+    .bp-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--gold); color: #0A1535;
+      padding: 11px 24px; border-radius: 10px;
+      font-weight: 800; font-size: 14px;
+      text-decoration: none; margin-top: 18px;
+      transition: all .2s; border: none;
+    }
+    .bp-btn:hover { background: #d4890f; color: #0A1535; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,166,35,.35); }
+
+    .bp-btn-wa {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green); color: #fff;
+      padding: 11px 24px; border-radius: 10px;
+      font-weight: 800; font-size: 14px;
+      text-decoration: none; margin-top: 18px;
+      transition: all .2s; border: none;
+    }
+    .bp-btn-wa:hover { background: #1da851; color: #fff; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,.3); }
+
+    /* ─── QR ─────────────────────────────────────────────── */
+    .bp-qr-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      margin: 20px 0 8px;
+      gap: 12px;
+    }
+    .bp-qr-img {
+      width: 180px; height: 180px;
+      object-fit: contain;
+      border: 3px solid var(--gold);
+      border-radius: 14px;
+      padding: 8px;
+      background: #fff;
+      box-shadow: 0 0 28px rgba(245,166,35,.3);
+    }
+    .bp-qr-label {
+      font-size: 13px; color: var(--text-m); text-align: center;
+    }
+    .bp-qr-label strong { color: var(--gold); }
+
+    /* ─── CTA Final ──────────────────────────────────────── */
+    .bp-cta {
+      background: linear-gradient(135deg, #0d1f45, #112258);
+      border-top: 1px solid rgba(245,166,35,.15);
+      border-bottom: 1px solid rgba(245,166,35,.15);
+      padding: 64px 24px;
+      text-align: center;
+    }
+    .bp-cta-title {
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 900; color: var(--gold); margin-bottom: 10px;
+    }
+    .bp-cta-sub {
+      font-size: 16px; color: var(--text-m); margin-bottom: 28px;
+    }
+    .bp-cta-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--green); color: #fff;
+      padding: 16px 36px; border-radius: 12px;
+      font-weight: 800; font-size: 18px;
+      text-decoration: none;
+      transition: all .2s;
+      box-shadow: 0 4px 24px rgba(37,211,102,.3);
+    }
+    .bp-cta-btn:hover { background: #1da851; color: #fff; transform: translateY(-3px); box-shadow: 0 8px 32px rgba(37,211,102,.4); }
+
+    @media (max-width: 600px) {
+      .bp-step-body { padding: 20px 16px 18px; }
+      .bp-step { gap: 16px; }
+      .bp-step-header { gap: 10px; }
+      .bp-step-emoji { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <span>&#9889; Entrega en 5-30 minutos</span>
+  &nbsp;|&nbsp; Soporte 24/7 via WhatsApp &nbsp;|&nbsp;
+  <span>&#128274; Pagos 100% seguros</span>
+</div>
+
+<!-- Navbar -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png" alt="Portal Gamers" onerror="this.style.display='none'">
+    <span class="nav-logo-text">Portal Gamers</span>
+  </a>
+
+  <ul class="nav-links" id="nav-links">
+    <li><a href="/#tienda"       class="nav-link" onclick="closeNav()">Juegos</a></li>
+    <li><a href="/#tienda"       class="nav-link" onclick="closeNav()">Ofertas</a></li>
+    <li><a href="/#como-comprar" class="nav-link" onclick="closeNav()">C&oacute;mo comprar</a></li>
+    <li><a href="/vender.html"   class="nav-link" onclick="closeNav()">V&eacute;ndenos</a></li>
+    <li><a href="/#tienda"       class="nav-link nav-link-buy" onclick="closeNav()">Comprar monedas</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <a href="https://wa.me/573223427456" target="_blank" class="btn-wa-nav">
+      &#128172; <span class="wa-nav-text">Cotiza por WhatsApp</span>
+    </a>
+  </div>
+
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Hero -->
+<section class="bp-hero">
+  <div class="bp-hero-inner">
+    <div class="bp-badge">&#8383; Tutorial Binance Pay</div>
+    <h1 class="bp-title">&#191;C&oacute;mo pagar con Binance Pay?</h1>
+    <p class="bp-subtitle">Gu&iacute;a paso a paso para comprar tus Kamas con USDT</p>
+    <div class="bp-time">&#9201; Solo toma 10 minutos configurarlo</div>
+  </div>
+</section>
+
+<!-- Timeline de pasos -->
+<div class="bp-timeline">
+
+  <!-- PASO 1 -->
+  <div class="bp-step">
+    <div class="bp-step-num-wrap">
+      <div class="bp-step-num">1</div>
+    </div>
+    <div class="bp-step-body">
+      <div class="bp-step-header">
+        <span class="bp-step-emoji">&#128242;</span>
+        <h2 class="bp-step-title">Crea tu cuenta Binance</h2>
+      </div>
+      <ol class="bp-list">
+        <li><span class="bp-list-num">1</span><span>Ve a <strong style="color:var(--gold)">www.binance.com</strong> desde tu computador o descarga la app en tu celular</span></li>
+        <li><span class="bp-list-num">2</span><span>Haz clic en <strong style="color:var(--white)">"Registrarse"</strong></span></li>
+        <li><span class="bp-list-num">3</span><span>Ingresa tu correo electr&oacute;nico y crea una contrase&ntilde;a segura</span></li>
+        <li><span class="bp-list-num">4</span><span>Verifica tu correo con el c&oacute;digo de 6 d&iacute;gitos que te llegar&aacute;</span></li>
+      </ol>
+      <div class="bp-tip">&#128161; Usa un correo que revises frecuentemente — ah&iacute; llegar&aacute;n confirmaciones de pago</div>
+      <a href="https://www.binance.com/es/register" target="_blank" rel="noopener" class="bp-btn">
+        Crear cuenta en Binance &rarr;
+      </a>
+    </div>
+  </div>
+
+  <!-- PASO 2 -->
+  <div class="bp-step">
+    <div class="bp-step-num-wrap">
+      <div class="bp-step-num">2</div>
+    </div>
+    <div class="bp-step-body">
+      <div class="bp-step-header">
+        <span class="bp-step-emoji">&#128100;</span>
+        <h2 class="bp-step-title">Verifica tu identidad (KYC)</h2>
+      </div>
+      <ol class="bp-list">
+        <li><span class="bp-list-num">1</span><span>Ve a <strong style="color:var(--white)">Perfil &rarr; Verificaci&oacute;n de identidad</strong></span></li>
+        <li><span class="bp-list-num">2</span><span>Selecciona tu pa&iacute;s de residencia</span></li>
+        <li><span class="bp-list-num">3</span><span>Sube foto de tu documento de identidad (c&eacute;dula o pasaporte)</span></li>
+        <li><span class="bp-list-num">4</span><span>Toma una selfie siguiendo las instrucciones en pantalla</span></li>
+        <li><span class="bp-list-num">5</span><span>Espera la aprobaci&oacute;n — normalmente tarda pocos minutos</span></li>
+      </ol>
+      <div class="bp-tip">&#128161; La verificaci&oacute;n es obligatoria para poder usar Binance Pay</div>
+      <div class="bp-badge-lock">&#128274; Tus datos est&aacute;n protegidos por Binance</div>
+    </div>
+  </div>
+
+  <!-- PASO 3 -->
+  <div class="bp-step">
+    <div class="bp-step-num-wrap">
+      <div class="bp-step-num">3</div>
+    </div>
+    <div class="bp-step-body">
+      <div class="bp-step-header">
+        <span class="bp-step-emoji">&#128176;</span>
+        <h2 class="bp-step-title">Compra USDT</h2>
+      </div>
+      <ol class="bp-list">
+        <li><span class="bp-list-num">1</span><span>Ve a <strong style="color:var(--white)">"Comprar cripto"</strong> en el men&uacute; principal</span></li>
+        <li><span class="bp-list-num">2</span><span>Selecciona <strong style="color:var(--gold)">USDT</strong> como la criptomoneda a comprar</span></li>
+        <li><span class="bp-list-num">3</span><span>Ingresa el monto en tu moneda local (COP, MXN, VES, CLP…)</span></li>
+        <li><span class="bp-list-num">4</span><span>Elige tu m&eacute;todo de pago (tarjeta de cr&eacute;dito, transferencia bancaria)</span></li>
+        <li><span class="bp-list-num">5</span><span>Revisa el resumen y confirma la compra</span></li>
+      </ol>
+      <div class="bp-tip">&#128161; Compra un poco m&aacute;s del monto exacto que necesitas — Binance cobra una peque&ntilde;a comisi&oacute;n de red</div>
+    </div>
+  </div>
+
+  <!-- PASO 4 -->
+  <div class="bp-step">
+    <div class="bp-step-num-wrap">
+      <div class="bp-step-num">4</div>
+    </div>
+    <div class="bp-step-body">
+      <div class="bp-step-header">
+        <span class="bp-step-emoji">&#128184;</span>
+        <h2 class="bp-step-title">Paga tu pedido con Binance Pay</h2>
+      </div>
+      <ol class="bp-list">
+        <li><span class="bp-list-num">1</span><span>Abre la app Binance y toca <strong style="color:var(--white)">"Pay"</strong> en el men&uacute; inferior</span></li>
+        <li><span class="bp-list-num">2</span><span>Toca el &iacute;cono de escanear QR (arriba a la derecha)</span></li>
+        <li><span class="bp-list-num">3</span><span>Escanea el QR de <strong style="color:var(--gold)">Portal Gamers LATAM</strong> que ves a continuaci&oacute;n</span></li>
+        <li><span class="bp-list-num">4</span><span>Ingresa el monto exacto en USDT que te indicamos</span></li>
+        <li><span class="bp-list-num">5</span><span>Confirma el pago con tu PIN o huella dactilar</span></li>
+        <li><span class="bp-list-num">6</span><span>Toma captura de pantalla del <strong style="color:var(--white)">comprobante</strong></span></li>
+        <li><span class="bp-list-num">7</span><span>Env&iacute;anos el comprobante por WhatsApp</span></li>
+      </ol>
+
+      <!-- QR centrado con borde dorado -->
+      <div class="bp-qr-wrap">
+        <img
+          src="/images/qr-binance.jpeg"
+          alt="QR Binance Pay — Portal Gamers LATAM"
+          class="bp-qr-img"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+        >
+        <div style="display:none;width:180px;height:180px;border:3px solid var(--gold);border-radius:14px;background:rgba(245,166,35,.08);align-items:center;justify-content:center;flex-direction:column;gap:8px">
+          <span style="font-size:40px">&#8383;</span>
+          <span style="color:var(--gold);font-size:13px;font-weight:700;text-align:center">QR<br>Binance Pay</span>
+        </div>
+        <div class="bp-qr-label">
+          <strong>Portal Gamers LATAM</strong><br>
+          Escanea con la app Binance &rarr; Pay &rarr; Scan QR
+        </div>
+      </div>
+
+      <div class="bp-tip" style="margin-top:16px">&#128161; Guarda el comprobante con el n&uacute;mero de transacci&oacute;n — lo necesitamos para verificar tu pago</div>
+
+      <a
+        href="https://wa.me/573223427456?text=Hola%2C+realic%C3%A9+mi+pago+por+Binance+Pay.+Adjunto+comprobante."
+        target="_blank" rel="noopener"
+        class="bp-btn-wa"
+      >
+        &#128172; Enviar comprobante por WhatsApp &rarr;
+      </a>
+    </div>
+  </div>
+
+</div><!-- /bp-timeline -->
+
+<!-- CTA Final -->
+<section class="bp-cta">
+  <h2 class="bp-cta-title">&#128172; &iquest;Tienes dudas?</h2>
+  <p class="bp-cta-sub">Nuestro equipo est&aacute; disponible 24/7 para ayudarte</p>
+  <a href="https://wa.me/573223427456" target="_blank" rel="noopener" class="bp-cta-btn">
+    &#128172; +57 322 342 7456
+  </a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:12px">
+          <img src="/images/logo.png" alt="Portal Gamers" style="width:40px;height:40px;border-radius:8px;object-fit:contain" onerror="this.style.display='none'">
+          <span class="nav-logo-text">Portal Gamers</span>
+        </div>
+        <p class="footer-desc">Tu tienda de confianza para Kamas de Dofus y Wakfu, y Silver de Albion Online. Entrega rapida y soporte 24/7.</p>
+        <div class="footer-socials">
+          <a href="https://www.facebook.com/share/18P3NJ7ne3/?mibextid=wwXIfr" target="_blank" class="social-btn" title="Facebook">f</a>
+          <a href="https://www.instagram.com/portalgamerslatam?igsh=MWgxNDMzc3RzYzl5Yw%3D%3D&utm_source=qr" target="_blank" class="social-btn" title="Instagram">ig</a>
+          <a href="https://wa.me/573223427456" target="_blank" class="social-btn" title="WhatsApp">wa</a>
+          <a href="https://discord.gg/GnkfWQP8" target="_blank" class="social-btn social-btn-discord" title="Discord">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.054a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4>Juegos</h4>
+        <ul>
+          <li><a href="/#tienda">Dofus Retro</a></li>
+          <li><a href="/#tienda">Dofus 3.0</a></li>
+          <li><a href="/#tienda">Dofus Touch</a></li>
+          <li><a href="/#tienda">Wakfu</a></li>
+          <li><a href="/#tienda">Albion Online</a></li>
+          <li><a href="/#tienda">WoW Gold</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Info</h4>
+        <ul>
+          <li><a href="/#como-comprar">C&oacute;mo comprar?</a></li>
+          <li><a href="/vender.html">Vender monedas</a></li>
+          <li><a href="/#pagos">M&eacute;todos de pago</a></li>
+          <li><a href="/como-pagar-binance.html" style="color:var(--gold)">Gu&iacute;a Binance Pay</a></li>
+          <li><a href="https://wa.me/573223427456" target="_blank">Soporte</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 Portal Gamers LATAM &mdash; Todos los derechos reservados</p>
+    </div>
+  </div>
+</footer>
+
+<!-- WhatsApp Flotante -->
+<a href="https://wa.me/573223427456?text=Hola!+Necesito+ayuda+" target="_blank" class="wa-float">
+  &#128172; WhatsApp
+</a>
+
+<script>
+function toggleNav() {
+  document.getElementById('nav-links').classList.toggle('open');
+  document.getElementById('nav-toggle').classList.toggle('open');
+}
+function closeNav() {
+  document.getElementById('nav-links').classList.remove('open');
+  document.getElementById('nav-toggle').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const nav = document.querySelector('nav');
+  if (!nav.contains(e.target)) closeNav();
+});
+
+// Fade-in al hacer scroll
+(function() {
+  var steps = document.querySelectorAll('.bp-step');
+  if (!steps.length) return;
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  steps.forEach(function(s) { io.observe(s); });
+})();
+</script>
+
+</body>
+</html>
