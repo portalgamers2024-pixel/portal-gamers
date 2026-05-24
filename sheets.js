@@ -5,9 +5,11 @@ const SHEET_ID = process.env.SHEET_ID;
 const SCOPES   = ['https://www.googleapis.com/auth/spreadsheets'];
 
 // Pestaña "💰 Precios": datos desde fila 6
-// Col A=Juego, B=Servidor, C=Venta USD/M, F=Compra USD/M
-const TAB_PRECIOS = '💰 Precios';
-const TAB_VENTAS  = '📝 Ventas';
+// Col A=Juego, B=Servidor, C=Venta USD, D=Venta MXN, E=Venta CLP
+//     F=Compra USD, I=Venta COP, O=Venta BS/VES
+const TAB_PRECIOS  = '💰 Precios';
+const TAB_VENTAS   = '📝 Ventas';
+const TAB_WOW_GOLD = 'WOW_GOLD';
 
 // Mapa de nombres en el Sheet → IDs en products.json
 const GAME_NAME_MAP = {
@@ -62,21 +64,26 @@ async function getPricesFromSheet() {
   const sheets = await api();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${TAB_PRECIOS}!A6:J100`,
+    range: `${TAB_PRECIOS}!A6:O100`,
   });
 
   const result = {};
   let currentGameId = null;
 
   for (const row of res.data.values || []) {
-    // Col A=Juego, B=Servidor, C=Venta USD, D=Venta MXN, E=Venta CLP,
-    //     F=Compra USD, G=Compra MXN, H=Compra CLP, I=Venta COP, J=Venta MXN2
-    const [gameRaw, server, ventaRaw, , , compraRaw, , , copVentaRaw] = row;
+    // C(2)=Venta USD, D(3)=Venta MXN, E(4)=Venta CLP
+    // F(5)=Compra USD, I(8)=Venta COP, O(14)=Venta BS/VES
+    const gameRaw  = row[0];
+    const server   = row[1];
+    const ventaRaw = row[2];
+    const mxnRaw   = row[3];
+    const clpRaw   = row[4];
+    const compraRaw = row[5];
+    const copRaw   = row[8];
+    const vesRaw   = row[14];
 
-    // Si col A tiene valor, es un juego nuevo
     if (gameRaw && gameRaw.trim()) {
       const mapped = GAME_NAME_MAP[gameRaw.trim().toUpperCase()] || null;
-      // Intento flexible si no hay match exacto
       if (mapped) {
         currentGameId = mapped;
       } else {
@@ -86,21 +93,58 @@ async function getPricesFromSheet() {
     }
 
     if (!currentGameId || !server || !server.trim()) continue;
-    // Ignorar filas de totales/márgenes
     if (server.trim().startsWith('📈') || server.trim().startsWith('MARGEN')) continue;
 
-    const venta    = parseNum(ventaRaw);
-    const compra   = parseNum(compraRaw);
-    const copVenta = parseNum(copVentaRaw);
+    const venta  = parseNum(ventaRaw);
+    const compra = parseNum(compraRaw);
+    const mxn    = parseNum(mxnRaw);
+    const clp    = parseNum(clpRaw);
+    const cop    = parseNum(copRaw);
+    const ves    = parseNum(vesRaw);
     if (!venta) continue;
 
     if (!result[currentGameId]) result[currentGameId] = {};
-    result[currentGameId][server.trim()] = { venta, compra, ...(copVenta && { cop: copVenta }) };
+    result[currentGameId][server.trim()] = {
+      venta,
+      compra,
+      ...(mxn  && { mxn }),
+      ...(clp  && { clp }),
+      ...(cop  && { cop }),
+      ...(ves  && { ves }),
+    };
+  }
+
+  // Leer precios de WoW Gold desde pestaña WOW_GOLD
+  try {
+    const wowRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `${TAB_WOW_GOLD}!A2:L10`,
+    });
+    const wowRows = wowRes.data.values || [];
+    if (wowRows.length) {
+      result['wow-retail'] = {};
+      for (const row of wowRows) {
+        const serverName = row[0]?.trim();
+        const activo     = row[11]?.trim()?.toUpperCase();
+        if (!serverName || activo === 'NO') continue;
+        const venta  = parseNum(row[4]);
+        const compra = parseNum(row[1]);
+        const cop    = parseNum(row[5]);
+        const ves    = parseNum(row[6]);
+        const clp    = parseNum(row[7]);
+        const mxn    = parseNum(row[8]);
+        if (!venta) continue;
+        result['wow-retail'][serverName] = { venta, compra, cop, ves, clp, mxn };
+      }
+    }
+  } catch (e) {
+    console.warn('[Sheets] Error leyendo WOW_GOLD:', e.message);
   }
 
   // Calcular meta por juego (precio mínimo de venta entre todos los servidores)
   for (const [gameId, servers] of Object.entries(result)) {
-    const ventas = Object.values(servers).map(s => s.venta);
+    const ventas = Object.values(servers).filter(s => typeof s === 'object' && s.venta).map(s => s.venta);
+    if (!ventas.length) continue;
     result[gameId]._meta = {
       min_venta: Math.min(...ventas),
       max_venta: Math.max(...ventas),

@@ -253,13 +253,13 @@ function renderServerCards() {
   const isWow = !!g.unit_label;
   grid.innerHTML = g.servers.map(server => {
     const serverPrice = g.server_prices?.[server]?.venta ?? g.price_per_million;
-    const localRate   = isWow ? getWowLocalPrice(g, server) : getLocalRate(g, server, serverPrice);
+    const localRate   = getLocalRate(g, server, serverPrice);
     const priceDisplay = isWow
       ? `$${serverPrice.toFixed(2)}<span class="sc-unit"> / ${unitLabel}</span>`
       : `$${serverPrice.toFixed(2)}<span class="sc-unit"> / M ${g.currency_name}</span>`;
-    const localDisplay = isWow
-      ? (localRate ? `<div class="sc-local">${localRate} / ${unitLabel}</div>` : '')
-      : (localRate ? `<div class="sc-local">&#8776; ${localRate} / M</div>` : '');
+    const localDisplay = localRate
+      ? `<div class="sc-local">&#8776; ${localRate}${isWow ? ` / ${unitLabel}` : ' / M'}</div>`
+      : '';
     return `
       <div class="server-card" data-game-id="${g.id}" onclick="selectServer('${server.replace(/'/g, "\\'")}')">
         <img class="sc-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
@@ -299,12 +299,8 @@ function renderPurchaseForm() {
   const defaultM = g.min_millions || 1;
   const presets = getPresets(g.min_millions, g.max_millions);
   const initTotal = (defaultM * g.price_per_million).toFixed(2);
-  const initLocal = isWow
-    ? (getWowLocalPrice(g, currentServer) || '')
-    : (convertPrice(defaultM * g.price_per_million) || '');
-  const rateLocal = isWow
-    ? getWowLocalPrice(g, currentServer)
-    : convertPrice(g.price_per_million);
+  const initLocal = getLocalTotal(g, currentServer, defaultM, defaultM * g.price_per_million) || '';
+  const rateLocal = getLocalRate(g, currentServer, g.price_per_million);
   const qtyLabel = isWow
     ? `Cantidad de unidades (1 unidad = ${unitLabel})`
     : `Cantidad de ${g.currency_name} (en Millones)`;
@@ -406,24 +402,7 @@ function updateLivePrice() {
   const localEl = document.getElementById('live-local');
   if (totalEl) totalEl.textContent = `$${total.toFixed(2)} USD`;
   if (localEl) {
-    const isWow = !!currentGame.unit_label;
-    let lp;
-    if (isWow && currentGame.local_prices?.sell) {
-      const lps = currentGame.local_prices.sell;
-      const rate = lps[selectedCurrency];
-      if (rate) {
-        const sym = selectedCurrency === 'VES' ? 'Bs.' : '$';
-        lp = `${sym}${(rate * millions).toLocaleString('es-CO')} ${selectedCurrency}`;
-      }
-    } else if (selectedCurrency === 'COP') {
-      const cop = currentGame.server_prices?.[currentServer]?.cop;
-      lp = cop
-        ? `$${(cop * millions).toLocaleString('es-CO')} COP`
-        : convertPrice(total);
-    } else {
-      lp = convertPrice(total);
-    }
-    localEl.textContent = lp || '';
+    localEl.textContent = getLocalTotal(currentGame, currentServer, millions, total) || '';
   }
 }
 
@@ -929,24 +908,34 @@ function convertPrice(usd) {
   return `${sym}${converted >= 1000 ? Math.round(converted).toLocaleString('es-CO') : converted.toFixed(2)} ${selectedCurrency}`;
 }
 
-// Usa precio COP del Sheet si está disponible y la moneda seleccionada es COP;
-// de lo contrario convierte vía tipo de cambio.
-function getLocalRate(game, server, usdPrice) {
-  if (selectedCurrency === 'COP') {
-    const cop = game.server_prices?.[server]?.cop;
-    if (cop) return `$${cop.toLocaleString('es-CO')} COP`;
-  }
-  return convertPrice(usdPrice);
+function _fmtLocal(n) {
+  return n % 1 === 0
+    ? n.toLocaleString('es-CO')
+    : n.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function getWowLocalPrice(game, server) {
-  if (!game?.local_prices?.sell) return null;
-  const lp = game.local_prices.sell;
-  if (selectedCurrency === 'COP' && lp.COP) return `$${lp.COP.toLocaleString('es-CO')} COP`;
-  if (selectedCurrency === 'VES' && lp.VES) return `Bs.${lp.VES.toLocaleString('es-CO')} VES`;
-  if (selectedCurrency === 'CLP' && lp.CLP) return `$${lp.CLP.toLocaleString('es-CO')} CLP`;
-  if (selectedCurrency === 'MXN' && lp.MXN) return `$${lp.MXN} MXN`;
-  return null;
+// Returns formatted local price per 1 unit/M from sheet data, or exchange-rate fallback.
+function getLocalRate(game, server, usdPerUnit) {
+  const sp = game.server_prices?.[server];
+  if (sp) {
+    if (selectedCurrency === 'COP' && sp.cop) return `$${_fmtLocal(sp.cop)} COP`;
+    if (selectedCurrency === 'VES' && sp.ves) return `Bs.${_fmtLocal(sp.ves)} VES`;
+    if (selectedCurrency === 'CLP' && sp.clp) return `$${_fmtLocal(sp.clp)} CLP`;
+    if (selectedCurrency === 'MXN' && sp.mxn) return `$${_fmtLocal(sp.mxn)} MXN`;
+  }
+  return convertPrice(usdPerUnit);
+}
+
+// Returns formatted local total for N units/millions from sheet data, or exchange-rate fallback.
+function getLocalTotal(game, server, units, usdTotal) {
+  const sp = game.server_prices?.[server];
+  if (sp) {
+    if (selectedCurrency === 'COP' && sp.cop) return `$${_fmtLocal(sp.cop * units)} COP`;
+    if (selectedCurrency === 'VES' && sp.ves) return `Bs.${_fmtLocal(sp.ves * units)} VES`;
+    if (selectedCurrency === 'CLP' && sp.clp) return `$${_fmtLocal(sp.clp * units)} CLP`;
+    if (selectedCurrency === 'MXN' && sp.mxn) return `$${_fmtLocal(sp.mxn * units)} MXN`;
+  }
+  return convertPrice(usdTotal);
 }
 
 // ─── Toast ────────────────────────────────────────────────
