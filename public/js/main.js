@@ -889,7 +889,7 @@ async function confirmOrder() {
   );
 
   cart = []; saveCart(); updateCartUI(); closeCart();
-  window.open(`https://wa.me/573016008994?text=${waMsg}`, '_blank');
+  window.open(`https://wa.me/${WA_NUMBER}?text=${waMsg}`, '_blank');
 
   if (btn) { btn.textContent = '✓ Confirmar pedido'; btn.disabled = false; }
   showCheckoutStep(3);
