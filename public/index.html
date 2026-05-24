@@ -583,7 +583,7 @@
       <div class="payment-group">
         <h4>&#127758; Internacional</h4>
         <div class="payment-badges">
-          <span class="payment-badge">&#8383; Binance Pay</span>
+          <button class="payment-badge-btn" onclick="openBinanceModal()">&#8383; Binance Pay</button>
           <a href="/como-pagar-binance.html" class="payment-badge" style="color:var(--cyan);border-color:rgba(41,171,212,.4);background:rgba(41,171,212,.08)">&#128196; Ver gu&iacute;a Binance Pay &rarr;</a>
           <span class="payment-badge">&#128156; Skrill</span>
           <span class="payment-badge">&#127968; Banco Uni&#243;n</span>
@@ -810,6 +810,35 @@
 
 <div class="toast-container" id="toast-container"></div>
 
+<!-- Modal Binance Pay -->
+<div class="modal-overlay" id="binance-modal" onclick="if(event.target===this)closeBinanceModal()">
+  <div class="modal">
+    <div class="region-modal-head">
+      <h3>&#8383; Pagar con Binance Pay</h3>
+      <button class="region-modal-close" onclick="closeBinanceModal()">&#10005;</button>
+    </div>
+    <p class="modal-sub">Escanea el QR desde la app Binance</p>
+    <img
+      src="/images/qr-binance-portal.png"
+      alt="QR Binance Pay — Portal Gamers"
+      class="binance-modal-img"
+      onerror="this.style.opacity='.4'"
+    >
+    <p class="binance-modal-amount">Ingresa el monto exacto en <strong style="color:var(--gold)">USDT</strong> que te indicamos</p>
+    <p class="binance-modal-note">Binance app &rarr; Pay &rarr; Scan QR</p>
+    <a
+      href="https://wa.me/573223427456?text=Hola%2C+realic%C3%A9+mi+pago+por+Binance+Pay.+Adjunto+comprobante."
+      target="_blank" rel="noopener"
+      class="pm-qr-wa-btn"
+      style="text-decoration:none"
+    >&#128172; Enviar comprobante por WhatsApp</a>
+    <div class="modal-actions" style="margin-top:16px">
+      <a href="/como-pagar-binance.html" class="btn-modal-cancel" style="text-align:center;text-decoration:none">&#128196; Ver gu&iacute;a completa</a>
+      <button class="btn-modal-confirm" onclick="closeBinanceModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/geo.js?v=20260524"></script>
 <script src="/js/main.js?v=20260524"></script>
 <script>
@@ -825,6 +854,12 @@ document.addEventListener('click', function(e) {
   const nav = document.querySelector('nav');
   if (!nav.contains(e.target)) closeNav();
 });
+function openBinanceModal() {
+  document.getElementById('binance-modal')?.classList.add('open');
+}
+function closeBinanceModal() {
+  document.getElementById('binance-modal')?.classList.remove('open');
+}
 </script>
 </body>
 </html>

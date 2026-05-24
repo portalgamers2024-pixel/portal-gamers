@@ -742,28 +742,46 @@ function nextToPayment() {
 function backToForm() { showCheckoutStep(1); }
 
 function getPaymentMethodsHTML(country) {
+  const total = cartTotal();
+  const waMsg = encodeURIComponent(
+    `Hola, realicé mi pago por Binance Pay por $${total.toFixed(2)} USDT. Adjunto comprobante.`
+  );
   const methods = PAYMENT_METHODS[country] || PAYMENT_METHODS['Otro'];
-  return methods.map((method, mi) => `
-    <div class="pm-card${mi === 0 ? ' selected' : ''}"
-         onclick="selectPaymentCard(this, '${method.name.replace(/'/g, '&#39;')}')"
-         data-method-name="${method.name.replace(/"/g, '&quot;')}">
-      <div class="pm-card-header">
-        <span class="pm-icon">${method.icon}</span>
-        <div class="pm-name">${method.name}</div>
-      </div>
-      <div class="pm-fields">
-        ${method.fields.map(f => `
-          <div class="pm-data-row">
-            <span class="pm-data-label">${f.label}</span>
-            <span class="pm-data-value">${f.value}</span>
-            ${f.copyable !== false
-              ? `<button class="pm-copy-btn" data-copy="${f.value.replace(/"/g, '&quot;')}" onclick="event.stopPropagation();copyFromBtn(this)">&#128203;</button>`
-              : ''}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
+  return methods.map((method, mi) => {
+    const isBinance = method.name === 'Binance';
+    const binanceQR = isBinance ? `
+      <div class="pm-binance-qr">
+        <img src="/images/qr-binance-portal.png" alt="QR Binance Pay" class="pm-qr-img"
+             onerror="this.style.opacity='.4'">
+        <div class="pm-qr-amount">Monto a pagar: <strong>$${total.toFixed(2)} USDT</strong></div>
+        <div class="pm-qr-note">Binance app &rarr; Pay &rarr; Scan QR &rarr; ingresa monto exacto</div>
+        <a href="https://wa.me/573223427456?text=${waMsg}"
+           target="_blank" rel="noopener"
+           class="pm-qr-wa-btn"
+           onclick="event.stopPropagation()">&#128172; Enviar comprobante por WhatsApp</a>
+      </div>` : '';
+    return `
+      <div class="pm-card${mi === 0 ? ' selected' : ''}"
+           onclick="selectPaymentCard(this, '${method.name.replace(/'/g, '&#39;')}')"
+           data-method-name="${method.name.replace(/"/g, '&quot;')}">
+        <div class="pm-card-header">
+          <span class="pm-icon">${method.icon}</span>
+          <div class="pm-name">${method.name}</div>
+        </div>
+        <div class="pm-fields">
+          ${method.fields.map(f => `
+            <div class="pm-data-row">
+              <span class="pm-data-label">${f.label}</span>
+              <span class="pm-data-value">${f.value}</span>
+              ${f.copyable !== false
+                ? `<button class="pm-copy-btn" data-copy="${f.value.replace(/"/g, '&quot;')}" onclick="event.stopPropagation();copyFromBtn(this)">&#128203;</button>`
+                : ''}
+            </div>
+          `).join('')}
+        </div>
+        ${binanceQR}
+      </div>`;
+  }).join('');
 }
 
 function selectPaymentCard(el, methodName) {
