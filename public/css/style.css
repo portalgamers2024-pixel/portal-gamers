@@ -1060,6 +1060,8 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
 .price-usdt { color: var(--cyan); font-weight: 700; font-size: 13px; }
 .price-ves  { color: var(--text-m); font-size: 13px; }
 .badge-buying { display: inline-block; background: rgba(37,211,102,.12); color: var(--green); border: 1px solid rgba(37,211,102,.3); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+button.badge-buying { cursor: pointer; font-family: inherit; transition: var(--trans); }
+button.badge-buying:hover { background: rgba(37,211,102,.28); transform: scale(1.06); box-shadow: 0 0 8px rgba(37,211,102,.25); }
 .badge-full   { display: inline-block; background: rgba(90,127,168,.1); color: var(--text-d); border: 1px solid var(--border); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
 
 /* ═══════════════════════════════════════════════════
