@@ -86,14 +86,14 @@
       "icon_img": "/images/icons/ALBION_SILVER_Coin.png",
       "currency_name": "Silver",
       "color": "#29ABD4",
-      "price_per_million": 0.3,
+      "price_per_million": 0.32,
       "min_millions": 10,
       "max_millions": 1000,
       "stock_millions": 1000,
       "delivery": "5-30 min",
       "active": true,
       "servers": [
-        "America"
+        "Global"
       ]
     },
     {

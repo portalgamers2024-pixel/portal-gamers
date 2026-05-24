@@ -253,7 +253,7 @@ function renderServerCards() {
   const isWow = !!g.unit_label;
   grid.innerHTML = g.servers.map(server => {
     const serverPrice = g.server_prices?.[server]?.venta ?? g.price_per_million;
-    const localRate   = isWow ? getWowLocalPrice(g, server) : convertPrice(serverPrice);
+    const localRate   = isWow ? getWowLocalPrice(g, server) : getLocalRate(g, server, serverPrice);
     const priceDisplay = isWow
       ? `$${serverPrice.toFixed(2)}<span class="sc-unit"> / ${unitLabel}</span>`
       : `$${serverPrice.toFixed(2)}<span class="sc-unit"> / M ${g.currency_name}</span>`;
@@ -415,6 +415,11 @@ function updateLivePrice() {
         const sym = selectedCurrency === 'VES' ? 'Bs.' : '$';
         lp = `${sym}${(rate * millions).toLocaleString('es-CO')} ${selectedCurrency}`;
       }
+    } else if (selectedCurrency === 'COP') {
+      const cop = currentGame.server_prices?.[currentServer]?.cop;
+      lp = cop
+        ? `$${(cop * millions).toLocaleString('es-CO')} COP`
+        : convertPrice(total);
     } else {
       lp = convertPrice(total);
     }
@@ -922,6 +927,16 @@ function convertPrice(usd) {
   const converted = usd * rates[selectedCurrency];
   const sym = SYMBOLS[selectedCurrency] || (selectedCurrency + ' ');
   return `${sym}${converted >= 1000 ? Math.round(converted).toLocaleString('es-CO') : converted.toFixed(2)} ${selectedCurrency}`;
+}
+
+// Usa precio COP del Sheet si está disponible y la moneda seleccionada es COP;
+// de lo contrario convierte vía tipo de cambio.
+function getLocalRate(game, server, usdPrice) {
+  if (selectedCurrency === 'COP') {
+    const cop = game.server_prices?.[server]?.cop;
+    if (cop) return `$${cop.toLocaleString('es-CO')} COP`;
+  }
+  return convertPrice(usdPrice);
 }
 
 function getWowLocalPrice(game, server) {

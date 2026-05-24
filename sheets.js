@@ -69,7 +69,9 @@ async function getPricesFromSheet() {
   let currentGameId = null;
 
   for (const row of res.data.values || []) {
-    const [gameRaw, server, ventaRaw, , , compraRaw] = row;
+    // Col A=Juego, B=Servidor, C=Venta USD, D=Venta MXN, E=Venta CLP,
+    //     F=Compra USD, G=Compra MXN, H=Compra CLP, I=Venta COP, J=Venta MXN2
+    const [gameRaw, server, ventaRaw, , , compraRaw, , , copVentaRaw] = row;
 
     // Si col A tiene valor, es un juego nuevo
     if (gameRaw && gameRaw.trim()) {
@@ -87,12 +89,13 @@ async function getPricesFromSheet() {
     // Ignorar filas de totales/márgenes
     if (server.trim().startsWith('📈') || server.trim().startsWith('MARGEN')) continue;
 
-    const venta  = parseNum(ventaRaw);
-    const compra = parseNum(compraRaw);
+    const venta    = parseNum(ventaRaw);
+    const compra   = parseNum(compraRaw);
+    const copVenta = parseNum(copVentaRaw);
     if (!venta) continue;
 
     if (!result[currentGameId]) result[currentGameId] = {};
-    result[currentGameId][server.trim()] = { venta, compra };
+    result[currentGameId][server.trim()] = { venta, compra, ...(copVenta && { cop: copVenta }) };
   }
 
   // Calcular meta por juego (precio mínimo de venta entre todos los servidores)
