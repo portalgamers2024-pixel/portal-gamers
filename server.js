@@ -213,6 +213,30 @@ app.post('/webhook/whatsapp', (req, res) => {
   }
 });
 
+// ─── Registro desde Apps Script (sin auth — llamado desde el Sheet) ──────────
+
+// Apps Script llama este endpoint al hacer clic en "▶ REGISTRAR COMPRA"
+app.post('/api/compras/register', async (req, res) => {
+  const { total_usd, servidor } = req.body || {};
+  if (total_usd) {
+    const { trackCompra } = require('./whatsapp/sender');
+    trackCompra(parseFloat(total_usd) || 0);
+    console.log(`[Compra] Registrada: $${total_usd} USD — ${servidor || '?'}`);
+  }
+  res.json({ success: true });
+});
+
+// Apps Script llama este endpoint al hacer clic en "▶ REGISTRAR VENTA"
+app.post('/api/ventas/register', async (req, res) => {
+  const { total_usd, servidor } = req.body || {};
+  if (total_usd) {
+    const { trackStat } = require('./whatsapp/sender');
+    trackStat('pedido', parseFloat(total_usd) || 0);
+    console.log(`[Venta] Registrada: $${total_usd} USD — ${servidor || '?'}`);
+  }
+  res.json({ success: true });
+});
+
 // Registro manual de venta (ventas por WhatsApp o fuera de MercadoPago)
 app.post('/api/sales/register', adminAuth, async (req, res) => {
   const { juego, servidor, cantidad, moneda, precio_m, total_usd, canal, asesor } = req.body;
