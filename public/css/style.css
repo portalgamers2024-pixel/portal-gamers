@@ -1701,8 +1701,6 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
   width: 100%;
   border: 3px solid var(--gold);
   border-radius: 12px;
-  padding: 8px;
-  background: #fff;
   box-shadow: 0 0 24px rgba(245,166,35,.35);
 }
 .pm-qr-amount {
@@ -1740,8 +1738,6 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
   width: 100%;
   border: 3px solid var(--gold);
   border-radius: 14px;
-  padding: 10px;
-  background: #fff;
   box-shadow: 0 0 32px rgba(245,166,35,.35);
   display: block;
   margin: 0 auto 14px;
