@@ -402,7 +402,7 @@
 
       <!-- QR centrado con glow dorado -->
       <div class="bp-qr-wrap">
-        <div class="bp-qr-container">
+        <div class="bp-qr-container qr-zoom-wrap" onclick="openQrLightbox('/images/qr-binance-portal.png')" title="Clic para ampliar">
           <img
             src="/images/qr-binance-portal.png"
             alt="QR Binance Pay — Portal Gamers LATAM"
@@ -524,6 +524,25 @@ document.addEventListener('click', function(e) {
   }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
   steps.forEach(function(s) { io.observe(s); });
 })();
+</script>
+
+<!-- Lightbox QR -->
+<div id="qr-lightbox" class="qr-lightbox" onclick="closeQrLightbox()">
+  <img id="qr-lightbox-img" class="qr-lightbox-img" src="" alt="QR Binance Pay">
+</div>
+<script>
+function openQrLightbox(src) {
+  document.getElementById('qr-lightbox-img').src = src;
+  document.getElementById('qr-lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeQrLightbox() {
+  document.getElementById('qr-lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeQrLightbox();
+});
 </script>
 
 </body>

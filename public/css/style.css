@@ -1681,6 +1681,52 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
   line-height: 1.2;
 }
 
+/* ─── Lightbox zoom QR ──────────────────────────────── */
+.qr-zoom-wrap {
+  position: relative;
+  display: inline-flex;
+  cursor: zoom-in;
+  border-radius: 20px;
+}
+.qr-zoom-wrap::after {
+  content: '🔍';
+  position: absolute;
+  bottom: 12px; right: 12px;
+  font-size: 22px;
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,.8));
+}
+.qr-zoom-wrap:hover::after { opacity: 1; }
+
+.qr-lightbox {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.9);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+  cursor: zoom-out;
+}
+.qr-lightbox.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.qr-lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto; height: auto;
+  border-radius: 16px;
+  box-shadow: 0 0 60px rgba(245,166,35,.55);
+  transform: scale(.88);
+  transition: transform .25s ease;
+  cursor: zoom-out;
+  display: block;
+}
+.qr-lightbox.open .qr-lightbox-img { transform: scale(1); }
+
 /* ─── WoW purchase form extras ──────────────────────── */
 .pf-wow-note { font-size: 12px; color: var(--text-d); margin-top: 8px; }
 .pf-wow-note a { color: var(--cyan); }

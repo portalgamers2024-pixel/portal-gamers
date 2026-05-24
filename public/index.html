@@ -821,12 +821,14 @@
       <button class="region-modal-close" onclick="closeBinanceModal()">&#10005;</button>
     </div>
     <p class="modal-sub">Escanea el QR desde la app Binance</p>
-    <img
-      src="/images/qr-binance-portal.png"
-      alt="QR Binance Pay — Portal Gamers"
-      class="binance-modal-img"
-      onerror="this.style.opacity='.4'"
-    >
+    <div class="qr-zoom-wrap" style="justify-content:center;width:100%" onclick="openQrLightbox('/images/qr-binance-portal.png')" title="Clic para ampliar">
+      <img
+        src="/images/qr-binance-portal.png"
+        alt="QR Binance Pay — Portal Gamers"
+        class="binance-modal-img"
+        onerror="this.style.opacity='.4'"
+      >
+    </div>
     <p class="binance-modal-amount">Ingresa el monto exacto en <strong style="color:var(--gold)">USDT</strong> que te indicamos</p>
     <p class="binance-modal-note">Binance app &rarr; Pay &rarr; Scan QR</p>
     <a
@@ -863,6 +865,23 @@ function openBinanceModal() {
 function closeBinanceModal() {
   document.getElementById('binance-modal')?.classList.remove('open');
 }
+function openQrLightbox(src) {
+  document.getElementById('qr-lightbox-img').src = src;
+  document.getElementById('qr-lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeQrLightbox() {
+  document.getElementById('qr-lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeQrLightbox();
+});
 </script>
+
+<!-- Lightbox QR -->
+<div id="qr-lightbox" class="qr-lightbox" onclick="closeQrLightbox()">
+  <img id="qr-lightbox-img" class="qr-lightbox-img" src="" alt="QR Binance Pay">
+</div>
 </body>
 </html>
