@@ -1,6 +1,7 @@
 'use strict';
 
-const fetch = require('node-fetch');
+const fetch  = require('node-fetch');
+const sheets = require('../sheets');
 
 const PHONE_ID = process.env.WHATSAPP_PHONE_ID;
 const TOKEN    = process.env.WHATSAPP_TOKEN;
@@ -112,20 +113,56 @@ Contáctalo directamente para atenderlo.`;
 
 // ─── Resumen diario (SOLO al dueño) ─────────────────────────────────────────
 
+// compras del día en USD — actualizable vía trackCompra()
+const _comprasHoy = { totalUSD: 0, count: 0, date: '' };
+
+function trackCompra(amountUSD = 0) {
+  const today = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota' });
+  if (_comprasHoy.date !== today) { _comprasHoy.totalUSD = 0; _comprasHoy.count = 0; _comprasHoy.date = today; }
+  _comprasHoy.totalUSD += Number(amountUSD) || 0;
+  _comprasHoy.count++;
+}
+
 async function sendDailySummary() {
-  const stats = getDailyStats();
+  const stats  = getDailyStats();
+  const fecha  = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota' });
+
+  // Leer ventas reales del día desde Google Sheets (fuente de verdad)
+  let sheetVentas = { totalUSD: 0, count: 0 };
+  try { sheetVentas = await sheets.getDailySalesStats(); } catch (_) {}
+
+  // Combinar pedidos web (bot) + registros manuales del sheet
+  const totalVentaUSD = Math.max(stats.totalUSD, sheetVentas.totalUSD);
+  const totalPedidos  = Math.max(stats.pedidos,   sheetVentas.count);
+
+  const today = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota' });
+  if (_comprasHoy.date !== today) { _comprasHoy.totalUSD = 0; _comprasHoy.count = 0; }
+  const compraUSD   = _comprasHoy.totalUSD;
+  const gananciaNeta = totalVentaUSD - compraUSD;
+  const margenPct    = totalVentaUSD > 0 ? (gananciaNeta / totalVentaUSD * 100).toFixed(1) : '0.0';
+
   const msg =
 `📊 *Resumen diario — Portal Gamers LATAM*
 ━━━━━━━━━━━━━━━━━━━━
-📅 ${new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })}
+📅 ${fecha}
 
-🛒 Pedidos recibidos: ${stats.pedidos}
-💵 Total vendido: $${stats.totalUSD.toFixed(2)} USD
-🎧 Solicitudes asesor: ${stats.asesores}
-━━━━━━━━━━━━━━━━━━━━`;
+💚 *VENTAS*
+  🛒 Transacciones: ${totalPedidos}
+  💵 Total vendido: $${totalVentaUSD.toFixed(2)} USD
+
+🔴 *COMPRAS*
+  🧾 Transacciones: ${_comprasHoy.count}
+  💰 Total comprado: $${compraUSD.toFixed(2)} USD
+
+📈 *RESULTADO*
+  💹 Ganancia neta: $${gananciaNeta.toFixed(2)} USD
+  📊 Margen: ${margenPct}%
+  🎧 Solicitudes asesor: ${stats.asesores}
+━━━━━━━━━━━━━━━━━━━━
+Ver detalle: Registro Rápido → TOTALES DEL DÍA`;
 
   // SOLO al dueño, nunca a la tienda ni a clientes
   await sendMessage(DUENO, msg);
 }
 
-module.exports = { sendMessage, sendOrderNotification, sendDailySummary, trackStat, getDailyStats };
+module.exports = { sendMessage, sendOrderNotification, sendDailySummary, trackStat, getDailyStats, trackCompra };

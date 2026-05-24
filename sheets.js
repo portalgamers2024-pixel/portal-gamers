@@ -247,4 +247,32 @@ async function getResenas() {
   return data;
 }
 
-module.exports = { getPricesFromSheet, getResenas, logSale, logOrder, invalidateCache };
+/**
+ * Suma las ventas del día actual desde la pestaña Ventas.
+ * Col A = FECHA ("D/M/YYYY, ..."), col I = TOTAL VENTA (USD) en formato "$X.XX".
+ */
+async function getDailySalesStats() {
+  if (!SHEET_ID) return { totalUSD: 0, count: 0 };
+  const sheetsApi = await api();
+  const res = await sheetsApi.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: `${TAB_VENTAS}!A4:I2000`,
+  });
+  const today = new Date().toLocaleDateString('es-CO', {
+    timeZone: 'America/Bogota',
+    day: 'numeric', month: 'numeric', year: 'numeric',
+  });
+  let totalUSD = 0;
+  let count = 0;
+  for (const row of res.data.values || []) {
+    if (!row[0]) continue;
+    const rowDate = row[0].split(',')[0].trim();
+    if (rowDate !== today) continue;
+    const usd = parseFloat((row[8] || '').replace(/[^0-9.]/g, '')) || 0;
+    totalUSD += usd;
+    count++;
+  }
+  return { totalUSD, count };
+}
+
+module.exports = { getPricesFromSheet, getResenas, logSale, logOrder, invalidateCache, getDailySalesStats };
