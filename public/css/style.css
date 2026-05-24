@@ -1733,8 +1733,8 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
 
 /* ─── Binance Pay modal (index.html sección pagos) ───── */
 .binance-modal-img {
-  max-width: 260px;
-  max-height: 260px;
+  max-width: 320px;
+  max-height: 320px;
   width: 100%;
   border: 3px solid var(--gold);
   border-radius: 14px;
