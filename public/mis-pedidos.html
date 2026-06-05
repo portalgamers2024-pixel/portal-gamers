@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-99LC8VQ37X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-99LC8VQ37X');
+  </script>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1339150608114505');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1339150608114505&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Pedidos — Portal Gamers LATAM</title>
+  <meta name="description" content="Consulta el estado de tu pedido en Portal Gamers LATAM. Escríbenos con tu número de pedido y te respondemos en minutos.">
+  <meta property="og:title" content="Mis Pedidos — Portal Gamers LATAM">
+  <meta property="og:description" content="Consulta el estado de tu pedido en Portal Gamers LATAM">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://portalgamerslatam.com/mis-pedidos.html">
+  <link rel="icon" href="/images/logo.png" type="image/png">
+  <link rel="stylesheet" href="/css/style.css?v=20260524">
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <span>&#9889; Entrega en 5-30 minutos</span>
+  &nbsp;|&nbsp; Soporte 24/7 via WhatsApp &nbsp;|&nbsp;
+  <span>&#128274; Pagos 100% seguros</span>
+</div>
+
+<!-- Navbar -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png" alt="Portal Gamers" onerror="this.style.display='none'">
+    <span class="nav-logo-text">Portal Gamers</span>
+  </a>
+
+  <ul class="nav-links" id="nav-links">
+    <li><a href="/#tienda"       class="nav-link" onclick="closeNav()">Juegos</a></li>
+    <li><a href="/#tienda"       class="nav-link" onclick="closeNav()">Ofertas</a></li>
+    <li><a href="/#como-comprar" class="nav-link" onclick="closeNav()">C&oacute;mo comprar</a></li>
+    <li><a href="/como-pagar-binance.html" class="nav-link" onclick="closeNav()">Pagar con Binance</a></li>
+    <li><a href="/vender.html"  class="nav-link" onclick="closeNav()">V&eacute;ndenos</a></li>
+    <li><a href="/#tienda"       class="nav-link nav-link-buy" onclick="closeNav()">Comprar monedas</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <button class="btn-region" id="btn-region" onclick="openRegionModal()" title="Cambiar región y moneda">
+      <span class="btn-region-flag" id="region-flag">&#127758;</span>
+      <span class="btn-region-currency" id="region-currency">USD</span>
+    </button>
+    <a href="https://wa.me/573223427456" target="_blank" class="btn-wa-nav">
+      &#128172; <span class="wa-nav-text">Cotiza por WhatsApp</span>
+    </a>
+    <button class="btn-cart" id="btn-cart" onclick="openCart()">
+      &#128722; <span class="cart-badge" id="cart-badge">0</span>
+    </button>
+  </div>
+
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<h1 style="font-size:28px;color:#a78bfa;text-align:center;padding:1.5rem 1rem;margin:0;background:#0f0f1a">Mis Pedidos — Consulta tu estado</h1>
+
+<!-- Mis Pedidos Section -->
+<div class="container section" style="padding: 60px 20px; text-align: center;">
+  <div style="max-width: 520px; margin: 0 auto; background: rgba(10, 10, 20, 0.8); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 12px; padding: 40px 30px;">
+    <div style="display: inline-block; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 8px; padding: 8px 16px; margin-bottom: 20px;">
+      <span style="color: #a78bfa; font-size: 13px; font-weight: 600;">📦 MIS PEDIDOS</span>
+    </div>
+
+    <h2 style="font-size: 32px; color: #fff; margin: 0 0 12px 0; font-weight: 700;">Consulta tu pedido</h2>
+
+    <p style="color: #b0b0b0; font-size: 15px; margin: 0 0 32px 0; line-height: 1.6;">
+      Para consultar el estado de tu pedido escríbenos con tu número de pedido y te respondemos en minutos.
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+      <a href="https://wa.me/573223427456" target="_blank" class="btn-contact" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.2s;">
+        &#128172; Enviar mensaje por WhatsApp
+      </a>
+
+      <a href="mailto:portalgamers24@gmail.com" class="btn-contact" style="background: rgba(167, 139, 250, 0.15); color: #a78bfa; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; border: 1px solid rgba(167, 139, 250, 0.3); transition: all 0.2s;">
+        ✉️ Enviar email
+      </a>
+    </div>
+
+    <p style="color: #888; font-size: 13px; margin: 0;">
+      ⏱️ <strong>Tiempo de respuesta:</strong> 5 a 15 minutos
+    </p>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:12px">
+          <img src="/images/logo.png" alt="Portal Gamers" style="width:40px;height:40px;border-radius:8px;object-fit:contain" onerror="this.style.display='none'">
+          <span class="nav-logo-text">Portal Gamers</span>
+        </div>
+        <p class="footer-desc">Tu tienda de confianza para Kamas de Dofus y Wakfu, y Silver de Albion Online. Entrega rapida y soporte 24/7.</p>
+        <div class="footer-socials">
+          <a href="https://www.facebook.com/share/18P3NJ7ne3/?mibextid=wwXIfr" target="_blank" class="social-btn" title="Facebook">f</a>
+          <a href="https://www.instagram.com/portalgamerslatam?igsh=MWgxNDMzc3RzYzl5Yw%3D%3D&utm_source=qr" target="_blank" class="social-btn" title="Instagram">ig</a>
+          <a href="https://wa.me/573223427456" target="_blank" class="social-btn" title="WhatsApp">wa</a>
+          <a href="https://discord.gg/GnkfWQP8" target="_blank" class="social-btn social-btn-discord" title="Discord">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.054a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4>Juegos</h4>
+        <ul>
+          <li><a href="/#tienda" onclick="document.getElementById('tienda')?.scrollIntoView({behavior:'smooth'});return false">Dofus Retro</a></li>
+          <li><a href="/#tienda" onclick="document.getElementById('tienda')?.scrollIntoView({behavior:'smooth'});return false">Dofus 3.0</a></li>
+          <li><a href="/#tienda" onclick="document.getElementById('tienda')?.scrollIntoView({behavior:'smooth'});return false">Dofus Touch</a></li>
+          <li><a href="/#tienda" onclick="document.getElementById('tienda')?.scrollIntoView({behavior:'smooth'});return false">Wakfu</a></li>
+          <li><a href="/#tienda" onclick="document.getElementById('tienda')?.scrollIntoView({behavior:'smooth'});return false">Albion Online</a></li>
+          <li><a href="/#tienda" onclick="document.getElementById('tienda')?.scrollIntoView({behavior:'smooth'});return false">WoW Gold</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Info</h4>
+        <ul>
+          <li><a href="/#como-comprar">Como comprar?</a></li>
+          <li><a href="/#compra-venta">Vender monedas</a></li>
+          <li><a href="/#pagos">Metodos de pago</a></li>
+          <li><a href="/como-pagar-binance.html">C&oacute;mo pagar con Binance Pay</a></li>
+          <li><a href="https://wa.me/573223427456" target="_blank">Soporte</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 Portal Gamers LATAM &mdash; Todos los derechos reservados</p>
+    </div>
+  </div>
+</footer>
+
+<!-- WhatsApp Flotante -->
+<a href="https://wa.me/573223427456?text=Hola!+Necesito+ayuda+" target="_blank" class="wa-float">
+  &#128172; WhatsApp
+</a>
+
+<script>
+function toggleNav() {
+  document.getElementById('nav-links').classList.toggle('open');
+  document.getElementById('nav-toggle').classList.toggle('open');
+}
+function closeNav() {
+  document.getElementById('nav-links').classList.remove('open');
+  document.getElementById('nav-toggle').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const nav = document.querySelector('nav');
+  if (!nav.contains(e.target)) closeNav();
+});
+</script>
+</body>
+</html>
