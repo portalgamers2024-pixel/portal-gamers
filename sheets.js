@@ -4,15 +4,14 @@ const path = require('path');
 const SHEET_ID = process.env.SHEET_ID;
 const SCOPES   = ['https://www.googleapis.com/auth/spreadsheets'];
 
-// Pestaña "💰 Precios": datos desde fila 7 (después de tasas)
-// Tasas desde fila 5:
-//   COMPRA: N5=MEX, O5=CLP, P5=COP, Q5=Bs
-//   VENTA:  R5=MEX, S5=CLP, T5=COP, U5=Bs
-// Precios desde fila 7:
+// Pestaña "💰 Precios": datos desde fila 6 (después de headers)
+// Tasas desde fila 2:
+//   COMPRA: P2=MEX, Q2=CLP, R2=COP, S2=BS
+//   VENTA:  T2=MEX, U2=CLP, V2=COP, W2=BS
+// Precios desde fila 6:
 //   A=Juego, B=Servidor
-//   C=Venta USD (base), D=Venta COP, E=Compra USD (base), F=Compra COP
-//   G=Venta MXN, H=Venta CLP, I=Venta Bs
-//   J=Compra MXN, K=Compra CLP, L=Compra Bs
+//   C=Venta USD (base), D=Venta MEX, E=Venta CLP, F=Venta BS, G=Venta COP
+//   H=Compra USD (base), I=Compra MEX, J=Compra CLP, K=Compra BS, L=Compra COP
 
 const TAB_PRECIOS  = '💰 Precios';
 const TAB_VENTAS   = '📝 Ventas';
@@ -80,26 +79,26 @@ async function getExchangeRates() {
   try {
     const sheets = await api();
 
-    // Lee fila 5 completa: N5:U5
-    // N5=Compra MEX, O5=Compra CLP, P5=Compra COP, Q5=Compra Bs
-    // R5=Venta MEX,  S5=Venta CLP,  T5=Venta COP,  U5=Venta Bs
+    // Lee fila 2 completa: P2:W2
+    // P2=Compra MEX, Q2=Compra CLP, R2=Compra COP, S2=Compra Bs
+    // T2=Venta MEX,  U2=Venta CLP,  V2=Venta COP,  W2=Venta Bs
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `${TAB_PRECIOS}!N5:U5`,
+      range: `${TAB_PRECIOS}!P2:W2`,
     });
 
     const row = (res.data.values && res.data.values[0]) || [];
 
     // Parsea valores
-    const compra_mex = parseNum(row[0]); // N5
-    const compra_clp = parseNum(row[1]); // O5
-    const compra_cop = parseNum(row[2]); // P5
-    const compra_bs  = parseNum(row[3]); // Q5
+    const compra_mex = parseNum(row[0]); // P2
+    const compra_clp = parseNum(row[1]); // Q2
+    const compra_cop = parseNum(row[2]); // R2
+    const compra_bs  = parseNum(row[3]); // S2
 
-    const venta_mex = parseNum(row[4]); // R5
-    const venta_clp = parseNum(row[5]); // S5
-    const venta_cop = parseNum(row[6]); // T5
-    const venta_bs  = parseNum(row[7]); // U5
+    const venta_mex = parseNum(row[4]); // T2
+    const venta_clp = parseNum(row[5]); // U2
+    const venta_cop = parseNum(row[6]); // V2
+    const venta_bs  = parseNum(row[7]); // W2
 
     // Validación: si alguna tasa es 0, usa defaults
     const rates = {
@@ -164,31 +163,31 @@ async function getPricesFromSheet() {
   // Obtiene tasas de cambio
   const rates = await getExchangeRates();
 
-  // Lee precios desde fila 7 (después de headers y tasas)
-  // Rango: A7:L100
-  // A=Juego, B=Servidor, C=Venta USD, D=Venta COP, E=Compra USD, F=Compra COP
-  // G=Venta MXN, H=Venta CLP, I=Venta Bs, J=Compra MXN, K=Compra CLP, L=Compra Bs
+  // Lee precios desde fila 6 (después de headers)
+  // Rango: A6:L100
+  // A=Juego, B=Servidor, C=Venta USD, D=Venta MEX, E=Venta CLP, F=Venta BS, G=Venta COP
+  // H=Compra USD, I=Compra MEX, J=Compra CLP, K=Compra BS, L=Compra COP
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${TAB_PRECIOS}!A7:L100`,
+    range: `${TAB_PRECIOS}!A6:L100`,
   });
 
   const result = {};
   let currentGameId = null;
 
   for (const row of res.data.values || []) {
-    const gameRaw    = row[0];
-    const server     = row[1];
-    const ventaUSD   = parseNum(row[2]);     // C: Venta USD
-    const ventaCOP   = parseNum(row[3]);     // D: Venta COP (puede ignorarse, se recalcula)
-    const compraUSD  = parseNum(row[4]);     // E: Compra USD
-    const compraCOP  = parseNum(row[5]);     // F: Compra COP (puede ignorarse, se recalcula)
-    const ventaMXN   = parseNum(row[6]);     // G: Venta MXN (puede ignorarse, se recalcula)
-    const ventaCLP   = parseNum(row[7]);     // H: Venta CLP (puede ignorarse, se recalcula)
-    const ventaBS    = parseNum(row[8]);     // I: Venta Bs (puede ignorarse, se recalcula)
-    const compraMXN  = parseNum(row[9]);     // J: Compra MXN (puede ignorarse, se recalcula)
-    const compraCLP  = parseNum(row[10]);    // K: Compra CLP (puede ignorarse, se recalcula)
-    const compraBS   = parseNum(row[11]);    // L: Compra Bs (puede ignorarse, se recalcula)
+    const gameRaw    = row[0];                // A: Juego
+    const server     = row[1];                // B: Servidor
+    const ventaUSD   = parseNum(row[2]);      // C: Venta USD (base)
+    const ventaMEX   = parseNum(row[3]);      // D: Venta MEX (se recalcula)
+    const ventaCLP   = parseNum(row[4]);      // E: Venta CLP (se recalcula)
+    const ventaBS    = parseNum(row[5]);      // F: Venta BS (se recalcula)
+    const ventaCOP   = parseNum(row[6]);      // G: Venta COP (se recalcula)
+    const compraUSD  = parseNum(row[7]);      // H: Compra USD (base)
+    const compraMEX  = parseNum(row[8]);      // I: Compra MEX (se recalcula)
+    const compraCLP  = parseNum(row[9]);      // J: Compra CLP (se recalcula)
+    const compraBS   = parseNum(row[10]);     // K: Compra BS (se recalcula)
+    const compraCOP  = parseNum(row[11]);     // L: Compra COP (se recalcula)
 
     // Identifica juego actual
     if (gameRaw && gameRaw.trim()) {
@@ -206,17 +205,16 @@ async function getPricesFromSheet() {
     if (server.trim().startsWith('📈') || server.trim().startsWith('MARGEN')) continue;
     if (!ventaUSD && !compraUSD) continue; // Si ambos son 0, ignora
 
-    // RECALCULA TODAS LAS MONEDAS desde USD * tasa
-    // (por si el Sheet contiene valores antiguos o incorrectos)
-    const finalVentaCOP  = ventaUSD * rates.venta.cop;
-    const finalVentaMXN  = ventaUSD * rates.venta.mex;
-    const finalVentaCLP  = ventaUSD * rates.venta.clp;
-    const finalVentaBS   = ventaUSD * rates.venta.bs;
+    // Mantiene valores del sheet si están presentes, sino recalcula desde USD * tasa
+    const finalVentaMEX  = ventaMEX  || ventaUSD * rates.venta.mex;
+    const finalVentaCLP  = ventaCLP  || ventaUSD * rates.venta.clp;
+    const finalVentaBS   = ventaBS   || ventaUSD * rates.venta.bs;
+    const finalVentaCOP  = ventaCOP  || ventaUSD * rates.venta.cop;
 
-    const finalCompraCOP = compraUSD * rates.compra.cop;
-    const finalCompraMXN = compraUSD * rates.compra.mex;
-    const finalCompraCLP = compraUSD * rates.compra.clp;
-    const finalCompraBS  = compraUSD * rates.compra.bs;
+    const finalCompraMEX = compraMEX || compraUSD * rates.compra.mex;
+    const finalCompraCLP = compraCLP || compraUSD * rates.compra.clp;
+    const finalCompraBS  = compraBS  || compraUSD * rates.compra.bs;
+    const finalCompraCOP = compraCOP || compraUSD * rates.compra.cop;
 
     if (!result[currentGameId]) result[currentGameId] = {};
     result[currentGameId][server.trim()] = {
@@ -227,8 +225,8 @@ async function getPricesFromSheet() {
       // Derivados (se calculan automáticamente)
       venta_cop: finalVentaCOP,
       compra_cop: finalCompraCOP,
-      venta_mxn: finalVentaMXN,
-      compra_mxn: finalCompraMXN,
+      venta_mxn: finalVentaMEX,
+      compra_mxn: finalCompraMEX,
       venta_clp: finalVentaCLP,
       compra_clp: finalCompraCLP,
       venta_bs: finalVentaBS,
@@ -236,7 +234,7 @@ async function getPricesFromSheet() {
 
       // Backward compatibility (alias para código antiguo)
       cop: finalVentaCOP,
-      mxn: finalVentaMXN,
+      mxn: finalVentaMEX,
       clp: finalVentaCLP,
       ves: finalVentaBS
     };
