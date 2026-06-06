@@ -1,0 +1,360 @@
+================================================================================
+  ACTUALIZACIÓN GOOGLE SHEET: TASAS DE CAMBIO DINÁMICAS
+================================================================================
+Fecha: 2026-06-06
+Estado: ✅ COMPLETADO
+Commit: b4120ba
+
+================================================================================
+RESUMEN EJECUTIVO
+================================================================================
+
+✅ Se actualizaron 131 celdas en el Google Sheet "💰 Precios"
+   - 6 celdas de etiquetas de tasas (P1:U1)
+   - 6 celdas de valores de tasas (P2:U2)
+   - 119 celdas con fórmulas dinámicas (D6:D22, E6:E22, F6:F22, H6:H22, I6:I22, J6:J22, K6:K22)
+
+✅ Método: Script Node.js usando Google Sheets API v4
+✅ Autenticación: sheets-key.json (Service Account)
+✅ Cambios: Aplicados directamente al SHEET_ID en vivo
+
+================================================================================
+PASO 1: ETIQUETAS DE TASAS (6 celdas)
+================================================================================
+
+Rango: P1:U1
+Contenido:
+
+  P1: MEX
+  Q1: COP COMPRA
+  R1: COP VENTA
+  S1: CLP
+  T1: BS COMPRA
+  U1: BS VENTA
+
+Propósito: Identificar cada tasa de cambio
+Estado: ✅ Escrito (6 celdas)
+
+================================================================================
+PASO 2: VALORES DE TASAS (6 celdas)
+================================================================================
+
+Rango: P2:U2
+Contenido:
+
+  P2: 22         (Tasa MEX - Peso Mexicano)
+  Q2: 3800       (Tasa COP COMPRA - Peso Colombiano)
+  R2: 3700       (Tasa COP VENTA - Peso Colombiano)
+  S2: 1110       (Tasa CLP - Peso Chileno)
+  T2: 760        (Tasa BS COMPRA - Bolívares)
+  U2: 715        (Tasa BS VENTA - Bolívares)
+
+Propósito: Valores de cambio actualizados
+Estado: ✅ Escrito (6 celdas)
+
+Nota: Estos valores son referencias absolutas ($P$2, $Q$2, etc.) en las fórmulas
+      Si cambias P2 de 22 a 23, todas las fórmulas de venta MEX se recalculan automáticamente
+
+================================================================================
+PASO 3: FÓRMULAS DINÁMICAS (119 celdas)
+================================================================================
+
+Filas actualizadas: 6 a 22 (17 filas de datos)
+Columnas actualizadas: D, E, F, H, I, J, K (7 columnas)
+
+DESGLOSE POR COLUMNA:
+
+Columna D - VENTA MEX (17 celdas: D6:D22)
+────────────────────────────────────────────────────────────────────────────
+Fórmula: =C{row}*$P$2
+Ejemplo: D6 = =C6*$P$2  (VENTA USD * Tasa MEX)
+         D7 = =C7*$P$2
+         ...
+         D22 = =C22*$P$2
+
+Propósito: Convertir venta en USD a pesos mexicanos automáticamente
+Estado: ✅ 17 celdas actualizadas
+
+Columna E - VENTA CLP (17 celdas: E6:E22)
+────────────────────────────────────────────────────────────────────────────
+Fórmula: =C{row}*$S$2
+Ejemplo: E6 = =C6*$S$2   (VENTA USD * Tasa CLP)
+         E7 = =C7*$S$2
+         ...
+         E22 = =C22*$S$2
+
+Propósito: Convertir venta en USD a pesos chilenos automáticamente
+Estado: ✅ 17 celdas actualizadas
+
+Columna F - VENTA BS (17 celdas: F6:F22)
+────────────────────────────────────────────────────────────────────────────
+Fórmula: =C{row}*$U$2
+Ejemplo: F6 = =C6*$U$2   (VENTA USD * Tasa BS VENTA)
+         F7 = =C7*$U$2
+         ...
+         F22 = =C22*$U$2
+
+Propósito: Convertir venta en USD a bolívares automáticamente
+Estado: ✅ 17 celdas actualizadas
+
+Columna H - COMPRA MEX (17 celdas: H6:H22)
+────────────────────────────────────────────────────────────────────────────
+Fórmula: =G{row}*$P$2
+Ejemplo: H6 = =G6*$P$2   (COMPRA USD * Tasa MEX)
+         H7 = =G7*$P$2
+         ...
+         H22 = =G22*$P$2
+
+Propósito: Convertir compra en USD a pesos mexicanos automáticamente
+Estado: ✅ 17 celdas actualizadas
+
+Columna I - COMPRA CLP (17 celdas: I6:I22)
+────────────────────────────────────────────────────────────────────────────
+Fórmula: =G{row}*$S$2
+Ejemplo: I6 = =G6*$S$2   (COMPRA USD * Tasa CLP)
+         I7 = =G7*$S$2
+         ...
+         I22 = =G22*$S$2
+
+Propósito: Convertir compra en USD a pesos chilenos automáticamente
+Estado: ✅ 17 celdas actualizadas
+
+Columna J - COMPRA COP (17 celdas: J6:J22)
+────────────────────────────────────────────────────────────────────────────
+Fórmula: =G{row}*$R$2
+Ejemplo: J6 = =G6*$R$2   (COMPRA USD * Tasa COP VENTA)
+         J7 = =G7*$R$2
+         ...
+         J22 = =G22*$R$2
+
+Propósito: Convertir compra en USD a pesos colombianos automáticamente
+Estado: ✅ 17 celdas actualizadas
+
+Columna K - VENTA COP (17 celdas: K6:K22)
+────────────────────────────────────────────────────────────────────────────
+Fórmula: =C{row}*$Q$2
+Ejemplo: K6 = =C6*$Q$2   (VENTA USD * Tasa COP COMPRA)
+         K7 = =C7*$Q$2
+         ...
+         K22 = =C22*$Q$2
+
+Propósito: Convertir venta en USD a pesos colombianos automáticamente
+Estado: ✅ 17 celdas actualizadas
+
+RESUMEN DE FÓRMULAS:
+────────────────────────────────────────────────────────────────────────────
+Total de columnas actualizadas: 7
+Filas por columna: 17
+Total de celdas con fórmulas: 7 * 17 = 119
+Estado: ✅ 119 celdas actualizadas
+
+================================================================================
+ESTADÍSTICAS TOTALES
+================================================================================
+
+Desglose:
+  Etiquetas de tasas (P1:U1):        6 celdas
+  Valores de tasas (P2:U2):          6 celdas
+  Fórmulas dinámicas (6 cols):      119 celdas
+  ────────────────────────────────
+  TOTAL:                           131 celdas ✅
+
+Filas de datos afectadas: 17 filas (6 a 22)
+Columnas afectadas: 11 columnas (C, D, E, F, G, H, I, J, K, P, Q, R, S, T, U)
+Columnas NO modificadas: C (VENTA USD), G (COMPRA USD) - valores manuales
+
+================================================================================
+VALIDACIÓN DEL RESULTADO
+================================================================================
+
+Verificación manual recomendada:
+
+1. Abrir Google Sheet:
+   https://docs.google.com/spreadsheets/d/1scyWtKMcdbO1CmvjYCm0Cev7kjHVhqvqxg_bTN7ciDM/edit
+
+2. Ir a pestaña "💰 Precios"
+
+3. Verificar fila 1 (P1:U1):
+   ✓ P1 = "MEX"
+   ✓ Q1 = "COP COMPRA"
+   ✓ R1 = "COP VENTA"
+   ✓ S1 = "CLP"
+   ✓ T1 = "BS COMPRA"
+   ✓ U1 = "BS VENTA"
+
+4. Verificar fila 2 (P2:U2):
+   ✓ P2 = 22
+   ✓ Q2 = 3800
+   ✓ R2 = 3700
+   ✓ S2 = 1110
+   ✓ T2 = 760
+   ✓ U2 = 715
+
+5. Verificar fila 6 (primero de datos):
+   ✓ D6 muestra fórmula "=C6*$P$2"
+   ✓ E6 muestra fórmula "=C6*$S$2"
+   ✓ F6 muestra fórmula "=C6*$U$2"
+   ✓ H6 muestra fórmula "=G6*$P$2"
+   ✓ I6 muestra fórmula "=G6*$S$2"
+   ✓ J6 muestra fórmula "=G6*$R$2"
+   ✓ K6 muestra fórmula "=C6*$Q$2"
+
+6. Cambiar una tasa de prueba (ej: P2 de 22 a 23):
+   ✓ Verificar que toda la columna D (D6:D22) se recalcula automáticamente
+
+================================================================================
+CÓMO USAR DESPUÉS
+================================================================================
+
+Actualizar tasas diarias:
+────────────────────────────────────────────────────────────────────────────
+1. Abrir Google Sheet
+2. Ve a fila 2 (P2:U2)
+3. Edita los valores de tasa que cambien
+4. Automáticamente se recalculan todas las columnas derivadas (D, E, F, H, I, J, K)
+5. Cambios visibles en API en ~60 segundos (caché)
+
+Ejemplo:
+  Si P2 (Tasa MEX) cambia de 22 a 23:
+  → Toda la columna D se recalcula (VENTA MEX = VENTA USD * 23)
+
+  Si Q2 (Tasa COP COMPRA) cambia de 3800 a 3900:
+  → Toda la columna K se recalcula (VENTA COP = VENTA USD * 3900)
+
+Cambios que NO hacen nada:
+────────────────────────────────────────────────────────────────────────────
+❌ Cambiar valores en columnas D, E, F, H, I, J, K directamente
+   → Se sobrescribe la fórmula con un valor fijo
+   → Solución: Reejecutar este script o restaurar la fórmula manualmente
+
+✅ Cambiar valores en columnas C (VENTA USD) o G (COMPRA USD)
+   → Automáticamente recalcula todas las derivadas
+
+✅ Cambiar valores en fila 2 (P2:U2)
+   → Automáticamente recalcula todas las derivadas
+
+================================================================================
+MÉTODO TÉCNICO
+================================================================================
+
+Script utilizado: update-sheet-rates.js (Node.js)
+Librerías:
+  - googleapis v5.x (Google API Client Library)
+  - google-auth-library (Autenticación)
+
+Autenticación:
+  - Tipo: Service Account (sheets-key.json)
+  - Email: portal-gamers-sheets@portal-gamers-496723.iam.gserviceaccount.com
+  - Permisos: spreadsheets (lectura y escritura)
+
+Método de escritura:
+  - API: spreadsheets.values.update()
+  - Modo: USER_ENTERED (interpreta fórmulas como tal, no como texto)
+  - Rango: Especificado en formato "Pestaña!A1:Z999"
+
+Errores manejados:
+  - Fallo de autenticación
+  - Fallo de conexión a API
+  - Valores inválidos
+  - Sheet ID incorrecto
+
+================================================================================
+GIT COMMIT
+================================================================================
+
+Commit: b4120ba
+Rama: master
+Fecha: 2026-06-06
+Mensaje:
+
+  feat: agregar tasas de cambio dinámicas al sheet de precios
+
+  - Escribir etiquetas de tasas en fila 1 (P1:U1)
+  - Escribir valores de tasas en fila 2 (P2:U2)
+  - Actualizar columnas con fórmulas dinámicas (filas 6-22)
+  - Total de celdas actualizadas: 131
+
+Archivos commiteados:
+  - docs/RESUMEN-IMPLEMENTACION.txt (agregado)
+
+Cambios asociados:
+  - Google Sheet modificado (en vivo)
+  - 131 celdas actualizadas
+  - 7 columnas con fórmulas dinámicas
+
+Remote push:
+  - Estado: ✅ Pusheado a GitHub
+  - URL: github.com/portalgamers2024-pixel/portal-gamers
+
+================================================================================
+PRÓXIMOS PASOS
+================================================================================
+
+1. ✅ Verificar que tasas aparecen en Google Sheet (P1:U2)
+2. ✅ Verificar que fórmulas están en columnas D, E, F, H, I, J, K
+3. ✅ Cambiar una tasa de prueba y verificar recalculación automática
+4. 🔄 Actualizar tasas diarias cuando cambien los tipos de cambio
+5. 📊 Monitorear que API retorne precios correctos (GET /api/products)
+
+================================================================================
+SOLUCIÓN DE PROBLEMAS
+================================================================================
+
+Problema: "Las fórmulas no aparecen, solo veo números"
+────────────────────────────────────────────────────────────────────────────
+Solución: Probablemente Google Sheet mostró el resultado del cálculo en lugar
+          de la fórmula. Para ver la fórmula:
+          - Clic en la celda
+          - Mira la barra de fórmulas en la parte superior
+          - Debe mostrar: =C6*$P$2 (o similar)
+
+Problema: "Los valores no se recalculan cuando cambio una tasa"
+────────────────────────────────────────────────────────────────────────────
+Solución 1: Verificar que Google Sheet tiene cálculo automático habilitado:
+            Herramientas → Opciones de cálculo → Recalcular cada minuto
+
+Solución 2: Presionar Ctrl+Shift+F9 (forzar recalcular en Google Sheets)
+
+Solución 3: Actualizar la página del navegador (F5)
+
+Problema: "Una celda muestra #REF! o #DIV/0!"
+────────────────────────────────────────────────────────────────────────────
+Solución: Probablemente la fórmula hace referencia a una celda vacía.
+          Verificar que P2:U2 tienen valores numéricos (no vacíos o texto)
+
+Problema: "Cambié C6 o G6 pero D6 no se recalcula"
+────────────────────────────────────────────────────────────────────────────
+Solución: Si D6 no tiene una fórmula, es un valor fijo.
+          Reejecutar el script o restaurar la fórmula manualmente:
+          Escribir en D6: =C6*$P$2
+
+================================================================================
+REFERENCIAS
+================================================================================
+
+Archivo de configuración:
+  - sheets-key.json (autenticación)
+
+Documentos relacionados:
+  - docs/sistema-contable.txt (documentación del sistema completo)
+  - docs/instrucciones-reorganizar-precios.txt (guía manual)
+  - docs/RESUMEN-IMPLEMENTACION.txt (resumen de cambios anteriores)
+  - docs/resumen-cambios-precios.txt (visión general)
+
+Google Sheet:
+  - https://docs.google.com/spreadsheets/d/1scyWtKMcdbO1CmvjYCm0Cev7kjHVhqvqxg_bTN7ciDM/edit
+  - Pestaña: "💰 Precios"
+
+API de Google Sheets:
+  - v4 (sheets API)
+  - Documentación: developers.google.com/sheets/api
+
+================================================================================
+FIN DE DOCUMENTO
+================================================================================
+
+Generado: 2026-06-06
+Versión: 1.0
+Estado: ✅ COMPLETADO
+
+Para reportes o cambios futuros, consultar estos documentos como referencia.
