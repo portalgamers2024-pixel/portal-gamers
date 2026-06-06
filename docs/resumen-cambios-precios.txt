@@ -1,0 +1,376 @@
+================================================================================
+  RESUMEN EJECUTIVO: CAMBIOS PESTAÑA "💰 PRECIOS"
+================================================================================
+Fecha: 2026-06-06
+Estado: Listo para implementar
+
+================================================================================
+¿QUÉ CAMBIA?
+================================================================================
+
+ESTRUCTURA ACTUAL (Problema):
+  ├─ Tasas fijas en cada moneda
+  ├─ Difícil actualizar múltiples monedas
+  ├─ Riesgo de inconsistencias
+  └─ No hay relación clara: USD → otras monedas
+
+ESTRUCTURA NUEVA (Solución):
+  ├─ USD como base única
+  ├─ Tasas centralizadas en fila 5
+  ├─ Cambios automáticos en todas las monedas
+  ├─ Fácil de mantener y auditar
+  └─ Transparencia: USD * Tasa = Moneda Local
+
+================================================================================
+CÓMO VER EL CAMBIO
+================================================================================
+
+VERSIÓN ANTERIOR:
+┌─────────────────┬──────────┬───────────┬───────────┬────────┬───────┐
+│ A: Juego        │ B: Srv   │ C: V-USD  │ D: V-MXN  │ E: V-CLP │ ...  │
+├─────────────────┼──────────┼───────────┼───────────┼────────┼───────┤
+│ DOFUS TOUCH     │ BLAIR    │    1.66   │   30.70   │ 1,330  │ ...  │
+│ DOFUS TOUCH     │ TALOK    │    1.54   │   28.50   │ 1,232  │ ...  │
+└─────────────────┴──────────┴───────────┴───────────┴────────┴───────┘
+
+⚠️ Problema: ¿De dónde vino 30.70? ¿1.66 * 18.5? ¿O es otro cálculo?
+          No está documentado. Si cambias 1.66, hay que cambiar 30.70 manualmente.
+
+VERSIÓN NUEVA:
+┌────────────────────────────────────────────────────────────────────────┐
+│ FILA 5: TASAS (Centralizadas)                                          │
+├────────────────────────────────────────────────────────────────────────┤
+│                COMPRA                    │           VENTA             │
+│ MEX: 17.0 │ CLP: 800 │ COP: 3,800 │ Bs: 25.0 │ MEX: 18.5 │ CLP: 850  │ COP: 4,000 │ Bs: 28.0 │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┬──────────┬───────────┬───────────┬────────────┬────────┬────────┬─────────┬────────┐
+│ A: Juego        │ B: Srv   │ C: V-USD  │ D: V-COP  │ E: C-USD   │ F:C-COP│ G:V-MXN│ H:V-CLP │ I:V-BS │
+├─────────────────┼──────────┼───────────┼───────────┼────────────┼────────┼────────┼─────────┼────────┤
+│ DOFUS TOUCH     │ BLAIR    │    1.66   │ =C*4,000  │    1.50    │=E*3,800│ =C*18.5│ =C*850  │=C*28  │
+│                 │          │           │ (6,640)   │            │(5,700) │(30.71) │(1,411)  │(46.48)│
+│ DOFUS TOUCH     │ TALOK    │    1.54   │ =C*4,000  │    1.40    │=E*3,800│ =C*18.5│ =C*850  │=C*28  │
+│                 │          │           │ (6,160)   │            │(5,320) │(28.49) │(1,309)  │(43.12)│
+└─────────────────┴──────────┴───────────┴───────────┴────────────┴────────┴────────┴─────────┴────────┘
+
+✅ Solución: Tasas visibles en fila 5. Cambiar 4,000 → 4,200 actualiza toda la columna D automáticamente.
+            Cambiar 1.66 → 1.68 recalcula D, G, H, I automáticamente.
+
+================================================================================
+ESTRUCTURA DE DATOS FINAL
+================================================================================
+
+Fila 1-4: Encabezados y espacios
+───────────────────────────────────────────────────────────────────────────
+
+Fila 5: TASAS (Manual, editable)
+───────────────────────────────────────────────────────────────────────────
+N5: 17.0    (Tasa COMPRA MEX)
+O5: 800     (Tasa COMPRA CLP)
+P5: 3800    (Tasa COMPRA COP)
+Q5: 25.0    (Tasa COMPRA Bs)
+
+R5: 18.5    (Tasa VENTA MEX)
+S5: 850     (Tasa VENTA CLP)
+T5: 4000    (Tasa VENTA COP)
+U5: 28.0    (Tasa VENTA Bs)
+
+Fila 6: Headers
+───────────────────────────────────────────────────────────────────────────
+A: JUEGO
+B: SERVIDOR
+C: VENTA USD/M           (Manual, base)
+D: VENTA COP/M           (Fórmula: =C*$T$5)
+E: COMPRA USD/M          (Manual, base)
+F: COMPRA COP/M          (Fórmula: =E*$P$5)
+G: VENTA MXN/M           (Fórmula: =C*$R$5)
+H: VENTA CLP/M           (Fórmula: =C*$S$5)
+I: VENTA BS/M            (Fórmula: =C*$U$5)
+J: COMPRA MXN/M          (Fórmula: =E*$N$5)
+K: COMPRA CLP/M          (Fórmula: =E*$O$5)
+L: COMPRA BS/M           (Fórmula: =E*$Q$5)
+
+Filas 7+: Datos
+───────────────────────────────────────────────────────────────────────────
+A7: DOFUS TOUCH          B7: BLAIR           C7: 1.66
+D7: =C7*$T$5             E7: 1.50            F7: =E7*$P$5
+G7: =C7*$R$5             H7: =C7*$S$5       I7: =C7*$U$5
+J7: =E7*$N$5             K7: =E7*$O$5       L7: =E7*$Q$5
+
+Resultado fila 7 (con tasas de ejemplo):
+───────────────────────────────────────────────────────────────────────────
+DOFUS TOUCH | BLAIR | 1.66 | 6640 | 1.50 | 5700 | 30.71 | 1411 | 46.48 | 27.75 | 12000 | 42
+
+================================================================================
+PASO A PASO: CÓMO IMPLEMENTAR
+================================================================================
+
+PASO 1: RESPALDAR Google Sheet
+───────────────────────────────────────────────────────────────────────────
+1. Abre Google Sheet
+2. Menú: Archivo → Descargar → Microsoft Excel (.xlsx)
+3. Guarda como: precios-backup-20260606.xlsx
+
+PASO 2: INSERTAR FILAS PARA TASAS
+───────────────────────────────────────────────────────────────────────────
+1. Selecciona Fila 1
+2. Clic derecho → Insertar 4 filas encima
+3. Ahora tienes filas nuevas 1-4, y datos originales empiezan en fila 5 (antes fila 1)
+
+   ESPERA: Ahora tus datos están en filas 10+, no 6+
+   Necesitas moverlos de vuelta:
+
+4. Selecciona datos antiguos (ej: A5:O100)
+5. Corta (Ctrl+X)
+6. Va a A7 y pega (Ctrl+V)
+7. Elimina filas 5-6 vacías
+
+Resultado: Filas 5=Tasas, Fila 6=Headers, Filas 7+=Datos
+
+PASO 3: CREAR TABLA DE TASAS (Fila 5)
+───────────────────────────────────────────────────────────────────────────
+Usa columnas N-U para las tasas:
+
+N5: 17.0    (COMPRA MEX)      R5: 18.5    (VENTA MEX)
+O5: 800     (COMPRA CLP)      S5: 850     (VENTA CLP)
+P5: 3800    (COMPRA COP)      T5: 4000    (VENTA COP)
+Q5: 25.0    (COMPRA Bs)       U5: 28.0    (VENTA Bs)
+
+Formato recomendado:
+  - Fondo: Amarillo (#fbbf24)
+  - Texto: Negrita
+  - Números: 0-2 decimales según moneda
+
+PASO 4: CREAR COLUMNA "VENTA COP"
+───────────────────────────────────────────────────────────────────────────
+1. Columna D debe ser "VENTA COP"
+2. D7: =C7*$T$5
+3. Copia fórmula a D8:D100
+4. Valida que resultados sean correctos (ej: 1.66 * 4000 = 6640)
+
+PASO 5: CREAR COLUMNA "COMPRA COP"
+───────────────────────────────────────────────────────────────────────────
+1. Insertar columna nueva después de E (antes de antigua F)
+2. Encabezado: "COMPRA COP"
+3. F7: =E7*$P$5
+4. Copia a F8:F100
+
+PASO 6: REORGANIZAR RESTO DE COLUMNAS
+───────────────────────────────────────────────────────────────────────────
+Después de insertar F, ahora tienes:
+  C: VENTA USD
+  D: VENTA COP
+  E: COMPRA USD
+  F: COMPRA COP
+  G: antiguo "Venta MXN"
+  H: antiguo "Venta CLP"
+  I: antiguo "Venta Bs"
+  ...
+
+Verifica que G, H, I tengan fórmulas:
+  G7: =C7*$R$5
+  H7: =C7*$S$5
+  I7: =C7*$U$5
+
+Y agrega columnas J, K, L para COMPRA (si no existen):
+  J7: =E7*$N$5     (COMPRA MXN)
+  K7: =E7*$O$5     (COMPRA CLP)
+  L7: =E7*$Q$5     (COMPRA BS)
+
+PASO 7: COPIAR FÓRMULAS A TODAS LAS FILAS
+───────────────────────────────────────────────────────────────────────────
+Para cada columna (D, E, F, G, H, I, J, K, L):
+1. Selecciona celda con fórmula (ej: D7)
+2. Copia (Ctrl+C)
+3. Selecciona rango completo (ej: D8:D100)
+4. Pega (Ctrl+V)
+
+PASO 8: VERIFICAR CÁLCULOS
+───────────────────────────────────────────────────────────────────────────
+Ejemplo (tasas por defecto):
+  C7: 1.66 (VENTA USD)
+  D7 debe ser: 1.66 * 4000 = 6640 ✅
+
+  E7: 1.50 (COMPRA USD)
+  F7 debe ser: 1.50 * 3800 = 5700 ✅
+
+Si no coincide, revisar tasas en N5:U5
+
+PASO 9: ACTUALIZAR sheets.js
+───────────────────────────────────────────────────────────────────────────
+1. Abre C:\Users\leand\portal-gamers\sheets.js
+2. Reemplaza contenido con código de sheets-js-actualizado.txt
+3. Guarda
+
+PASO 10: REINICIAR SERVIDOR
+───────────────────────────────────────────────────────────────────────────
+1. Detén servidor: Ctrl+C
+2. Inicia: npm start
+3. Verifica en logs: no hay errores de "undefined range"
+
+PASO 11: PROBAR API
+───────────────────────────────────────────────────────────────────────────
+1. Abre navegador
+2. Ve a: http://localhost:3000/api/products
+3. Verifica que retorna precios con estructura:
+   {
+     "dofus-touch": {
+       "BLAIR": {
+         "venta": 1.66,
+         "compra": 1.50,
+         "venta_cop": 6640,
+         "compra_cop": 5700,
+         ...
+       }
+     }
+   }
+
+✅ Si ves los datos, implementación completada
+
+================================================================================
+DESPUÉS: CÓMO MANTENER
+================================================================================
+
+Actualizar tasas diarias:
+───────────────────────────────────────────────────────────────────────────
+1. Abre Google Sheet
+2. Ve a fila 5
+3. Edita N5:U5 con tasas del día
+4. Automáticamente se actualizan todas las columnas derivadas
+5. Cambios visibles en web en ~60 segundos (caché)
+
+Agregar nuevo servidor:
+───────────────────────────────────────────────────────────────────────────
+1. Va a fila nueva (ej: fila 25)
+2. Escribe: JUEGO | SERVIDOR | 1.66 | (deja D vacío, copiará fórmula después)
+3. En D25: =C25*$T$5
+4. Copia D25 a E25:L25 (pero E es COMPRA USD, así que reescribe =E25*... para J, K, L)
+
+Cambiar tasa USD→COP:
+───────────────────────────────────────────────────────────────────────────
+Antes: Necesitabas editar 50 celdas manualmente (D7:D56)
+Ahora: Solo edita T5 de 4000 → 4200
+       Automáticamente D7:D56 se recalculan
+
+================================================================================
+FÓRMULAS EXACTAS
+================================================================================
+
+Copia estas fórmulas exactas a las celdas indicadas:
+
+D7 (VENTA COP):      =C7*$T$5
+E7 (COMPRA USD):     (Manual, número)
+F7 (COMPRA COP):     =E7*$P$5
+G7 (VENTA MXN):      =C7*$R$5
+H7 (VENTA CLP):      =C7*$S$5
+I7 (VENTA BS):       =C7*$U$5
+J7 (COMPRA MXN):     =E7*$N$5
+K7 (COMPRA CLP):     =E7*$O$5
+L7 (COMPRA BS):      =E7*$Q$5
+
+Referencias fijas:
+  $N$5 = Tasa COMPRA MEX
+  $O$5 = Tasa COMPRA CLP
+  $P$5 = Tasa COMPRA COP
+  $Q$5 = Tasa COMPRA BS
+  $R$5 = Tasa VENTA MEX
+  $S$5 = Tasa VENTA CLP
+  $T$5 = Tasa VENTA COP
+  $U$5 = Tasa VENTA BS
+
+================================================================================
+VALIDACIÓN FINAL
+================================================================================
+
+Checklist:
+
+□ Respaldé el Google Sheet original
+□ Inserté filas 1-4 para tasas
+□ Creé tabla de tasas en fila 5 (N5:U5)
+□ Moví datos a fila 7+
+□ Creo columna D (VENTA COP) con fórmula
+□ Creo columna F (COMPRA COP) con fórmula
+□ Actualicé columnas G-L con fórmulas correctas
+□ Copié fórmulas a todas las filas (7-100)
+□ Verifiqué cálculos manuales (1.66 * 4000 = 6640)
+□ Reemplacé sheets.js con versión actualizada
+□ Reinicié servidor (npm start)
+□ Probé /api/products en navegador
+□ Vi precios con estructura venta_cop, compra_cop, etc.
+□ Cambié una tasa de prueba (ej: T5) y verifiqué que se actualizó
+
+✅ Si todos están marcados, implementación exitosa
+
+================================================================================
+SOLUCIÓN DE PROBLEMAS
+================================================================================
+
+Problema: "Error al leer rango A5:L100"
+Solución: Verificar que filas 7+ tengan datos (no columnas vacías)
+          Si columnas están vacías, Google Sheets no devolverá valores
+
+Problema: "Los precios no cambian cuando cambio tasas"
+Solución: Verificar que Google Sheet tiene cache deshabilitado:
+          Herramientas → Opciones de cálculo → Recalcular cada minuto
+
+Problema: "La fórmula muestra error #DIV/0!"
+Solución: Tasas en N5:U5 están vacías o son texto (no números)
+          Escribir número: 17.0 (no "17.0")
+
+Problema: "sheets.js dice 'cannot read property X of undefined'"
+Solución: Nueva estructura espera columnas D, E, F (COP). Si no existen,
+          actualizar sheets.js a versión anterior o crear las columnas
+
+================================================================================
+ARCHIVOS DE REFERENCIA
+================================================================================
+
+Documentos disponibles:
+  1. instrucciones-reorganizar-precios.txt — Paso a paso detallado
+  2. sheets-js-actualizado.txt — Código completo Node.js actualizado
+  3. resumen-cambios-precios.txt — ESTE ARCHIVO
+
+Ubicación:
+  C:\Users\leand\portal-gamers\docs\
+
+Para revisar:
+  1. Lee instrucciones-reorganizar-precios.txt primero (entender el "qué")
+  2. Lee este resumen-cambios-precios.txt para el "por qué" y "cómo"
+  3. Usa sheets-js-actualizado.txt para copiar el código
+
+================================================================================
+PREGUNTAS FRECUENTES
+================================================================================
+
+P: ¿Puedo cambiar las tasas en tiempo real?
+R: Sí, edita N5:U5 cuando quieras. Los precios se actualizan en segundos.
+
+P: ¿Qué pasa si una tasa es 0?
+R: sheets.js tiene valores por defecto. Si P5 (COMPRA COP) es 0, usa 3800.
+
+P: ¿Cómo agrego una nueva moneda (ej: EUR)?
+R: Inserta columna nueva, agrega tasa en fila 5, agrega fórmula. Muy fácil.
+
+P: ¿Los históricos de ventas se actualizan?
+R: No, solo los precios futuros. Los históricos usan tasas del día de venta.
+
+P: ¿Hay limit de filas?
+R: No, Google Sheets soporta hasta 10 millones. Nuestro rango es 7-100, 93 filas.
+
+P: ¿Si cambio USD de 1.66 a 1.68, se actualiza COP?
+R: Sí si tienes fórmula =E*$T$5. Si es número fijo, no.
+
+================================================================================
+FIN DE RESUMEN
+================================================================================
+
+Próximos pasos:
+1. Lee instrucciones-reorganizar-precios.txt
+2. Implementa cambios en Google Sheet (pasos 1-8)
+3. Reemplaza sheets.js (paso 9)
+4. Reinicia servidor (paso 10)
+5. Prueba en navegador (paso 11)
+
+Tiempo estimado: 30-45 minutos
+
+================================================================================

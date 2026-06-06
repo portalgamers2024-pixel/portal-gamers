@@ -1,0 +1,1454 @@
+================================================================================
+  PORTAL GAMERS LATAM — DOCUMENTACIÓN SISTEMA CONTABLE Y GOOGLE SHEETS
+================================================================================
+Generado: 2026-06-06
+Proyecto: C:\Users\leand\portal-gamers
+Versión: 1.0 (Análisis Completo)
+
+================================================================================
+1. DESCRIPCIÓN GENERAL
+================================================================================
+
+Portal Gamers LATAM utiliza Google Sheets como base de datos central para:
+- Gestión de precios dinámicos de todos los juegos
+- Registro de compras a proveedores
+- Registro de ventas a clientes
+- Seguimiento de inventario por servidor
+- Intercambios entre servidores
+- Reseñas de clientes
+
+El sistema está integrado con:
+- Node.js (server.js) — API REST que consulta Sheets
+- Google Apps Script — Scripts automáticos en el Sheet
+- WhatsApp Bot — Registro de pedidos
+- Sitio Web — Catálogo dinámico
+
+================================================================================
+2. ARCHIVOS DEL PROYECTO
+================================================================================
+
+Proyecto: C:\Users\leand\portal-gamers
+├── sheets.js              ← NÚCLEO: Integraciones Google Sheets (Node.js)
+├── sheets-key.json        ← CREDENCIALES: Service Account Google (JSON)
+├── .env                   ← VARIABLES DE ENTORNO (contiene SHEET_ID)
+├── apps-script/
+│   └── registro-rapido.gs ← SCRIPTS: Google Apps Script para el Sheet
+├── server.js              ← INTEGRACIÓN: Endpoints API que llaman sheets.js
+├── whatsapp/
+│   ├── bot.js            ← BOT: Lógica de conversación WhatsApp
+│   ├── sender.js         ← SENDER: Resumen diario
+│   └── SETUP.md          ← Documentación WhatsApp
+└── docs/
+    └── sistema-contable.txt  ← ESTE ARCHIVO
+
+================================================================================
+3. CONFIGURACIÓN Y CREDENCIALES
+================================================================================
+
+3.1 PROYECTO GOOGLE CLOUD
+  Nombre: portal-gamers-496723
+  Service Account Email: portal-gamers-sheets@portal-gamers-496723.iam.gserviceaccount.com
+  ID de Proyecto: portal-gamers-496723
+  ID de Cliente: 106831505499403761742
+
+3.2 ARCHIVO: sheets-key.json
+  Ubicación: C:\Users\leand\portal-gamers\sheets-key.json
+  Contenido:
+    - type: "service_account"
+    - project_id: "portal-gamers-496723"
+    - private_key_id: "3cb6981e3bebda62a43b50ba2789b540b1d64003"
+    - client_email: "portal-gamers-sheets@portal-gamers-496723.iam.gserviceaccount.com"
+    - client_id: "106831505499403761742"
+    - auth_uri: "https://accounts.google.com/o/oauth2/auth"
+    - token_uri: "https://oauth2.googleapis.com/token"
+    - auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+
+3.3 VARIABLES DE ENTORNO (.env)
+  Línea 17: SHEET_ID=1scyWtKMcdbO1CmvjYCm0Cev7kjHVhqvqxg_bTN7ciDM
+
+  Autenticación:
+    - En Railway (producción): Credenciales JSON en variable GOOGLE_CREDENTIALS
+    - En local: Lee desde sheets-key.json como fallback
+    - Scope: https://www.googleapis.com/auth/spreadsheets
+
+3.4 URL DEL GOOGLE SHEET
+  https://docs.google.com/spreadsheets/d/1scyWtKMcdbO1CmvjYCm0Cev7kjHVhqvqxg_bTN7ciDM/
+
+================================================================================
+4. ESTRUCTURA DEL GOOGLE SHEET - HOJAS DISPONIBLES
+================================================================================
+
+El Google Sheet contiene 9 pestañas principales:
+
+────────────────────────────────────────────────────────────────────────────
+4.1 PESTAÑA: "💰 Precios"
+────────────────────────────────────────────────────────────────────────────
+Función: Catálogo maestro de precios de todos los juegos
+Rango de lectura: A6:O100
+Rango de actualización: Dinámico (filas 6-100)
+
+Estructura de columnas:
+  A = Juego (DOFUS TOUCH, DOFUS 3.0, DOFUS RETRO, WAKFU, ALBION, WOW RETAIL)
+  B = Servidor (BLAIR, TALOK, ALLISTERIA, etc.)
+  C = Venta USD (precio por millón en USD)
+  D = Venta MXN (precio en pesos mexicanos)
+  E = Venta CLP (precio en pesos chilenos)
+  F = Compra USD (precio que se paga al proveedor)
+  G = (Vacío)
+  H = (Vacío)
+  I = Venta COP (precio en pesos colombianos)
+  J-N = (Varían según necesidad)
+  O = Venta BS/VES (precio en bolívares/nuevos soles)
+
+Mapeo de juegos a IDs internos:
+  "DOFUS TOUCH"  → dofus-touch
+  "DOFUS 3.0"    → dofus-3
+  "DOFUS RETRO"  → dofus-retro
+  "WAKFU"        → wakfu
+  "ALBION"       → albion
+  "WOW RETAIL"   → wow-retail
+
+Formato de números: Europeo (1.881,60 = 1881.60)
+
+Filas a ignorar:
+  - Filas que comienzan con "📈" en columna B (títulos de sección)
+  - Filas con "MARGEN" en columna B (cálculos internos)
+
+Ejemplo de contenido:
+  Fila 6:  DOFUS TOUCH | BLAIR    | 1.66 | ... | 6640 | ... | 6640
+  Fila 7:  DOFUS TOUCH | TALOK    | 1.54 | ... | 6160 | ... | 6160
+  Fila 8:  DOFUS TOUCH | EPSILON  | 1.80 | ... | 7200 | ... | 7200
+  Fila 9:  DOFUS 3.0   | DRACONIROS | 0.90 | ... | 3600 | ... | 3600
+
+────────────────────────────────────────────────────────────────────────────
+4.2 PESTAÑA: "📝 Ventas"
+────────────────────────────────────────────────────────────────────────────
+Función: Registro de todas las transacciones de venta a clientes
+Rango de lectura: A4:L2000
+Rango de escritura: Append a partir de fila 4
+
+Estructura de columnas:
+  A = FECHA (timestamp formato: "dd/MM/yyyy HH:mm:ss", zona Colombia)
+  B = ASESOR (nombre de quien registró la venta, default: "Sistema")
+  C = CANAL (fuente de venta: Web, WhatsApp, Manual, etc., default: "Web")
+  D = JUEGO (nombre del juego)
+  E = SERVIDOR (nombre del servidor)
+  F = CANTIDAD (millones M a vender)
+  G = MONEDA (tipo de moneda vendida, default: "Kamas")
+  H = PRECIO/M (precio por millón en USD, formato: "$X.XXX")
+  I = TOTAL VENTA (monto total en USD, formato: "$X.XX")
+  J = TOTAL USD (duplicado de I para cálculos)
+  K = COPIAS (conversión a moneda local)
+  L = METODO PAGO (Nequi, Transferencia, Binance, etc.)
+
+Fuentes de registro:
+  1. logSale() — Ventas manuales desde panel admin (POST /api/ventas/register)
+  2. logOrder() — Pedidos desde checkout web (POST /api/checkout/confirm)
+  3. Bot WhatsApp — Pedidos confirmados por cliente
+  4. Google Apps Script — Botón "Registrar Venta" en "🚀 Registro Rápido"
+
+Ejemplo de contenido:
+  06/06/2026, 10:30 | Sistema | Web | DOFUS TOUCH | BLAIR | 100 | Kamas | $1.66 | $166.00 | $166.00 | 664000 | Binance
+
+────────────────────────────────────────────────────────────────────────────
+4.3 PESTAÑA: "📋 Compras"
+────────────────────────────────────────────────────────────────────────────
+Función: Registro de compras de monedas a proveedores
+Rango de lectura: A4:J2000
+Rango de escritura: Append a partir de fila 4
+
+Estructura de columnas:
+  A = FECHA (timestamp, zona Colombia)
+  B = ASESOR (nombre del comprador)
+  C = SERVIDOR (a qué servidor se compra)
+  D = CANTIDAD_M (millones comprados)
+  E = MONEDA_COMPRA (moneda local del proveedor)
+  F = PRECIO_COMPRA_USD (precio pagado por millón en USD)
+  G = TOTAL_USD_PAGADO (monto total pagado en USD)
+  H = VALOR_MONEDA_LOCAL (conversión a moneda local)
+  I = PROVEEDOR (nombre del proveedor)
+  J = CANAL (método de contacto)
+
+Triggers automáticos:
+  - Actualiza "📦 Stock" (suma cantidad a stock existente)
+  - Actualiza "Stock Y Cuentas Base" (ajusta inventario)
+  - Notifica servidor: POST /api/compras/register { total_usd, servidor }
+
+Ejemplo de contenido:
+  06/06/2026, 14:15 | Juan | BLAIR | 500 | COP | 0.50 | $250.00 | $1,000,000 | ProvedorX | WhatsApp
+
+────────────────────────────────────────────────────────────────────────────
+4.4 PESTAÑA: "🔄 Intercambio"
+────────────────────────────────────────────────────────────────────────────
+Función: Registro de intercambios de monedas entre servidores diferentes
+Rango de lectura: A:M
+Rango de escritura: Append
+
+Estructura de columnas:
+  A = Juego Origen (juego del que compramos)
+  B = Servidor Origen (servidor del que compramos)
+  C = Cantidad Origen (M que compramos)
+  D = Precio Compra (precio/M que pagamos por origen)
+  E = Valor Total (total USD pagado)
+  F = Juego Destino (juego al que vendemos)
+  G = Servidor Destino (servidor al que vendemos)
+  H = Precio Venta (precio/M que cobramos por destino)
+  I = M a Entregar (M que entregamos al cliente)
+  J = Ganancia USD (diferencia de precio)
+  K = FECHA (timestamp, zona Colombia)
+  L = ASESOR (quien registró)
+  M = CANAL (método)
+
+Ejemplo de contenido:
+  DOFUS TOUCH | BLAIR | 100 | $1.50 | $150 | DOFUS TOUCH | TALOK | $1.80 | 83 | $48.40 | 06/06/2026 | Admin | WhatsApp
+
+────────────────────────────────────────────────────────────────────────────
+4.5 PESTAÑA: "📦 Stock" (Auto-generada)
+────────────────────────────────────────────────────────────────────────────
+Función: Seguimiento de inventario comprado de cada servidor
+Creación: Automática por actualizarStock() cuando se registra primera compra
+Rango: A1:D100
+
+Estructura de columnas:
+  A = SERVIDOR (nombre único del servidor)
+  B = STOCK_M (millones en stock actual)
+  C = ULTIMA_COMPRA (fecha timestamp de última compra)
+  D = TOTAL_INVERTIDO_USD (suma acumulada de inversión)
+
+Actualización automática:
+  - Tras registrar compra: B += cantidad, C = fecha, D += total_usd
+  - Tras registrar venta: B -= cantidad (manual, no automático en esta pestaña)
+
+Ejemplo de contenido:
+  BLAIR | 2500 | 06/06/2026 14:15:30 | $15,000.00
+  TALOK | 1800 | 05/06/2026 10:45:00 | $9,000.00
+
+────────────────────────────────────────────────────────────────────────────
+4.6 PESTAÑA: "Stock Y Cuentas Base" (Auto-generada)
+────────────────────────────────────────────────────────────────────────────
+Función: Base maestra de cuentas de juego con stock máximo y alertas
+Creación: Automática por inicializarStock() basado en "💰 Precios"
+Rango: A1:I100+
+
+Estructura de columnas:
+  A = JUEGO (nombre del juego)
+  B = SERVIDOR (nombre del servidor)
+  C = CUENTA/APODO (nick en el juego, editado manualmente)
+  D = STOCK_M (millones actuales, ajustable)
+  E = STOCK_MAX (millones máximo objetivo)
+  F = VALOR_USD (precio de venta USD/M desde "💰 Precios")
+  G = VALOR_COP (conversión a COP, fórmula: =F*4000)
+  H = ESTADO (fórmula: =IF(D>0,1,0), muestra "Disponible" o "Sin stock")
+  I = ALERTA (fórmula: =IF(AND(E>0,D<E*0.2),1,0), muestra "REABASTECER" si stock<20%)
+
+Inicialización:
+  1. Menu: 🎮 Portal Gamers > (no visible, solo Apps Script)
+  2. Función: inicializarStock()
+  3. Lee todas las filas de "💰 Precios" (A6:O30)
+  4. Genera fila por servidor con fórmulas automáticas
+
+Ajuste de stock:
+  - Venta registrada: D -= cantidad (función _ajustarStockBase)
+  - Compra registrada: D += cantidad
+  - Saldo negativo: Aviso al usuario
+
+Ejemplo de contenido:
+  DOFUS TOUCH | BLAIR    | PlayerName1 | 250 | 500 | 1.66 | 6640  | Disponible | (vacío)
+  DOFUS TOUCH | TALOK    | PlayerName2 | 50  | 500 | 1.54 | 6160  | Sin stock  | REABASTECER
+  DOFUS RETRO | ALLISTERIA | PlayerName3 | 0 | 300 | 0.84 | 3360  | Sin stock  | REABASTECER
+
+────────────────────────────────────────────────────────────────────────────
+4.7 PESTAÑA: "🚀 Registro Rápido" (Dashboard visual)
+────────────────────────────────────────────────────────────────────────────
+Función: Interfaz de entrada de datos con 3 paneles paralelos (Venta, Compra, Intercambio)
+Rango: A1:J35
+Propósito: Formulario visual optimizado para entrada rápida de transacciones
+
+PANEL VENTA (Columnas A-C, filas 4-17):
+  Fila 1:   Encabezado "VENTA"
+  Fila 3:   Etiqueta de sección (verde)
+  Fila 4:   Asesor (C4)
+  Fila 5:   Servidor (C5, validación contra "💰 Precios")
+  Fila 6:   Cantidad en M (C6)
+  Fila 7:   Método pago (C7, dropdown: Nequi/Binance/Transferencia)
+  Fila 8:   Canal (C8, dropdown: WhatsApp/Web/Manual)
+  Fila 9:   Precio/M USD (C9, auto-calculado desde "💰 Precios")
+  Fila 10:  Total USD (C10, fórmula: =C6*C9)
+  Fila 11:  Total COP (C11, fórmula: =C10*4000)
+  Fila 12:  Comisión MP % (C12, para descontar de total)
+  Fila 13:  Neto USD (C13, fórmula: =C10-(C10*C12))
+  Fila 17:  BOTÓN "▶ REGISTRAR VENTA" → llama registrarVenta()
+
+PANEL COMPRA (Columnas E-G, filas 4-16):
+  Fila 1:   Encabezado "COMPRA"
+  Fila 3:   Etiqueta de sección (rojo)
+  Fila 4:   Asesor (F4)
+  Fila 5:   Servidor (F5, validación)
+  Fila 6:   Cantidad M (F6)
+  Fila 7:   Moneda compra (F7, dropdown: COP/VES/USD)
+  Fila 8:   Proveedor (F8, texto libre)
+  Fila 9:   Precio compra/M USD (F9, auto-calculado desde "💰 Precios" col F)
+  Fila 10:  Total USD pagado (F10, fórmula: =F6*F9)
+  Fila 11:  Valor moneda local (F11, conversión: =F10*tipo_cambio)
+  Fila 17:  BOTÓN "▶ REGISTRAR COMPRA" → llama registrarCompra()
+
+PANEL INTERCAMBIO (Columnas H-J, filas 4-17):
+  Fila 1:   Encabezado "INTERCAMBIO"
+  Fila 3:   Etiqueta de sección (morado)
+  Fila 4:   Asesor (I4)
+  Fila 5:   Servidor ORIGEN (I5, de qué servidor compramos)
+  Fila 6:   Cantidad ORIGEN (I6, M que compramos)
+  Fila 7:   Servidor DESTINO (I7, a qué servidor vendemos)
+  Fila 8:   Canal (I8)
+  Fila 9:   Precio compra ORIGEN/M (I9, lo que pagamos)
+  Fila 10:  Valor USD recibido (I10, total de origen en USD)
+  Fila 11:  Precio venta DESTINO/M (I11, lo que cobramos)
+  Fila 12:  M a entregar (I12, cantidad en servidor destino)
+  Fila 13:  Costo nuestro (I13, cálculo interno)
+  Fila 14:  Ganancia USD (I14, fórmula: =(I12*I11)-(I6*I9))
+  Fila 17:  BOTÓN "▶ REGISTRAR INTERCAMBIO" → llama registrarIntercambio()
+
+Limpieza automática:
+  - Tras "Registrar Venta": C5, C6 se limpian (limpiarVenta())
+  - Tras "Registrar Compra": F5, F6, F8, F11 se limpian (limpiarCompra())
+  - Tras "Registrar Intercambio": I5:I8 se limpian
+
+Tema visual:
+  Fondo: #0f0f1a (azul oscuro)
+  Texto principal: #a0a0c0 (gris-morado)
+  Venta: Verde (#065f46 fondo, #10b981 texto)
+  Compra: Rojo (#7f1d1d fondo, #ef4444 texto)
+  Intercambio: Morado (#4c1d95 fondo, #8b5cf6 texto)
+  Valores: #6ee7b7 (cyan)
+
+────────────────────────────────────────────────────────────────────────────
+4.8 PESTAÑA: "WOW_GOLD" (Exclusiva para World of Warcraft)
+────────────────────────────────────────────────────────────────────────────
+Función: Precios específicos para WoW Gold (estructura diferente)
+Rango de lectura: A2:L10
+Rango de escritura: Directo en celdas (no append)
+
+Estructura de columnas:
+  A = Servidor (nombre del reino WoW)
+  B = Compra (precio/M que pagamos al proveedor)
+  C = (Vacío)
+  D = (Vacío)
+  E = Venta (precio/M que cobramos al cliente)
+  F = COP (conversión a pesos colombianos)
+  G = VES (conversión a bolívares)
+  H = CLP (conversión a pesos chilenos)
+  I = MXN (conversión a pesos mexicanos)
+  J = (Vacío)
+  K = (Vacío)
+  L = Activo (SI/NO, si es NO se ignora del cálculo)
+
+Ejemplo de contenido:
+  US Servers | 0.45 | | | 0.52 | 2080 | 1040 | 2600 | 8320 | | | SI
+  EU Servers | 0.48 | | | 0.55 | 2200 | 1100 | 2750 | 8800 | | | SI
+
+────────────────────────────────────────────────────────────────────────────
+4.9 PESTAÑA: "RESEÑAS" (Reviews de clientes)
+────────────────────────────────────────────────────────────────────────────
+Función: Almacén de testimonios de clientes mostrados en el sitio web
+Rango de lectura: A2:E100
+Rango de escritura: Append (edición manual)
+
+Estructura de columnas:
+  A = Nombre (nombre del cliente)
+  B = Reseña (texto del testimonio)
+  C = Juego (juego específico, default: "Portal Gamers")
+  D = Fecha (cuándo escribió la reseña)
+  E = Estrellas (1-5, default: 5)
+
+Caché: 60 segundos (getResenas())
+
+Ejemplo de contenido:
+  Carlos M. | Excelente servicio, recibí mis kamas en menos de 3 minutos. 100% recomendado. | Dofus Retro | Mayo 2025 | 5
+  María G.  | Muy confiables, llevan meses atiéndome. Los mejores precios. | Dofus Touch | Abril 2025 | 5
+
+================================================================================
+5. FUNCIONES DISPONIBLES EN sheets.js
+================================================================================
+
+Archivo: C:\Users\leand\portal-gamers\sheets.js (279 líneas)
+
+────────────────────────────────────────────────────────────────────────────
+5.1 getAuth()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Inicializa autenticación Google con la service account
+Sintaxis: let _auth = getAuth()
+Retorna: GoogleAuth object (cached)
+
+Lógica:
+  1. Si ya existe _auth cacheado, retorna ese
+  2. Si existe GOOGLE_CREDENTIALS (env), parsea y usa eso
+  3. Si no, lee sheets-key.json del filesystem
+  4. Configura scopes: ['https://www.googleapis.com/auth/spreadsheets']
+
+Usado internamente por: api()
+
+────────────────────────────────────────────────────────────────────────────
+5.2 api()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Retorna cliente de Google Sheets API v4 autenticado
+Sintaxis: async function api()
+Retorna: Promise<google.sheets API client>
+
+Llamadas internas:
+  const sheets = await api();
+  const res = await sheets.spreadsheets.values.get({...});
+  await sheets.spreadsheets.values.append({...});
+
+Usado por: getPricesFromSheet(), logSale(), logOrder(), getResenas(), getDailySalesStats()
+
+────────────────────────────────────────────────────────────────────────────
+5.3 parseNum(str)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Convierte números en formato europeo a float JavaScript
+Sintaxis: function parseNum(str)
+Parámetro: str (string con formato "X.XXX,XX")
+Retorna: number (parseado)
+
+Lógica:
+  1. Si no existe str o no es string, retorna 0
+  2. Elimina todos los puntos: "1.881,60" → "1881,60"
+  3. Reemplaza última coma por punto: "1881,60" → "1881.60"
+  4. Parsea con parseFloat(), si falla retorna 0
+
+Ejemplos:
+  parseNum("1.881,60")  → 1881.60
+  parseNum("1,96")      → 1.96
+  parseNum("100")       → 100
+  parseNum("")          → 0
+
+Usado por: getPricesFromSheet() (cols C, D, E, F, I, O)
+
+────────────────────────────────────────────────────────────────────────────
+5.4 getPricesFromSheet()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Obtiene catálogo de precios desde "💰 Precios"
+Sintaxis: async function getPricesFromSheet()
+Parámetros: Ninguno
+Retorna: Promise<{Object}>
+
+Estructura de retorno:
+{
+  'dofus-touch': {
+    'BLAIR': {
+      venta: 1.66,
+      compra: 1.50,
+      mxn: 45.60,     // si existe en columna D
+      clp: 1490.00,   // si existe en columna E
+      cop: 6640,      // si existe en columna I
+      ves: 3320       // si existe en columna O
+    },
+    'TALOK': { venta: 1.54, ... },
+    '_meta': {
+      min_venta: 1.54,  // precio mínimo entre todos los servidores
+      max_venta: 1.66   // precio máximo entre todos los servidores
+    }
+  },
+  'dofus-3': { ... },
+  'dofus-retro': { ... },
+  'wakfu': { ... },
+  'albion': { ... },
+  'wow-retail': { ... }
+}
+
+Proceso:
+  1. Verifica si SHEET_ID existe
+  2. Checa caché (TTL=60 segundos)
+  3. Si caché válido, retorna caché
+  4. Si no, llama sheets.spreadsheets.values.get(SHEET_ID, "💰 Precios!A6:O100")
+  5. Procesa cada fila:
+     - Identifica juego actual (si col A tiene valor)
+     - Mapea nombre con GAME_NAME_MAP
+     - Ignora filas que empiezan con "📈" o "MARGEN"
+     - Parsea valores numéricos con parseNum()
+     - Valida que venta > 0
+  6. Lee pestaña WOW_GOLD especialmente (A2:L10)
+  7. Calcula _meta (min_venta, max_venta) por juego
+  8. Actualiza caché con timestamp actual
+
+Caché:
+  - Variable global: let cache = { data: null, ts: 0 }
+  - TTL: 60000 ms (60 segundos)
+  - Se invalida con: invalidateCache() tras logSale/logOrder
+
+Manejo de errores: Si WOW_GOLD no existe, loga warning pero continúa
+
+Usado por:
+  - GET /api/products (server.js) → precios dinámicos del sitio
+  - Bot WhatsApp (catalog.js) → catálogo en conversación
+
+────────────────────────────────────────────────────────────────────────────
+5.5 invalidateCache()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Invalida el caché de precios para forzar recarga en próxima llamada
+Sintaxis: function invalidateCache()
+Parámetros: Ninguno
+Retorna: void
+
+Acción: cache.ts = 0
+
+Llamado por:
+  - logSale() al final (tras registrar venta)
+  - logOrder() al final (tras registrar pedido)
+
+────────────────────────────────────────────────────────────────────────────
+5.6 logSale(params)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Registra una venta en la pestaña "📝 Ventas"
+Sintaxis: async function logSale({ juego, servidor, cantidad, precio_m, total_usd, moneda, canal, asesor, pago_id })
+Parámetros:
+  - juego (string): nombre del juego
+  - servidor (string): nombre del servidor
+  - cantidad (number): millones vendidos
+  - precio_m (number): precio por millón en USD
+  - total_usd (number): monto total en USD
+  - moneda (string, opcional): tipo de moneda (default: observado de datos)
+  - canal (string, opcional): fuente (default: "Web")
+  - asesor (string, opcional): vendedor (default: "Sistema")
+  - pago_id (string, opcional): ID de pago externo
+
+Retorna: Promise<void>
+
+Proceso:
+  1. Si SHEET_ID no existe, retorna (no hace nada)
+  2. Obtiene timestamp actual en zona Colombia (America/Bogota)
+  3. Formatea total_usd como "$X.XX"
+  4. Llama sheets.spreadsheets.values.append() al rango "📝 Ventas!A:J"
+  5. Append una sola fila con 10 columnas:
+     [FECHA, ASESOR, CANAL, JUEGO, SERVIDOR, CANTIDAD, MONEDA, PRECIO_M, TOTAL, TOTAL]
+  6. Invalida caché de precios
+  7. Retorna (sin esperar respuesta del servidor remoto)
+
+Valores por defecto:
+  - asesor: "Sistema"
+  - canal: "Web"
+  - moneda: observado del parámetro o vacío
+  - precio_m: formateado como "$X.XXX"
+  - total_usd: formateado como "$X.XX"
+
+Llamado por:
+  - POST /api/ventas/register (server.js, admin manual)
+  - Google Apps Script: registrarVenta() (desde Sheet)
+
+Ejemplo de llamada:
+  await logSale({
+    juego: "DOFUS TOUCH",
+    servidor: "BLAIR",
+    cantidad: 100,
+    precio_m: 1.66,
+    total_usd: 166.00,
+    moneda: "Kamas",
+    canal: "WhatsApp",
+    asesor: "Juan"
+  });
+
+────────────────────────────────────────────────────────────────────────────
+5.7 logOrder(params)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Registra un pedido de cliente desde checkout web o WhatsApp
+Sintaxis: async function logOrder({ nombre, usuario_juego, pais, email, juego, servidor, cantidad, total_usd, total_local, metodo_pago })
+Parámetros:
+  - nombre (string): nombre del cliente
+  - usuario_juego (string): nick/usuario en el juego
+  - pais (string): país del cliente
+  - email (string): email
+  - juego (string): juego adquirido
+  - servidor (string): servidor
+  - cantidad (number): millones
+  - total_usd (number): total en USD
+  - total_local (string): monto en moneda local del país
+  - metodo_pago (string): método (Nequi, Binance, etc.)
+
+Retorna: Promise<void>
+
+Proceso:
+  1. Si SHEET_ID no existe, retorna
+  2. Obtiene timestamp en zona Colombia
+  3. Llama sheets.spreadsheets.values.append() al rango "📝 Ventas!A:L"
+  4. Append una fila con 12 columnas:
+     [FECHA, NOMBRE, USUARIO_JUEGO, PAIS, EMAIL, JUEGO, SERVIDOR, CANTIDAD, TOTAL_USD, TOTAL_USD, METODO_PAGO, "PENDIENTE VERIFICACION"]
+  5. Invalida caché
+  6. Retorna
+
+Estado inicial: "PENDIENTE VERIFICACION" (se actualiza manualmente en Sheet)
+
+Llamado por:
+  - POST /api/checkout/confirm (server.js, web checkout)
+  - Bot WhatsApp: confirmación de pago
+  - Google Apps Script: registrarVenta_silencioso()
+
+Ejemplo de llamada:
+  await logOrder({
+    nombre: "Carlos M.",
+    usuario_juego: "Warrior123",
+    pais: "Colombia",
+    email: "carlos@example.com",
+    juego: "DOFUS TOUCH",
+    servidor: "BLAIR",
+    cantidad: 100,
+    total_usd: 166.00,
+    total_local: "664000 COP",
+    metodo_pago: "Nequi"
+  });
+
+────────────────────────────────────────────────────────────────────────────
+5.8 getResenas()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Obtiene todas las reseñas de clientes desde "RESEÑAS"
+Sintaxis: async function getResenas()
+Parámetros: Ninguno
+Retorna: Promise<Array>
+
+Estructura de retorno:
+[
+  {
+    nombre: "Carlos M.",
+    resena: "Excelente servicio, recibí mis kamas en menos de 3 minutos...",
+    juego: "Dofus Retro",    // default: "Portal Gamers"
+    fecha: "Mayo 2025",
+    estrellas: 5,
+    inicial: "C"              // primera letra de nombre (para avatar)
+  },
+  { ... }
+]
+
+Proceso:
+  1. Si SHEET_ID no existe, retorna [] vacío
+  2. Checa caché (resenasCache, TTL=60s)
+  3. Si caché válido, retorna caché
+  4. Si no, llama sheets.spreadsheets.values.get(SHEET_ID, "RESEÑAS!A2:E100")
+  5. Filtra solo filas con col A (nombre) y col B (reseña) no vacías
+  6. Mapea cada fila a objeto:
+     - nombre: row[0]
+     - resena: row[1]
+     - juego: row[2] || "Portal Gamers"
+     - fecha: row[3]
+     - estrellas: parseInt(row[4]) || 5
+     - inicial: primera letra mayúscula del nombre
+  7. Actualiza caché
+
+Caché:
+  - Variable global: let resenasCache = { data: null, ts: 0 }
+  - TTL: 60000 ms (60 segundos)
+
+Usado por:
+  - GET /api/resenas (server.js) → frontend carrusel de reseñas
+
+────────────────────────────────────────────────────────────────────────────
+5.9 getDailySalesStats()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Calcula el total de ventas del día actual en USD
+Sintaxis: async function getDailySalesStats()
+Parámetros: Ninguno
+Retorna: Promise<{Object}>
+
+Estructura de retorno:
+{
+  totalUSD: 1245.50,    // suma de todas las ventas del día
+  count: 8              // número de transacciones
+}
+
+Proceso:
+  1. Si SHEET_ID no existe, retorna { totalUSD: 0, count: 0 }
+  2. Llama sheets.spreadsheets.values.get(SHEET_ID, "📝 Ventas!A4:I2000")
+  3. Obtiene fecha actual en formato "D/M/YYYY" zona Colombia
+  4. Itera cada fila:
+     - Parsea col A (FECHA) tomando solo la parte anterior a ","
+     - Si fecha coincide con hoy:
+       - Extrae col I (TOTAL USD, formato "$X.XX")
+       - Elimina caracteres no numéricos
+       - Suma a totalUSD
+       - Incrementa count
+  5. Retorna { totalUSD, count }
+
+Formato esperado de FECHA: "D/M/YYYY, HH:MM:SS" (genera logSale/logOrder)
+
+Usado por:
+  - Resumen diario WhatsApp (sender.js) a las 22:00
+  - Dashboard (si existe)
+
+Ejemplo de retorno:
+  { totalUSD: 1245.50, count: 8 }
+
+────────────────────────────────────────────────────────────────────────────
+5.10 Constants y Variables globales
+────────────────────────────────────────────────────────────────────────────
+
+SHEET_ID:
+  Valor: process.env.SHEET_ID (del .env)
+  Descripción: ID único del Google Sheet
+
+SCOPES:
+  Valor: ['https://www.googleapis.com/auth/spreadsheets']
+  Descripción: Permisos solicitados a Google
+
+TAB_PRECIOS:
+  Valor: '💰 Precios'
+  Descripción: Nombre de pestaña de precios
+
+TAB_VENTAS:
+  Valor: '📝 Ventas'
+  Descripción: Nombre de pestaña de ventas
+
+TAB_WOW_GOLD:
+  Valor: 'WOW_GOLD'
+  Descripción: Nombre de pestaña específica para WoW
+
+GAME_NAME_MAP:
+  Descripción: Mapeo de nombres de juego en Sheet a IDs internos
+  Contenido:
+    {
+      'DOFUS TOUCH': 'dofus-touch',
+      'DOFUS 3.0': 'dofus-3',
+      'DOFUS RETRO': 'dofus-retro',
+      'WAKFU': 'wakfu',
+      'ALBION': 'albion',
+      'WOW RETAIL': 'wow-retail'
+    }
+
+cache:
+  Descripción: Caché en memoria para precios
+  Estructura: { data: Object|null, ts: number }
+  TTL: 60000 ms (60 segundos)
+
+resenasCache:
+  Descripción: Caché en memoria para reseñas
+  Estructura: { data: Array|null, ts: number }
+  TTL: 60000 ms (60 segundos)
+
+_auth:
+  Descripción: GoogleAuth object cacheado
+  Scope: Privado, usado solo por getAuth()
+
+================================================================================
+6. INTEGRACIÓN CON SERVIDOR (server.js)
+================================================================================
+
+Archivo: C:\Users\leand\portal-gamers\server.js
+
+────────────────────────────────────────────────────────────────────────────
+6.1 GET /api/products
+────────────────────────────────────────────────────────────────────────────
+Descripción: Retorna catálogo de juegos con precios dinámicos de Google Sheets
+Método HTTP: GET
+Ruta: /api/products
+Parámetros query: Ninguno
+Retorna: JSON
+
+Lógica (líneas 44-85):
+  1. Lee base datos local: const data = readData()
+  2. Intenta obtener precios con timeout de 5 segundos:
+     const sheetPrices = await withTimeout(sheets.getPricesFromSheet(), 5000)
+  3. Si sheetPrices existe:
+     - Mapea cada juego en data.games
+     - Enriquece con objeto servers{ serverName: { venta, compra, ...} }
+     - Enriquece con _meta { min_venta, max_venta }
+  4. Si falla (timeout o error), usa precios de products.json local
+  5. Retorna: { success: true, games: [...] }
+
+Respuesta ejemplo:
+{
+  "success": true,
+  "games": [
+    {
+      "id": "dofus-touch",
+      "name": "Dofus Touch",
+      "servers": {
+        "BLAIR": { "venta": 1.66, "compra": 1.50 },
+        "TALOK": { "venta": 1.54, "compra": 1.40 }
+      },
+      "_meta": { "min_venta": 1.54, "max_venta": 1.66 }
+    }
+  ]
+}
+
+────────────────────────────────────────────────────────────────────────────
+6.2 GET /api/resenas
+────────────────────────────────────────────────────────────────────────────
+Descripción: Retorna todas las reseñas de clientes
+Método HTTP: GET
+Ruta: /api/resenas
+Retorna: JSON Array
+
+Lógica (líneas 90-99):
+  1. Intenta obtener reseñas: const data = await withTimeout(sheets.getResenas(), 5000)
+  2. Establece headers anti-caché: Cache-Control: no-store, no-cache, must-revalidate
+  3. Retorna: { success: true, data: [...] }
+
+Respuesta ejemplo:
+{
+  "success": true,
+  "data": [
+    {
+      "nombre": "Carlos M.",
+      "resena": "Excelente servicio...",
+      "juego": "Dofus Retro",
+      "fecha": "Mayo 2025",
+      "estrellas": 5,
+      "inicial": "C"
+    }
+  ]
+}
+
+────────────────────────────────────────────────────────────────────────────
+6.3 POST /api/checkout/confirm
+────────────────────────────────────────────────────────────────────────────
+Descripción: Confirma un pedido desde checkout web y lo registra en Sheets
+Método HTTP: POST
+Ruta: /api/checkout/confirm
+Body JSON:
+  {
+    "customer": { "name", "gameUsername", "country", "email" },
+    "items": [{ "game", "server", "quantity", "price_usd" }, ...],
+    "payment_method": "string",
+    "total_usd": number
+  }
+
+Lógica (líneas 140-165):
+  1. Extrae datos del cliente y items
+  2. Calcula totalCalc sumando: items.reduce((s,i) => s + i.price_usd * i.quantity)
+  3. Registra cada item en Sheets:
+     await sheets.logOrder({
+       nombre: customer.name,
+       usuario_juego: customer.gameUsername,
+       pais: customer.country,
+       email: customer.email,
+       juego: item.game,
+       servidor: item.server,
+       cantidad: item.quantity,
+       total_usd: totalCalc,
+       total_local: "...",
+       metodo_pago: payment_method
+     })
+  4. Retorna: { success: true, order_id: "..." }
+
+────────────────────────────────────────────────────────────────────────────
+6.4 POST /api/ventas/register (Admin)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Registra una venta manualmente desde panel admin
+Método HTTP: POST
+Ruta: /api/ventas/register
+Body JSON:
+  {
+    "juego": "DOFUS TOUCH",
+    "servidor": "BLAIR",
+    "cantidad": 100,
+    "moneda": "Kamas",
+    "precio_m": 1.66,
+    "total_usd": 166.00,
+    "canal": "Manual",
+    "asesor": "Admin"
+  }
+
+Lógica (líneas 242-250):
+  1. Valida campos requeridos: juego y cantidad
+  2. Llama sheets.logSale({ ... })
+  3. Retorna: { success: true }
+
+Usado por: Panel admin / dashboard interno
+
+════════════════════════════════════════════════════════════════════════════
+7. INTEGRACIÓN CON WHATSAPP BOT
+════════════════════════════════════════════════════════════════════════════
+
+Archivos involucrados:
+  - whatsapp/bot.js → Lógica de conversación
+  - whatsapp/sender.js → Envío de mensajes y resumen diario
+  - whatsapp/catalog.js → Catálogo de precios
+
+────────────────────────────────────────────────────────────────────────────
+7.1 Integración en bot.js
+────────────────────────────────────────────────────────────────────────────
+Función: getResenas()/getPricesFromSheet()
+Uso: Mostrar catálogo dinámico en conversación
+Flujo:
+  1. Usuario escribe "1" (ver catálogo)
+  2. Bot llama: const prices = await sheets.getPricesFromSheet()
+  3. Formatea respuesta para WhatsApp
+  4. Envía catálogo con precios actuales
+
+Función: logOrder()
+Uso: Registrar pedido cuando cliente confirma pago
+Flujo:
+  1. Cliente paga y envía comprobante
+  2. Bot obtiene datos del pedido
+  3. Llama sheets.logOrder({ ... })
+  4. Registra en "📝 Ventas"
+
+────────────────────────────────────────────────────────────────────────────
+7.2 Integración en sender.js (Resumen diario)
+────────────────────────────────────────────────────────────────────────────
+Función: getDailySalesStats()
+Uso: Calcular totales para resumen a las 22:00
+Flujo:
+  1. Cron job a las 22:00 (hora Colombia)
+  2. Llama: const stats = await sheets.getDailySalesStats()
+  3. Construye mensaje: "Hoy vendimos: $1,245.50 en 8 transacciones"
+  4. Envía a WHATSAPP_DUENO (número del dueño)
+
+Ejemplo de mensaje:
+  "📊 RESUMEN DIARIO 06/06/2026
+   💰 Total vendido: $1,245.50
+   📦 Transacciones: 8
+   📧 Solicitudes de asesor: 2"
+
+════════════════════════════════════════════════════════════════════════════
+8. GOOGLE APPS SCRIPT (registro-rapido.gs)
+════════════════════════════════════════════════════════════════════════════
+
+Ubicación: Google Sheets → Extensiones → Apps Script
+URL: https://script.google.com/...
+Archivo local: C:\Users\leand\portal-gamers\apps-script\registro-rapido.gs (594 líneas)
+
+────────────────────────────────────────────────────────────────────────────
+8.1 onOpen()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Se ejecuta cuando se abre el Sheet
+Crea un menú personalizado "🎮 Portal Gamers" con opciones:
+  - 🔴 Registrar Compra → registrarCompra()
+  - 💚 Registrar Venta → registrarVenta()
+  - 🔄 Registrar Intercambio → registrarIntercambio()
+  - Separador
+  - 🧹 Limpiar Formulario Compra → limpiarCompra()
+  - 🧹 Limpiar Formulario Venta → limpiarVenta()
+
+────────────────────────────────────────────────────────────────────────────
+8.2 getJuegoPorServidor(servidor)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Lookup que busca a qué juego pertenece un servidor
+Parámetro: servidor (string, ej: "BLAIR")
+Retorna: string (ej: "DOFUS TOUCH")
+
+Lógica:
+  1. Abre hoja "💰 Precios"
+  2. Lee rango A6:B30
+  3. Itera cada fila
+  4. Si col A tiene valor, almacena como juego actual
+  5. Si col B (servidor) coincide, retorna juego almacenado
+  6. Si no encuentra, retorna vacío
+
+────────────────────────────────────────────────────────────────────────────
+8.3 _setupComprasHeaders(log)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Asegura que la pestaña "📋 Compras" tenga encabezados
+Parámetro: log (Hoja de Compras)
+
+Si no existen encabezados (fila 1 vacía):
+  Escribe: FECHA | ASESOR | SERVIDOR | CANTIDAD_M | MONEDA_COMPRA | PRECIO_COMPRA_USD | TOTAL_USD_PAGADO | VALOR_MONEDA_LOCAL | PROVEEDOR | CANAL
+
+────────────────────────────────────────────────────────────────────────────
+8.4 actualizarStock(ss, servidor, cantidad, totalUSDPagado, fecha)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Actualiza pestaña "📦 Stock" tras registrar compra
+Parámetros:
+  - ss: Spreadsheet object
+  - servidor: nombre del servidor
+  - cantidad: millones comprados
+  - totalUSDPagado: monto en USD
+  - fecha: timestamp
+
+Lógica:
+  1. Abre pestaña "📦 Stock" (crea si no existe)
+  2. Si no tiene encabezados, los crea: SERVIDOR | STOCK_M | ULTIMA_COMPRA | TOTAL_INVERTIDO_USD
+  3. Busca fila con servidor coincidente
+  4. Si existe: actualiza col B (+= cantidad), col C (fecha), col D (+= totalUSD)
+  5. Si no existe: añade nueva fila
+
+────────────────────────────────────────────────────────────────────────────
+8.5 inicializarStock()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Genera tabla base de stock desde "💰 Precios"
+Parámetros: Ninguno (usa Sheet activo)
+
+Lógica:
+  1. Abre/crea pestaña "Stock Y Cuentas Base"
+  2. Limpia contenido anterior
+  3. Crea encabezados: JUEGO | SERVIDOR | CUENTA/APODO | STOCK_M | STOCK_MAX | VALOR_USD | VALOR_COP | ESTADO | ALERTA
+  4. Lee "💰 Precios" (A6:O30)
+  5. Para cada servidor, crea fila con:
+     - Juego, Servidor (de Precios)
+     - Cuenta: vacío (se llena manualmente)
+     - Stock_M: 0 (inicial)
+     - Stock_Max: 0 (se ajusta manualmente)
+     - Valor_USD: precio de venta (col C)
+     - Valor_COP: fórmula =F*4000
+     - Estado: fórmula =IF(D>0,1,0)
+     - Alerta: fórmula =IF(AND(E>0,D<E*0.2),1,0)
+  6. Aplica formatos numéricos especiales a col H, I
+  7. Ajusta alturas y anchos de celdas para tema visual gaming
+
+════════════════════════════════════════════════════════════════════════════
+8.6 registrarCompra()
+════════════════════════════════════════════════════════════════════════════
+Descripción: Registra una compra a proveedor desde formulario
+Parámetros: Ninguno (lee del formulario "🚀 Registro Rápido" cols E-G)
+
+Lectura de formulario:
+  - F4: Asesor
+  - F5: Servidor (validación)
+  - F6: Cantidad (millones)
+  - F7: Moneda compra
+  - F8: Proveedor
+  - F9: Precio compra/M USD
+  - F10: Total USD pagado
+  - F11: Valor moneda local
+
+Validación:
+  - Servidor (F5) obligatorio
+  - Cantidad (F6) obligatoria
+  - Precio compra/M (F9) obligatorio
+
+Acciones:
+  1. Valida campos
+  2. Obtiene fecha actual (zona Colombia)
+  3. Crea encabezados si no existen
+  4. Append a "📋 Compras" con 10 columnas
+  5. Llama actualizarStock(servidor, cantidad, totalUSD, fecha)
+  6. Ajusta stock base: _ajustarStockBase(servidor, +cantidad)
+  7. Notifica servidor: POST /api/compras/register { total_usd, servidor }
+  8. Limpia formulario: limpiarCompra()
+  9. Muestra toast: "✅ Compra registrada correctamente"
+
+────────────────────────────────────────────────────────────────────────────
+8.7 registrarVenta()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Registra una venta a cliente desde formulario
+Parámetros: Ninguno (lee del formulario "🚀 Registro Rápido" cols A-C)
+
+Lectura de formulario:
+  - C4: Asesor
+  - C5: Servidor
+  - C6: Cantidad
+  - C7: Método pago
+  - C8: Canal
+  - C9: Precio USD
+  - C10: Total USD
+  - C11: Total COP
+  - C12: Comisión MP
+  - C13: Neto USD
+
+Validación:
+  - Servidor obligatorio
+  - Cantidad obligatoria
+
+Acciones:
+  1. Valida campos
+  2. Obtiene juego desde servidor: getJuegoPorServidor(servidor)
+  3. Obtiene fecha actual
+  4. Append a "📝 Ventas" con 13 columnas
+  5. Notifica servidor: POST /api/ventas/register { total_usd, servidor }
+  6. Limpia formulario
+  7. Ajusta stock base: _ajustarStockBase(servidor, -cantidad)
+  8. Si stock queda negativo, muestra alerta: "Stock negativo: XXX M"
+  9. Muestra toast: "✅ Venta registrada correctamente"
+
+────────────────────────────────────────────────────────────────────────────
+8.8 registrarIntercambio()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Registra intercambio entre dos servidores
+Parámetros: Ninguno (lee del formulario cols H-J)
+
+Lectura de formulario:
+  - I4: Asesor
+  - I5: Servidor ORIGEN
+  - I6: Cantidad ORIGEN
+  - I7: Servidor DESTINO
+  - I8: Canal
+  - I9: Precio compra ORIGEN/M
+  - I10: Valor USD recibido
+  - I11: Precio venta DESTINO/M
+  - I12: M a entregar
+  - I13: Costo nuestro
+  - I14: Ganancia USD
+
+Validación:
+  - Servidor ORIGEN obligatorio
+  - Servidor DESTINO obligatorio
+  - Cantidad ORIGEN obligatoria
+
+Acciones:
+  1. Valida campos
+  2. Obtiene juegos: getJuegoPorServidor(origen), getJuegoPorServidor(destino)
+  3. Obtiene fecha
+  4. Append a "🔄 Intercambio" con 13 columnas
+  5. Limpia rango I5:I8
+  6. Muestra toast: "✅ Intercambio registrado correctamente"
+
+────────────────────────────────────────────────────────────────────────────
+8.9 _ajustarStockBase(ss, servidor, delta)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Ajusta cantidad de stock en "Stock Y Cuentas Base"
+Parámetros:
+  - ss: Spreadsheet
+  - servidor: nombre del servidor
+  - delta: cambio (+cantidad para compra, -cantidad para venta)
+
+Retorna: number (nuevo stock) o null si no encontró servidor
+
+Lógica:
+  1. Abre "Stock Y Cuentas Base"
+  2. Busca fila con servidor (col B)
+  3. Si encuentra:
+     - Calcula nuevo = stock_actual (col D) + delta
+     - Actualiza col D
+     - Retorna nuevo
+  4. Si no encuentra, retorna null
+
+Usado por: registrarCompra(), registrarVenta()
+
+────────────────────────────────────────────────────────────────────────────
+8.10 limpiarCompra() y limpiarVenta()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Limpian formularios tras registrar
+
+limpiarCompra() limpia:
+  - F5 (Servidor)
+  - F6 (Cantidad)
+  - F8 (Proveedor)
+  - F11 (Valor moneda local)
+  - F16 (Valor venta local)
+
+Conserva:
+  - F4 (Asesor)
+  - F7 (Moneda compra)
+  - F15 (Moneda venta)
+
+limpiarVenta() limpia:
+  - C5 (Servidor)
+  - C6 (Cantidad)
+
+────────────────────────────────────────────────────────────────────────────
+8.11 onSelectionChange(e)
+────────────────────────────────────────────────────────────────────────────
+Descripción: Trigger que ejecuta registro al hacer clic en fila 17 (botones)
+Parámetro: e (ChangeEvent)
+
+Lógica:
+  1. Obtiene rango y hoja del evento
+  2. Si no es en "🚀 Registro Rápido", ignora
+  3. Si fila=17 y col 1-3: registrarVenta_silencioso()
+  4. Si fila=17 y col 4-7: registrarCompra_silencioso()
+  5. Si fila=17 y col 8-10: registrarIntercambio_silencioso()
+
+────────────────────────────────────────────────────────────────────────────
+8.12 registrarVenta_silencioso(), registrarCompra_silencioso(), registrarIntercambio_silencioso()
+────────────────────────────────────────────────────────────────────────────
+Descripción: Versiones silenciosas de funciones (sin dialogs UI)
+Uso: Llamadas por onSelectionChange (no mostrar popups)
+Funcionamiento: Idéntico a versiones normales pero:
+  - Usa ss.toast() en lugar de SpreadsheetApp.getUi().alert()
+  - No retorna dialogs
+
+════════════════════════════════════════════════════════════════════════════
+8.13 redisenarSheet()
+════════════════════════════════════════════════════════════════════════════
+Descripción: Aplica tema visual gaming a "🚀 Registro Rápido"
+Colores:
+  - Fondo: #0f0f1a (azul muy oscuro)
+  - Panel: #1a1a2e (azul oscuro)
+  - Campo: #16213e (azul oscuro más claro)
+  - Verde: #065f46 (fondo), #10b981 (texto)
+  - Rojo: #7f1d1d (fondo), #ef4444 (texto)
+  - Morado: #4c1d95 (fondo), #8b5cf6 (texto)
+  - Amarillo: #fbbf24 (highlight)
+  - Texto: #a0a0c0 (gris-morado)
+  - Valores: #6ee7b7 (cyan)
+
+Aplicación:
+  1. Fila 1: Encabezado principal
+  2. Fila 3: Etiquetas de secciones (colores específicos)
+  3. Filas 4-13: Campos
+  4. Fila 13: Total (verde highlight)
+  5. Fila 17: Botones
+  6. Fila 18: Separador
+  7. Fila 19-35: Logs/información adicional
+
+Fuente: "Roboto Mono"
+Tamaños: Encabezados 10-14pt, campos 9pt
+
+════════════════════════════════════════════════════════════════════════════
+9. FLUJO DE DATOS COMPLETO
+════════════════════════════════════════════════════════════════════════════
+
+ENTRADA DE DATOS (3 vías principales):
+
+───────────────────────────────────────────────────────────────────────────
+Vía 1: WEB (Sitio público)
+───────────────────────────────────────────────────────────────────────────
+Flujo:
+  Usuario accede a sitio web
+    ↓
+  GET /api/products
+    ↓ (sheets.getPricesFromSheet() → "💰 Precios")
+  Muestra catálogo dinámico con precios actuales
+    ↓
+  Usuario selecciona juego, servidor, cantidad y cantidad
+    ↓
+  POST /api/checkout/confirm
+    ↓ (sheets.logOrder() → "📝 Ventas")
+  Registra pedido con estado "PENDIENTE VERIFICACION"
+    ↓
+  Administrador verifica pago y actualiza estado manualmente en Sheet
+
+───────────────────────────────────────────────────────────────────────────
+Vía 2: WHATSAPP BOT
+───────────────────────────────────────────────────────────────────────────
+Flujo:
+  Cliente envía mensaje a WhatsApp (573223427456)
+    ↓
+  Bot recibe y parsea mensaje
+    ↓
+  Si es "1" (ver catálogo):
+    - getPricesFromSheet() → "💰 Precios"
+    - Formatea y envía catálogo
+    ↓
+  Si cliente selecciona producto:
+    - Bot solicita servidor, cantidad, país
+    - Calcula total con precios dinámicos
+    ↓
+  Cliente confirma pago y envía comprobante
+    ↓
+  logOrder() → "📝 Ventas"
+    ↓
+  Bot registra pedido
+  Notifica TIENDA (WHATSAPP_TIENDA) con detalles
+
+───────────────────────────────────────────────────────────────────────────
+Vía 3: GOOGLE SHEET (Panel administrativo)
+───────────────────────────────────────────────────────────────────────────
+Flujo:
+  Administrador abre Google Sheet
+    ↓
+  Navega a "🚀 Registro Rápido" (dashboard visual)
+    ↓
+  OPCIÓN A: Registrar Venta
+    - Ingresa datos en formulario cols A-C
+    - Hace clic en "▶ REGISTRAR VENTA"
+    - registrarVenta() → "📝 Ventas"
+    - _ajustarStockBase(servidor, -cantidad) → "Stock Y Cuentas Base"
+    - Notifica /api/ventas/register
+    - Limpia formulario
+    ↓
+  OPCIÓN B: Registrar Compra
+    - Ingresa datos en formulario cols E-G
+    - Hace clic en "▶ REGISTRAR COMPRA"
+    - registrarCompra() → "📋 Compras"
+    - actualizarStock() → "📦 Stock"
+    - _ajustarStockBase(servidor, +cantidad) → "Stock Y Cuentas Base"
+    - Notifica /api/compras/register
+    - Limpia formulario
+    ↓
+  OPCIÓN C: Registrar Intercambio
+    - Ingresa datos en formulario cols H-J
+    - Hace clic en "▶ REGISTRAR INTERCAMBIO"
+    - registrarIntercambio() → "🔄 Intercambio"
+    - Limpia formulario
+
+MAESTRO DE DATOS:
+───────────────────────────────────────────────────────────────────────────
+"💰 Precios" es la fuente única de verdad para:
+  - getPricesFromSheet() → API /api/products (web)
+  - Bot WhatsApp catálogo
+  - Google Apps Script (validaciones, lookups)
+  - Valores iniciales para "Stock Y Cuentas Base"
+
+Actualización:
+  - Manual en Sheet (administrador edita filas 6+)
+  - Caché de 60 segundos en Node.js (invalidateCache() tras venta)
+  - Caché de 60 segundos en Google Apps Script
+
+CONSULTAS/REPORTES:
+───────────────────────────────────────────────────────────────────────────
+getResenas() → "RESEÑAS"
+  - Para: Frontend (carrusel de testimonios)
+  - Caché: 60 segundos
+
+getDailySalesStats() → "📝 Ventas"
+  - Para: Resumen diario WhatsApp (22:00)
+  - Cálculo: SUM(TOTAL USD) WHERE FECHA = HOY
+
+════════════════════════════════════════════════════════════════════════════
+10. ESTRUCTURA DE DATOS Y EJEMPLOS
+════════════════════════════════════════════════════════════════════════════
+
+────────────────────────────────────────────────────────────────────────────
+10.1 getPricesFromSheet() — Objeto retornado
+────────────────────────────────────────────────────────────────────────────
+
+{
+  "dofus-touch": {
+    "BLAIR": {
+      "venta": 1.66,
+      "compra": 1.50,
+      "mxn": 45.60,
+      "clp": 1490.00,
+      "cop": 6640,
+      "ves": 3320
+    },
+    "TALOK": {
+      "venta": 1.54,
+      "compra": 1.40,
+      "cop": 6160
+    },
+    "EPSILON": {
+      "venta": 1.80,
+      "compra": 1.65,
+      "cop": 7200
+    },
+    "_meta": {
+      "min_venta": 1.54,
+      "max_venta": 1.80
+    }
+  },
+  "dofus-3": {
+    "DRACONIROS": {
+      "venta": 0.90,
+      "compra": 0.80,
+      "cop": 3600
+    },
+    "_meta": {
+      "min_venta": 0.90,
+      "max_venta": 0.90
+    }
+  },
+  "dofus-retro": { ... },
+  "wakfu": { ... },
+  "albion": { ... },
+  "wow-retail": { ... }
+}
+
+────────────────────────────────────────────────────────────────────────────
+10.2 logSale() — Datos registrados en "📝 Ventas"
+────────────────────────────────────────────────────────────────────────────
+
+Row 1: FECHA | ASESOR | CANAL | JUEGO | SERVIDOR | CANTIDAD | MONEDA | PRECIO/M | TOTAL VENTA | TOTAL USD
+
+Ejemplo:
+  06/06/2026, 10:30:45 | Juan | WhatsApp | DOFUS TOUCH | BLAIR | 100 | Kamas | $1.66 | $166.00 | $166.00
+
+────────────────────────────────────────────────────────────────────────────
+10.3 logOrder() — Datos registrados en "📝 Ventas"
+────────────────────────────────────────────────────────────────────────────
+
+Row 1: FECHA | NOMBRE | USUARIO_JUEGO | PAIS | EMAIL | JUEGO | SERVIDOR | CANTIDAD | TOTAL USD | TOTAL USD | METODO PAGO | ESTADO
+
+Ejemplo:
+  06/06/2026, 14:15:30 | Carlos M. | Warrior123 | Colombia | carlos@mail.com | DOFUS TOUCH | BLAIR | 100 | $166.00 | $166.00 | Nequi | PENDIENTE VERIFICACION
+
+────────────────────────────────────────────────────────────────────────────
+10.4 registrarCompra() — Datos registrados en "📋 Compras"
+────────────────────────────────────────────────────────────────────────────
+
+Row 1: FECHA | ASESOR | SERVIDOR | CANTIDAD_M | MONEDA_COMPRA | PRECIO_COMPRA_USD | TOTAL_USD_PAGADO | VALOR_MONEDA_LOCAL | PROVEEDOR | CANAL
+
+Ejemplo:
+  06/06/2026, 08:45:00 | Admin | BLAIR | 500 | COP | 0.50 | $250.00 | $1,000,000 | ProvedorX | Email
+
+También actualiza "📦 Stock":
+  BLAIR | 2500 | 06/06/2026 08:45:00 | $15,000.00
+
+Y ajusta "Stock Y Cuentas Base":
+  DOFUS TOUCH | BLAIR | PlayerName1 | 250 | 500 | 1.66 | 6640 | Disponible | (vacío)
+
+────────────────────────────────────────────────────────────────────────────
+10.5 getDailySalesStats() — Objeto retornado
+────────────────────────────────────────────────────────────────────────────
+
+{
+  "totalUSD": 1245.50,
+  "count": 8
+}
+
+Usado por resumen diario:
+  "📊 RESUMEN 06/06/2026
+   Total vendido: $1,245.50 USD
+   Transacciones: 8"
+
+════════════════════════════════════════════════════════════════════════════
+11. SEGURIDAD Y NOTAS OPERACIONALES
+════════════════════════════════════════════════════════════════════════════
+
+11.1 Credenciales
+────────────────────────────────────────────────────────────────────────────
+- Archivo sheets-key.json contiene privada key (MANTENER PRIVADO)
+- NO pushearlo a GitHub (está en .gitignore)
+- En producción (Railway), usar variable GOOGLE_CREDENTIALS (JSON en env)
+- Service Account tiene solo permisos de lectura/escritura en Sheets (no Drive)
+
+11.2 Caché
+────────────────────────────────────────────────────────────────────────────
+- getPricesFromSheet() cachea 60 segundos
+- getResenas() cachea 60 segundos
+- invalidateCache() se llama tras venta para actualizar inmediatamente
+- Si Sheets no responde en 5 segundos, fallback a products.json local
+
+11.3 Timezone
+────────────────────────────────────────────────────────────────────────────
+- Todas las fechas se graban en zona: America/Bogota (Colombia)
+- Importante para reporte diario: getDailySalesStats() compara con "hoy" en Colombia
+
+11.4 Validación
+────────────────────────────────────────────────────────────────────────────
+- parseNum() maneja formato europeo (1.881,60)
+- Validación de campos obligatorios en Google Apps Script
+- Lookup de servidor → juego (getJuegoPorServidor)
+- No hay validación de duplicados
+
+11.5 Limitaciones conocidas
+────────────────────────────────────────────────────────────────────────────
+- Max 2,000 filas por pestaña (rangos A4:I2000)
+- No hay sincronización bidireccional (solo Sheet → API)
+- Edición simultánea en Google Sheet puede causar race conditions
+- Google Sheets API tiene quota diaria (10,000 solicitudes)
+
+11.6 Mantenimiento
+────────────────────────────────────────────────────────────────────────────
+- Actualizar SHEET_ID en .env si se cambia de Sheet
+- Revisar "💰 Precios" regularmente (precios pueden desactualizar)
+- Limpiar filas antiguas en "📝 Ventas" anualmente (archive histórico)
+- Verificar "Stock Y Cuentas Base" para detectar stock bajo
+
+════════════════════════════════════════════════════════════════════════════
+12. REFERENCIAS DE IMPLEMENTACIÓN
+════════════════════════════════════════════════════════════════════════════
+
+Dependencias npm:
+  - googleapis v5.x (Google APIs)
+  - google-auth-library (autenticación)
+
+Variables de entorno requeridas:
+  SHEET_ID=1scyWtKMcdbO1CmvjYCm0Cev7kjHVhqvqxg_bTN7ciDM
+  GOOGLE_CREDENTIALS=(JSON en producción) o sheets-key.json (local)
+
+Endpoints disponibles:
+  GET /api/products → Catálogo dinámico
+  GET /api/resenas → Reseñas
+  POST /api/checkout/confirm → Registrar pedido web
+  POST /api/ventas/register → Registrar venta manual
+
+Google Apps Script (instalación):
+  1. Abre Google Sheet
+  2. Extensiones → Apps Script
+  3. Copia contenido de registro-rapido.gs
+  4. Guarda como "PortalGamers"
+  5. Ejecuta onOpen() una vez
+  6. Se crea menú "🎮 Portal Gamers"
+
+════════════════════════════════════════════════════════════════════════════
+FIN DE DOCUMENTACIÓN
+════════════════════════════════════════════════════════════════════════════
+Generado: 2026-06-06
+Versión: 1.0 (Análisis Completo)
+Páginas: 12+
+
+Para actualizaciones, revisar:
+  - sheets.js (cambios en funciones)
+  - apps-script/registro-rapido.gs (cambios en UI)
+  - .env (variables de configuración)
+  - SHEET_ID en Google Sheets directamente
+
+================================================================================

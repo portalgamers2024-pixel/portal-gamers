@@ -1,3 +1,37 @@
+================================================================================
+  sheets.js ACTUALIZADO — NUEVA ESTRUCTURA CON TASAS DINÁMICAS
+================================================================================
+Fecha: 2026-06-06
+Versión: 2.0 (Con tasas centralizadas)
+
+IMPORTANTE: Este archivo muestra el código actualizado de sheets.js
+Reemplazar C:\Users\leand\portal-gamers\sheets.js con este contenido
+
+================================================================================
+CAMBIOS PRINCIPALES
+================================================================================
+
+1. Nueva función: getExchangeRates()
+   - Lee las tasas de cambio desde fila 5 del Google Sheet
+   - Retorna objeto con tasas de compra y venta
+
+2. Función actualizada: getPricesFromSheet()
+   - Nuevo rango de lectura: A5:L100 (incluye tasas)
+   - Lee dinámicamente las tasas del Sheet
+   - Calcula precios en todas las monedas automáticamente
+
+3. Tasas centralizadas
+   - COMPRA: N5 (MEX), O5 (CLP), P5 (COP), Q5 (Bs)
+   - VENTA: R5 (MEX), S5 (CLP), T5 (COP), U5 (Bs)
+
+4. Estructura de retorno actualizada
+   - Ahora incluye tasas en el objeto retornado
+   - Precios derivados automáticamente de USD * tasa
+
+================================================================================
+CÓDIGO ACTUALIZADO
+================================================================================
+
 const { google } = require('googleapis');
 const path = require('path');
 
@@ -442,3 +476,129 @@ module.exports = {
   invalidateCache,
   getDailySalesStats
 };
+
+================================================================================
+CAMBIOS NECESARIOS EN OTROS ARCHIVOS
+================================================================================
+
+1. server.js (línea ~47):
+
+   ANTES:
+   const sheetPrices = await withTimeout(sheets.getPricesFromSheet(), 5000);
+
+   DESPUÉS (Sin cambios, funciona igual):
+   const sheetPrices = await withTimeout(sheets.getPricesFromSheet(), 5000);
+
+   La función retorna la estructura completa, incluyendo tasas en _rates
+
+
+2. whatsapp/catalog.js (si existe):
+
+   Los precios ahora tienen estructura:
+   {
+     venta: 1.66,      // USD base
+     cop: 6640,        // calculado automáticamente
+     mxn: 30.7,        // calculado automáticamente
+     ... etc
+   }
+
+   Código compatible (no cambia nada):
+   const prices = await sheets.getPricesFromSheet();
+   const gamePrice = prices['dofus-touch']['BLAIR'];
+   console.log(gamePrice.venta);  // 1.66 USD
+   console.log(gamePrice.cop);    // 6640 COP (backward compatible)
+
+
+3. Nuevo: Endpoint para obtener tasas (opcional):
+
+   En server.js, agregar:
+
+   app.get('/api/exchange-rates', async (req, res) => {
+     try {
+       const rates = await sheets.getExchangeRates();
+       res.json({ success: true, rates });
+     } catch (err) {
+       console.error('[API] Error:', err.message);
+       res.status(500).json({ success: false, error: err.message });
+     }
+   });
+
+   Uso en frontend:
+   const response = await fetch('/api/exchange-rates');
+   const { rates } = await response.json();
+   console.log(rates.venta.cop); // 4000
+
+================================================================================
+TESTING Y VALIDACIÓN
+================================================================================
+
+Después de actualizar sheets.js, ejecutar:
+
+1. Prueba local:
+   $ node -e "const sheets = require('./sheets'); sheets.getPricesFromSheet().then(p => console.log(JSON.stringify(p, null, 2)));"
+
+   Verifica que:
+   - Retorna objeto con juegos
+   - Cada juego tiene servidores
+   - Cada servidor tiene venta, compra, cop, mxn, clp, bs
+   - Los valores derivados son venta_usd * tasa (ej: 1.66 * 4000 = 6640)
+
+2. Verifica tasas:
+   $ node -e "const sheets = require('./sheets'); sheets.getExchangeRates().then(r => console.log(JSON.stringify(r, null, 2)));"
+
+   Verifica que:
+   - compra.cop, venta.cop, etc. tienen valores numéricos
+   - Si alguno es 0, usa defaults
+   - raw contiene valores crudos del Sheet (para debugging)
+
+3. Test API:
+   $ curl http://localhost:3000/api/products | jq '.games[0]'
+
+   Verifica que:
+   - Precios se retornan correctamente
+   - Las monedas derivadas están presentes
+   - _meta tiene min_venta y max_venta
+
+================================================================================
+DEBUGGING
+================================================================================
+
+Si algo no funciona:
+
+1. Verificar tasas en fila 5:
+   - Abrir Google Sheet
+   - Ir a fila 5
+   - Celdas N5:U5 deben tener números, no vacías
+   - Si están vacías, agregar valores por defecto
+
+2. Verificar rango de lectura:
+   - La función ahora lee A7:L100 (no A6:O100)
+   - Si los precios no aparecen, verificar que están en fila 7+
+
+3. Verificar formato de números:
+   - Tasas deben ser números, no texto
+   - Si están como texto ("17.0"), Google Sheets puede no devolverlos
+   - Solución: Formatear columna como "Número" en Google Sheets
+
+4. Logs:
+   - Si hay error, revisar console.log de Node.js
+   - Mensajes como "[Sheets] Error leyendo tasas" indican problema
+   - Verificar credenciales en sheets-key.json
+
+================================================================================
+ROLLBACK (Si es necesario volver a la versión anterior)
+================================================================================
+
+Si algo sale mal:
+
+1. Guardar copia actual de sheets.js
+2. Restaurar sheets.js original desde git
+3. Ejecutar: git checkout sheets.js
+4. Reiniciar servidor: npm start
+
+Nota: Si el Google Sheet ya fue modificado, tendrá que revertirse manualmente
+en Google Sheets.
+
+================================================================================
+FIN DE CÓDIGO ACTUALIZADO
+================================================================================

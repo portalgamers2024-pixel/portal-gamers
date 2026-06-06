@@ -1,0 +1,313 @@
+================================================================================
+  INSTRUCCIONES: REORGANIZACIÓN PESTAÑA "💰 PRECIOS"
+================================================================================
+Fecha: 2026-06-06
+Objetivo: Reorganizar estructura de precios con tasas dinámicas
+
+================================================================================
+RESUMEN DE CAMBIOS
+================================================================================
+
+ANTES:
+  A | B | C | D | E | F | I | O
+  Juego | Servidor | Venta USD | Venta MXN | Venta CLP | Compra USD | Venta COP | Venta BS
+
+DESPUÉS:
+  A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P
+  Juego | Servidor | Venta USD | Venta COP | Compra USD | Compra COP | Venta MXN | Venta CLP | Venta BS | Compra MXN | Compra CLP | Compra BS | ... | TASAS
+
+================================================================================
+PASO 1: CREAR SECCIÓN DE TASAS (Arriba del Sheet)
+================================================================================
+
+Ubicación: Filas 1-4 (antes de la tabla principal que empieza en fila 6)
+
+Estructura:
+┌─────────────────────────────────────────────────────┐
+│ FILA 1: Encabezado principal                        │
+│ ┌──────────────────┬──────────────────┐             │
+│ │ TASAS COMPRA     │ TASAS VENTA      │             │
+│ └──────────────────┴──────────────────┘             │
+│                                                     │
+│ FILA 2-3: (vacías para separación visual)          │
+│                                                     │
+│ FILA 4: Etiquetas de tasas                         │
+│ ┌──────────┬──────────┬──────────┬─────────┐       │
+│ │ MEX (₱)  │ CLP (¢)  │ COP ($)  │ Bs (Bs) │       │
+│ └──────────┴──────────┴──────────┴─────────┘       │
+└─────────────────────────────────────────────────────┘
+
+Paso a paso:
+1. Abre el Google Sheet
+2. Selecciona la fila 1
+3. Inserta filas: clic derecho → Insertar 4 filas encima
+
+4. En fila 1, celdas N1:Q1 (o donde tengas espacio), escribe:
+   N1: "TASAS COMPRA"
+   O1: (vacío)
+   P1: "TASAS VENTA"
+   Q1: (vacío)
+
+5. En fila 4 (headers de tasas):
+   N4: "MEX (₱)"       → Celda editable para tasa
+   O4: "CLP (¢)"       → Celda editable para tasa
+   P4: "COP ($)"       → Celda editable para tasa
+   Q4: "Bs (Bs)"       → Celda editable para tasa
+
+   R4: "MEX (₱)"       → Celda editable para tasa
+   S4: "CLP (¢)"       → Celda editable para tasa
+   T4: "COP ($)"       → Celda editable para tasa
+   U4: "Bs (Bs)"       → Celda editable para tasa
+
+Sugerencia de tasas iniciales (2026-06-06):
+  COMPRA:
+    MEX: 17.00
+    CLP: 800.00
+    COP: 3,800.00
+    Bs: 25.00
+
+  VENTA:
+    MEX: 18.50
+    CLP: 850.00
+    COP: 4,000.00
+    Bs: 28.00
+
+================================================================================
+PASO 2: REORGANIZAR COLUMNAS DE PRECIOS (Filas 6+)
+================================================================================
+
+Nueva estructura (a partir de fila 6):
+
+  A | B | C | D | E | F | G | H | I | J | K | L
+  --|---|---|---|---|---|---|---|---|---|---|---
+  JUEGO | SERVIDOR | VENTA USD | VENTA COP | COMPRA USD | COMPRA COP | VENTA MXN | VENTA CLP | VENTA BS | COMPRA MXN | COMPRA CLP | COMPRA BS
+
+Pasos:
+
+A. ELIMINAR columnas antiguas innecesarias:
+   1. Selecciona columna D (actual "Venta MXN")
+   2. Clic derecho → Eliminar columna
+   3. Esto empuja todo a la izquierda
+
+   Nota: Después de eliminar, comprueba la nueva posición de las columnas
+
+B. REORGANIZAR (después de eliminar lo necesario):
+
+   Columna A: JUEGO (sin cambios)
+   Columna B: SERVIDOR (sin cambios)
+   Columna C: VENTA USD (sin cambios - es la base)
+
+   INSERTAR nueva columna después de C:
+   1. Clic en D (actual)
+   2. Clic derecho → Insertar 1 columna a la izquierda
+   3. Encabezado: "VENTA COP"
+   4. Fórmula (a partir de D7): =C7*$T$5
+      (Donde $T$5 es la celda de tasa de venta COP)
+
+   Columna E: COMPRA USD (sin cambios - es la base de compras)
+
+   INSERTAR nueva columna después de E:
+   1. Clic en F (actual)
+   2. Clic derecho → Insertar 1 columna a la izquierda
+   3. Encabezado: "COMPRA COP"
+   4. Fórmula (a partir de F7): =E7*$P$5
+      (Donde $P$5 es la celda de tasa de compra COP)
+
+   Las demás columnas (MXN, CLP, Bs) se renombran:
+   G: VENTA MXN → Fórmula: =C7*$R$5
+   H: VENTA CLP → Fórmula: =C7*$S$5
+   I: VENTA BS  → Fórmula: =C7*$U$5
+   J: COMPRA MXN → Fórmula: =E7*$N$5
+   K: COMPRA CLP → Fórmula: =E7*$O$5
+   L: COMPRA BS  → Fórmula: =E7*$Q$5
+
+================================================================================
+PASO 3: CREAR REFERENCIAS DE TASAS CORRECTAS
+================================================================================
+
+Las celdas de tasas deben estar en una fila fija (ej: fila 5) para que las
+fórmulas puedan referenciarlas con $ (referencias absolutas).
+
+Ubicación final de tasas (fila 5):
+
+  TASAS COMPRA:
+  N5: Tasa MEX Compra (manual, editable)
+  O5: Tasa CLP Compra (manual, editable)
+  P5: Tasa COP Compra (manual, editable)
+  Q5: Tasa Bs Compra (manual, editable)
+
+  TASAS VENTA:
+  R5: Tasa MEX Venta (manual, editable)
+  S5: Tasa CLP Venta (manual, editable)
+  T5: Tasa COP Venta (manual, editable)
+  U5: Tasa Bs Venta (manual, editable)
+
+Referencia en fórmulas:
+  Para VENTA: $R$5, $S$5, $T$5, $U$5
+  Para COMPRA: $N$5, $O$5, $P$5, $Q$5
+
+================================================================================
+PASO 4: APLICAR FÓRMULAS EN TODAS LAS FILAS
+================================================================================
+
+Una vez creadas las primeras fórmulas en fila 7:
+
+1. Selecciona la celda D7 (VENTA COP)
+2. Copia la fórmula: =C7*$T$5
+3. Selecciona rango D8:D100 (todas las filas de datos)
+4. Pega (Ctrl+V)
+5. Google Sheets ajusta automáticamente C7→C8, C9, etc. pero mantiene $T$5 igual
+
+Repite para cada columna:
+  - F7:F100 (COMPRA COP): =E7*$P$5
+  - G7:G100 (VENTA MXN): =C7*$R$5
+  - H7:H100 (VENTA CLP): =C7*$S$5
+  - I7:I100 (VENTA BS): =C7*$U$5
+  - J7:J100 (COMPRA MXN): =E7*$N$5
+  - K7:K100 (COMPRA CLP): =E7*$O$5
+  - L7:L100 (COMPRA BS): =E7*$Q$5
+
+================================================================================
+PASO 5: VALIDAR Y FORMATEAR
+================================================================================
+
+1. Formato de números:
+   - Tasas: 2 decimales (ej: 17.50)
+   - Precios USD/Compra USD: 2 decimales (ej: 1.66)
+   - Precios en monedas locales: 0 decimales (ej: 6640)
+
+2. Formato de celdas (opcional pero recomendado):
+   - Tasas (fila 5): Fondo amarillo (#fbbf24), texto negrita
+   - Headers (fila 6): Fondo azul, texto blanco, negrita
+   - Datos (filas 7+): Fondo blanco, bordes
+
+3. Validación de datos:
+   - Tasas: Solo números > 0
+   - Precios USD: Solo números > 0
+   - Precios locales: Solo números ≥ 0 (pueden ser 0 si no aplica)
+
+================================================================================
+PASO 6: ACTUALIZAR sheets.js (Node.js)
+================================================================================
+
+Después de reorganizar el Sheet, actualiza sheets.js para leer las nuevas
+columnas. Ver archivo "sheets-js-actualizado.txt" para el código modificado.
+
+Cambios principales:
+  - Nueva función getExchangeRates() para leer tasas
+  - Actualizar getPricesFromSheet() para nuevas columnas
+  - Cambiar rangos de lectura: A5:L100 (incluye tasas)
+
+================================================================================
+ESTRUCTURA FINAL
+================================================================================
+
+Fila 5 (Tasas):
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
+│ A   │ B   │ C   │ D   │ E   │ F   │ G   │ H   │ I   │ J   │ K   │ L   │ ... │ N   │ O   │ P   │ Q   │ R   │ S   │ T   │ U   │
+│     │     │     │     │     │     │     │     │     │     │     │     │     │ MEX │ CLP │ COP │ Bs  │ MEX │ CLP │ COP │ Bs  │
+│     │     │     │     │     │     │     │     │     │     │     │     │     │17.0│800  │3800 │25.0 │18.5│850  │4000 │28.0 │
+└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
+
+Fila 6 (Headers):
+┌──────────┬──────────┬─────────────┬──────────────┬──────────────┬──────────────┬─────────────┬─────────────┬──────────┬──────────────┬──────────────┬──────────┐
+│ JUEGO    │SERVIDOR  │ VENTA USD/M │ VENTA COP/M  │ COMPRA USD/M │ COMPRA COP/M │ VENTA MXN/M │ VENTA CLP/M │VENTA BS/M│ COMPRA MXN/M │ COMPRA CLP/M │COMPRA BS │
+│    A     │    B     │      C      │      D       │      E       │      F       │      G      │      H      │    I     │      J       │      K       │    L     │
+└──────────┴──────────┴─────────────┴──────────────┴──────────────┴──────────────┴─────────────┴─────────────┴──────────┴──────────────┴──────────────┴──────────┘
+
+Filas 7+ (Datos):
+┌──────────────┬─────────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
+│DOFUS TOUCH   │ BLAIR   │1.66│6640│1.50│5700│30.7│1328│46.5│27.75│12000│42  │
+│              │ TALOK   │1.54│6160│1.40│5320│28.5│1232│43.1│25.9 │11200│39  │
+│DOFUS 3.0     │DRACONIROS│0.90│3600│0.80│3040│16.7│720 │25.2│14.8 │6400 │22.4│
+└──────────────┴─────────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
+
+================================================================================
+VENTAJAS DE ESTA ESTRUCTURA
+================================================================================
+
+1. ✅ Mantiene USD como base (todos los cálculos derivan de USD)
+2. ✅ Tasas centralizadas en fila 5 (fácil de actualizar)
+3. ✅ Cambios automáticos: editar tasa → actualiza toda la columna
+4. ✅ Separación clara: COMPRA vs VENTA
+5. ✅ Fácil de leer y mantener
+6. ✅ Compatible con nuevas monedas (solo agregar columnas)
+7. ✅ Permite descuentos/márgenes por moneda (si se necesita después)
+
+================================================================================
+POSIBLES PROBLEMAS Y SOLUCIONES
+================================================================================
+
+Problema: "Las fórmulas no se actualizan"
+Solución: En Google Sheets, ir a Herramientas → Opciones de cálculo →
+          Recalcular → Cambiar a "Recalcular cada minuto"
+
+Problema: "Las referencias $T$5 dan error"
+Solución: Verificar que la celda T5 realmente contiene la tasa (no vacía)
+          y que no haya espacios en blanco
+
+Problema: "¿Cómo agregar una nueva moneda?"
+Solución:
+  1. Agregar columna nueva
+  2. Agregar encabezado (ej: "VENTA GBP/M")
+  3. Agregar tasa en fila 5
+  4. Agregar fórmula en fila 7: =C7*[celda_tasa]
+  5. Copiar fórmula a todas las filas
+
+Problema: "Las conversiones se ven incorrectas"
+Solución: Revisar que las tasas en fila 5 sean correctas
+          Ejemplo: Si USD=1, MXN tasa debe ser ~17-20, no 0.17
+
+================================================================================
+PASO 7: ACTUALIZAR sheets.js
+================================================================================
+
+Ver archivo separado: sheets-js-actualizado.txt
+
+Cambios principales:
+  1. Nueva función: getExchangeRates() — lee tasas de fila 5
+  2. Actualizar getPricesFromSheet() para nuevas columnas
+  3. Rango de lectura: A5:L100 (incluye fila de tasas)
+
+Ejemplo:
+  const rates = await getExchangeRates();
+  // Retorna:
+  // {
+  //   compra: { mex: 17.0, clp: 800, cop: 3800, bs: 25.0 },
+  //   venta: { mex: 18.5, clp: 850, cop: 4000, bs: 28.0 }
+  // }
+
+================================================================================
+CHECKLIST FINAL
+================================================================================
+
+□ Inserté 4 filas nuevas para tasas (filas 1-4)
+□ Creé tabla de tasas en fila 5 (12 celdas editables)
+□ Renombré y reorganicé columnas de precios
+□ Apliqué fórmulas =C*$T$5 en todas las filas
+□ Verifiqué que los cálculos sean correctos
+□ Formaté celdas (colores, decimales, bordes)
+□ Actualicé sheets.js con nuevas funciones
+□ Probé en desarrollo (local)
+□ Actualicé .env si cambiaron rangos de lectura
+□ Documené los cambios
+□ Comuniqué a equipo los nuevos procedimientos
+
+================================================================================
+CÓMO USAR DESPUÉS
+================================================================================
+
+Operación diaria:
+  1. Abre "💰 Precios"
+  2. Ve a fila 5
+  3. Actualiza tasas (N5, O5, P5, Q5 para compra; R5, S5, T5, U5 para venta)
+  4. Edita precios USD en columnas C (venta) y E (compra)
+  5. El resto se calcula automáticamente
+
+Ejemplo:
+  Si actualizas T5 de 4000 a 4200:
+  Todas las celdas en columna D (VENTA COP) se recalculan automáticamente
+
+================================================================================
+FIN DE INSTRUCCIONES
+================================================================================
