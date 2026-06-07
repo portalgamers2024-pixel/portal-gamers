@@ -252,19 +252,38 @@ function renderServerCards() {
   const unitLabel = g.unit_label || `M ${g.currency_name}`;
   const isWow = !!g.unit_label;
   grid.innerHTML = g.servers.map(server => {
-    const serverPrice = g.server_prices?.[server]?.venta ?? g.price_per_million;
-    const localRate   = getLocalRate(g, server, serverPrice);
+    const serverData = g.server_prices?.[server];
+    const serverPrice = serverData?.venta_usd ?? serverData?.venta ?? g.price_per_million;
+    const estado = serverData?.estado || 'Disponible';
+    const localRate = getLocalRate(g, server, serverPrice);
     const priceDisplay = isWow
       ? `$${serverPrice.toFixed(2)}<span class="sc-unit"> / ${unitLabel}</span>`
       : `$${serverPrice.toFixed(2)}<span class="sc-unit"> / M ${g.currency_name}</span>`;
     const localDisplay = localRate
       ? `<div class="sc-local">&#8776; ${localRate}${isWow ? ` / ${unitLabel}` : ' / M'}</div>`
       : '';
+
+    // Determina color del badge según estado
+    let estadoBadgeHtml = '';
+    let badgeColor = '#10b981'; // verde
+    let badgeText = estado;
+    if (estado === 'Agotado') {
+      badgeColor = '#ef4444'; // rojo
+    } else if (estado === 'Stock Lleno') {
+      badgeColor = '#f97316'; // naranja
+      badgeText = 'No compramos';
+    }
+
+    if (estado) {
+      estadoBadgeHtml = `<div class="sc-estado-badge" style="background-color:${badgeColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-align:center;">${badgeText}</div>`;
+    }
+
     return `
       <div class="server-card" data-game-id="${g.id}" onclick="selectServer('${server.replace(/'/g, "\\'")}')">
         <img class="sc-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
         <div class="sc-game-badge">${g.name}</div>
         <div class="sc-name">${server}</div>
+        ${estadoBadgeHtml}
         <div class="sc-price">${priceDisplay}</div>
         ${localDisplay}
         <div class="sc-delivery">&#9889; ${g.delivery}</div>
@@ -918,10 +937,11 @@ function _fmtLocal(n) {
 function getLocalRate(game, server, usdPerUnit) {
   const sp = game.server_prices?.[server];
   if (sp) {
-    if (selectedCurrency === 'COP' && sp.cop) return `$${_fmtLocal(sp.cop)} COP`;
-    if (selectedCurrency === 'VES' && sp.ves) return `Bs.${_fmtLocal(sp.ves)} VES`;
-    if (selectedCurrency === 'CLP' && sp.clp) return `$${_fmtLocal(sp.clp)} CLP`;
-    if (selectedCurrency === 'MXN' && sp.mxn) return `$${_fmtLocal(sp.mxn)} MXN`;
+    // Primero intenta los nuevos nombres de propiedades
+    if (selectedCurrency === 'COP' && (sp.venta_cop || sp.cop)) return `$${_fmtLocal(sp.venta_cop || sp.cop)} COP`;
+    if (selectedCurrency === 'VES' && (sp.venta_bs || sp.ves)) return `Bs.${_fmtLocal(sp.venta_bs || sp.ves)} VES`;
+    if (selectedCurrency === 'CLP' && (sp.venta_clp || sp.clp)) return `$${_fmtLocal(sp.venta_clp || sp.clp)} CLP`;
+    if (selectedCurrency === 'MXN' && (sp.venta_mex || sp.mxn)) return `$${_fmtLocal(sp.venta_mex || sp.mxn)} MXN`;
   }
   return convertPrice(usdPerUnit);
 }
@@ -930,10 +950,11 @@ function getLocalRate(game, server, usdPerUnit) {
 function getLocalTotal(game, server, units, usdTotal) {
   const sp = game.server_prices?.[server];
   if (sp) {
-    if (selectedCurrency === 'COP' && sp.cop) return `$${_fmtLocal(sp.cop * units)} COP`;
-    if (selectedCurrency === 'VES' && sp.ves) return `Bs.${_fmtLocal(sp.ves * units)} VES`;
-    if (selectedCurrency === 'CLP' && sp.clp) return `$${_fmtLocal(sp.clp * units)} CLP`;
-    if (selectedCurrency === 'MXN' && sp.mxn) return `$${_fmtLocal(sp.mxn * units)} MXN`;
+    // Primero intenta los nuevos nombres de propiedades
+    if (selectedCurrency === 'COP' && (sp.venta_cop || sp.cop)) return `$${_fmtLocal((sp.venta_cop || sp.cop) * units)} COP`;
+    if (selectedCurrency === 'VES' && (sp.venta_bs || sp.ves)) return `Bs.${_fmtLocal((sp.venta_bs || sp.ves) * units)} VES`;
+    if (selectedCurrency === 'CLP' && (sp.venta_clp || sp.clp)) return `$${_fmtLocal((sp.venta_clp || sp.clp) * units)} CLP`;
+    if (selectedCurrency === 'MXN' && (sp.venta_mex || sp.mxn)) return `$${_fmtLocal((sp.venta_mex || sp.mxn) * units)} MXN`;
   }
   return convertPrice(usdTotal);
 }

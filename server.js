@@ -98,6 +98,33 @@ app.get('/api/resenas', async (req, res) => {
   }
 });
 
+// GET /api/stock-status → Retorna solo el estado de cada servidor sin precios
+// Respuesta: { "dofus-touch": { "Blair": "Disponible", "Talok": "Agotado", ... }, ... }
+app.get('/api/stock-status', async (req, res) => {
+  try {
+    const sheetPrices = await withTimeout(sheets.getPricesFromSheet(), 5000);
+    if (!sheetPrices) {
+      return res.json({ success: false, error: 'No prices from sheet' });
+    }
+
+    const status = {};
+    for (const [gameId, servers] of Object.entries(sheetPrices)) {
+      if (gameId.startsWith('_')) continue;
+      status[gameId] = {};
+      for (const [serverName, data] of Object.entries(servers)) {
+        if (serverName === '_meta') continue;
+        status[gameId][serverName] = data.estado || 'Disponible';
+      }
+    }
+
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.json({ success: true, status });
+  } catch (err) {
+    console.error('[Stock Status] Error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Actualizar configuracion de un juego (precio/millon, stock, etc.)
 app.put('/api/admin/games/:gameId', adminAuth, (req, res) => {
   const data = readData();
