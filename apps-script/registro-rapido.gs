@@ -99,8 +99,8 @@ function inicializarStock() {
     if (!servidor || !String(servidor).trim()) continue;
     var srv = String(servidor).trim();
     if (srv.startsWith('📈') || srv.toUpperCase().startsWith('MARGEN')) continue;
-    var valorUSD = datos[i][2] || '';
-    var valorCOP = datos[i][8] || '';
+    var valorUSD = datos[i][5] || '';  // Columna F - VENTA USD (índice 5 desde A)
+    var valorCOP = datos[i][9] || '';  // Columna J - VENTA COP (índice 9 desde A)
     rows.push([juego, srv, '', 0, 0, valorUSD, valorCOP, '', '']);
   }
 
