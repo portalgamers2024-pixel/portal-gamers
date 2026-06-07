@@ -8,6 +8,9 @@ npm-debug.log*
 Thumbs.db
 sheets-key.json
 scripts/test-users.json
+# Migration artifacts contain account emails/passwords from the sheet — never commit
+data/migration.json
+data/precios-backup-live-*.json
 setup_discord.py
 check-domains.js
 api-response.json

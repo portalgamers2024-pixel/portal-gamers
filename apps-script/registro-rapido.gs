@@ -233,16 +233,13 @@ function registrarVenta() {
   var metodo    = form.getRange('C7').getValue();
   var canal     = form.getRange('C8').getValue();
   var precioUSD = form.getRange('C9').getValue();
-  var totalUSD  = form.getRange('C10').getValue();
-  var totalCOP  = form.getRange('C11').getValue();
-  var comMP     = form.getRange('C12').getValue();
-  var netoUSD   = form.getRange('C13').getValue();
 
-  if (!servidor || !cantidad) {
-    SpreadsheetApp.getUi().alert('⚠️ Campos obligatorios incompletos:\n- Servidor (C5)\n- Cantidad (C6)');
+  if (!servidor || !cantidad || !precioUSD) {
+    SpreadsheetApp.getUi().alert('⚠️ Campos obligatorios incompletos:\n- Servidor (C5)\n- Cantidad (C6)\n- Precio/M (C9)');
     return;
   }
 
+  var totalUSD = Number(cantidad) * Number(precioUSD);
   var juego = getJuegoPorServidor(servidor);
   var fecha = Utilities.formatDate(new Date(), 'America/Bogota', 'dd/MM/yyyy HH:mm:ss');
 
@@ -255,11 +252,11 @@ function registrarVenta() {
     cantidad || '',
     'Kamas',
     precioUSD ? '$' + precioUSD.toFixed(3) : '',
-    totalUSD  ? '$' + totalUSD.toFixed(2)  : '',
-    totalUSD  ? '$' + totalUSD.toFixed(2)  : '',
-    totalCOP  ? Math.round(totalCOP).toString() : '',
+    totalUSD ? '$' + totalUSD.toFixed(2)  : '',
+    totalUSD ? '$' + totalUSD.toFixed(2)  : '',
+    '',
     metodo   || '',
-    comMP    ? (comMP * 100).toFixed(2) + '%' : '',
+    '',
   ]);
 
   // Notificar servidor

@@ -134,28 +134,8 @@ async function getExchangeRates() {
 
 /**
  * FUNCIÓN ACTUALIZADA: getPricesFromSheet()
- *
- * Retorna: {
- *   [game_id]: {
- *     [serverName]: {
- *       venta_usd: USD,
- *       compra_usd: USD,
- *       venta_cop: COP,
- *       compra_cop: COP,
- *       venta_mex: MXN,
- *       venta_clp: CLP,
- *       venta_bs: Bs,
- *       compra_bs: Bs,
- *       compra_cop: COP,
- *       estado: "Disponible" | "Agotado" | "Stock Lleno",
- *       // Backward compatibility
- *       venta: USD (alias venta_usd),
- *       compra: USD (alias compra_usd)
- *     }
- *   },
- *   [game_id]._meta: { min_venta, max_venta },
- *   _rates: { compra: {...}, venta: {...} }
- * }
+ * Lee desde CALCULADORA y STOCKS en la nueva estructura migrada.
+ * Tasas vienen desde getExchangeRates() que lee desde ⚙️ Configuracion.
  */
 async function getPricesFromSheet() {
   if (!SHEET_ID) return null;
@@ -163,111 +143,137 @@ async function getPricesFromSheet() {
   if (cache.data && now - cache.ts < TTL) return cache.data;
 
   const sheets = await api();
-
-  // Obtiene tasas de cambio
   const rates = await getExchangeRates();
 
-  // Lee precios desde fila 6 (después de headers en fila 5)
-  // Rango: A6:K100 (incluye nueva columna ESTADO en K)
-  // A=Juego, B=Servidor
-  // C=Compra USD, D=Compra BS, E=Compra COP
-  // F=Venta USD, G=Venta MEX, H=Venta CLP, I=Venta BS, J=Venta COP
-  // K=Estado
-  const res = await sheets.spreadsheets.values.get({
+  // Lee CALCULADORA: estructura con bloques horizontales
+  const calc = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${TAB_PRECIOS}!A6:K100`,
+    range: `${TAB_PRECIOS}!A1:AL41`,
   });
 
+  // Lee STOCKS para ESTADO VENTA
+  const stocks = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: `📦 Stock Y Cuentas!A1:K100`,
+  });
+
+  const calcRows = calc.data.values || [];
+  const stockRows = stocks.data.values || [];
+
+  // Build server->estado map from STOCKS (A=servidor, K=ESTADO VENTA)
+  const estadoMap = {};
+  for (let i = 2; i < stockRows.length; i++) {
+    const row = stockRows[i] || [];
+    const server = row[0] && String(row[0]).trim();
+    const estado = row[10] && String(row[10]).trim();
+    if (server && estado) {
+      estadoMap[server.toUpperCase()] = estado;
+    }
+  }
+
   const result = {};
-  let currentGameId = null;
+  let currentGame = null;
 
-  for (const row of res.data.values || []) {
-    const gameRaw    = row[0];                // A: Juego/Servidor
-    const compraUSD  = parseNum(row[1]);      // B: Compra USD
-    const compraBS   = parseNum(row[2]);      // C: Compra BS
-    const compraCOP  = parseNum(row[3]);      // D: Compra COP
-    const ventaUSD   = parseNum(row[4]);      // E: Venta USD (base)
-    const ventaMEX   = parseNum(row[5]);      // F: Venta MEX
-    const ventaCLP   = parseNum(row[6]);      // G: Venta CLP
-    const ventaBS    = parseNum(row[7]);      // H: Venta BS
-    const ventaCOP   = parseNum(row[8]);      // I: Venta COP
-    const estado     = (row[10] || 'Disponible').trim();  // K: Estado
+  // Row 5: Game headers (B=DOFUS, Q=ALBION, etc)
+  // Row 6: Section headers (B=COMPRA, F=VENTA, etc)
+  // Row 7: Column headers (B=Servidor, D=USDT, J=USDT, etc)
+  // Row 8+: Data rows por juego
 
-    const server = gameRaw && gameRaw.trim() ? gameRaw.trim() : '';
+  // Process rows starting from row 8 (after headers)
+  for (let i = 7; i < calcRows.length; i++) {
+    const row = calcRows[i] || [];
+    const colB = row[1] ? String(row[1]).trim() : '';
+    const colQ = row[16] ? String(row[16]).trim() : '';
 
-    // Identifica juego basado en el nombre del servidor o juego en la primer columna
-    if (gameRaw && gameRaw.trim()) {
-      // Intenta mapear el nombre a un juego conocido
-      const mapped = GAME_NAME_MAP[gameRaw.trim().toUpperCase()] || null;
+    // Detect game header rows (all-caps game names, no prices)
+    if (colB && colB.toUpperCase() === colB && !parseNum(row[3])) {
+      const mapped = Object.entries(GAME_NAME_MAP).find(([k]) => colB.toUpperCase().includes(k));
       if (mapped) {
-        currentGameId = mapped;
-      } else {
-        // Busca coincidencia parcial
-        const key = Object.keys(GAME_NAME_MAP).find(k => gameRaw.toUpperCase().includes(k));
-        if (key) {
-          currentGameId = GAME_NAME_MAP[key];
-        }
+        currentGame = mapped[1];
+      }
+      continue;
+    }
+
+    // DOFUS family block (left side): cols B-L
+    // B=Servidor, D=USDT(compra), J=USDT(venta), G=COP(venta), K=BS(venta)
+    if (currentGame && colB && !colB.startsWith('COMPRA') && !colB.startsWith('VENTA') && !colB.match(/^[0-9,]+$/)) {
+      const compraUSD = parseNum(row[3]);  // D
+      const ventaUSD = parseNum(row[9]);   // J
+
+      if (compraUSD > 0 || ventaUSD > 0) {
+        const serverName = colB;
+        const ventaCOP = parseNum(row[6]);   // G
+        const ventaBS = parseNum(row[10]);   // K
+
+        if (!result[currentGame]) result[currentGame] = {};
+        result[currentGame][serverName] = {
+          venta_usd: ventaUSD,
+          compra_usd: compraUSD,
+          venta_cop: ventaCOP || (ventaUSD * rates.venta.cop),
+          compra_cop: compraUSD * rates.compra.cop,
+          venta_mex: ventaUSD * rates.venta.mex,
+          compra_mex: compraUSD * rates.compra.mex,
+          venta_clp: ventaUSD * rates.venta.clp,
+          compra_clp: compraUSD * rates.compra.clp,
+          venta_bs: ventaBS || (ventaUSD * rates.venta.bs),
+          compra_bs: compraUSD * rates.compra.bs,
+          estado: estadoMap[serverName.toUpperCase()] || 'Disponible',
+          // Backward compat
+          venta: ventaUSD,
+          compra: compraUSD,
+          cop: ventaCOP || (ventaUSD * rates.venta.cop),
+          mxn: ventaUSD * rates.venta.mex,
+          clp: ventaUSD * rates.venta.clp,
+          ves: ventaBS || (ventaUSD * rates.venta.bs),
+        };
       }
     }
 
-    // Validación
-    if (!currentGameId || !server) continue;
-    if (server.startsWith('📈') || server.startsWith('MARGEN')) continue;
-    if (!ventaUSD && !compraUSD) continue; // Si ambos son 0, ignora
+    // ALBION block (right side): cols Q-Z (regions: BINANCE, COLOMBIA, VENEZUELA, CHILE)
+    // Q=Region, T=Compra USDT, Z=Venta USDT
+    if (colQ && colQ !== 'COMPRA' && colQ !== 'VENTA' && colQ !== 'BINANCE' && !colQ.match(/^[0-9,]+$/)) {
+      const compraUSD = parseNum(row[19]);  // T
+      const ventaUSD = parseNum(row[25]);   // Z
 
-    // Calcula precios en otras monedas usando tasas
-    const finalVentaMEX  = ventaMEX  || ventaUSD * rates.venta.mex;
-    const finalVentaCLP  = ventaCLP  || ventaUSD * rates.venta.clp;
-    const finalVentaBS   = ventaBS   || ventaUSD * rates.venta.bs;
-    const finalVentaCOP  = ventaCOP  || ventaUSD * rates.venta.cop;
-
-    const finalCompraMEX = compraUSD * rates.compra.mex;
-    const finalCompraCLP = compraUSD * rates.compra.clp;
-    const finalCompraBS  = compraBS  || compraUSD * rates.compra.bs;
-    const finalCompraCOP = compraCOP || compraUSD * rates.compra.cop;
-
-    if (!result[currentGameId]) result[currentGameId] = {};
-    result[currentGameId][server.trim()] = {
-      // Base (USD) - nombres nuevos consistentes
-      venta_usd: ventaUSD,
-      compra_usd: compraUSD,
-
-      // Ventas en otras monedas
-      venta_mex: finalVentaMEX,
-      venta_clp: finalVentaCLP,
-      venta_bs: finalVentaBS,
-      venta_cop: finalVentaCOP,
-
-      // Compras en otras monedas
-      compra_bs: finalCompraBS,
-      compra_cop: finalCompraCOP,
-
-      // Estado del servidor
-      estado: estado,
-
-      // Backward compatibility (alias para código antiguo)
-      venta: ventaUSD,
-      compra: compraUSD,
-      cop: finalVentaCOP,
-      mxn: finalVentaMEX,
-      clp: finalVentaCLP,
-      ves: finalVentaBS
-    };
+      if (compraUSD > 0 || ventaUSD > 0) {
+        if (!result['albion']) result['albion'] = {};
+        result['albion'][colQ] = {
+          venta_usd: ventaUSD,
+          compra_usd: compraUSD,
+          venta_cop: ventaUSD * rates.venta.cop,
+          compra_cop: compraUSD * rates.compra.cop,
+          venta_mex: ventaUSD * rates.venta.mex,
+          compra_mex: compraUSD * rates.compra.mex,
+          venta_clp: ventaUSD * rates.venta.clp,
+          compra_clp: compraUSD * rates.compra.clp,
+          venta_bs: ventaUSD * rates.venta.bs,
+          compra_bs: compraUSD * rates.compra.bs,
+          estado: estadoMap[colQ.toUpperCase()] || 'Disponible',
+          // Backward compat
+          venta: ventaUSD,
+          compra: compraUSD,
+          cop: ventaUSD * rates.venta.cop,
+          mxn: ventaUSD * rates.venta.mex,
+          clp: ventaUSD * rates.venta.clp,
+          ves: ventaUSD * rates.venta.bs,
+        };
+      }
+    }
   }
 
-  // Calcula _meta por juego (precio mínimo/máximo de venta en USD)
+  // Calcula _meta por juego
   for (const [gameId, servers] of Object.entries(result)) {
     const ventas = Object.values(servers)
       .filter(s => typeof s === 'object' && s.venta)
       .map(s => s.venta);
-    if (!ventas.length) continue;
-    result[gameId]._meta = {
-      min_venta: Math.min(...ventas),
-      max_venta: Math.max(...ventas),
-    };
+    if (ventas.length) {
+      result[gameId]._meta = {
+        min_venta: Math.min(...ventas),
+        max_venta: Math.max(...ventas),
+      };
+    }
   }
 
-  // Incluye tasas en el resultado (opcional, para debugging)
   result._rates = rates;
 
   cache = { data: result, ts: now };
