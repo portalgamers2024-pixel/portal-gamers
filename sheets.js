@@ -151,7 +151,7 @@ async function getPricesFromSheet() {
     range: `${TAB_PRECIOS}!A1:AL41`,
   });
 
-  // Lee STOCKS para ESTADO VENTA
+  // Lee STOCKS para ESTADO COMPRA y ESTADO VENTA
   const stocks = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
     range: `📦 Stock Y Cuentas!A1:K100`,
@@ -160,14 +160,19 @@ async function getPricesFromSheet() {
   const calcRows = calc.data.values || [];
   const stockRows = stocks.data.values || [];
 
-  // Build server->estado map from STOCKS (A=servidor, K=ESTADO VENTA)
+  // Build server->estado map from STOCKS
+  // A=servidor, J=ESTADO COMPRA (DISPONIBLE/FULL STOCK), K=ESTADO VENTA (DISPONIBLE/STOCK AGOTADO)
   const estadoMap = {};
   for (let i = 2; i < stockRows.length; i++) {
     const row = stockRows[i] || [];
     const server = row[0] && String(row[0]).trim();
-    const estado = row[10] && String(row[10]).trim();
-    if (server && estado) {
-      estadoMap[server.toUpperCase()] = estado;
+    const estadoCompra = row[9] && String(row[9]).trim();
+    const estadoVenta = row[10] && String(row[10]).trim();
+    if (server) {
+      estadoMap[server.toUpperCase()] = {
+        estado_compra: estadoCompra || 'DISPONIBLE',
+        estado_venta: estadoVenta || 'DISPONIBLE'
+      };
     }
   }
 
@@ -206,6 +211,7 @@ async function getPricesFromSheet() {
         const ventaBS = parseNum(row[10]);   // K
 
         if (!result[currentGame]) result[currentGame] = {};
+        const serverEstado = estadoMap[serverName.toUpperCase()] || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
         result[currentGame][serverName] = {
           venta_usd: ventaUSD,
           compra_usd: compraUSD,
@@ -217,7 +223,9 @@ async function getPricesFromSheet() {
           compra_clp: compraUSD * rates.compra.clp,
           venta_bs: ventaBS || (ventaUSD * rates.venta.bs),
           compra_bs: compraUSD * rates.compra.bs,
-          estado: estadoMap[serverName.toUpperCase()] || 'Disponible',
+          estado_compra: serverEstado.estado_compra,
+          estado_venta: serverEstado.estado_venta,
+          estado: serverEstado.estado_venta,
           // Backward compat
           venta: ventaUSD,
           compra: compraUSD,
@@ -237,6 +245,7 @@ async function getPricesFromSheet() {
 
       if (compraUSD > 0 || ventaUSD > 0) {
         if (!result['albion']) result['albion'] = {};
+        const serverEstado = estadoMap[colQ.toUpperCase()] || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
         result['albion'][colQ] = {
           venta_usd: ventaUSD,
           compra_usd: compraUSD,
@@ -248,7 +257,9 @@ async function getPricesFromSheet() {
           compra_clp: compraUSD * rates.compra.clp,
           venta_bs: ventaUSD * rates.venta.bs,
           compra_bs: compraUSD * rates.compra.bs,
-          estado: estadoMap[colQ.toUpperCase()] || 'Disponible',
+          estado_compra: serverEstado.estado_compra,
+          estado_venta: serverEstado.estado_venta,
+          estado: serverEstado.estado_venta,
           // Backward compat
           venta: ventaUSD,
           compra: compraUSD,

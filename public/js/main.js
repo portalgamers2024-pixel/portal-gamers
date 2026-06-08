@@ -263,27 +263,46 @@ function renderServerCards() {
       ? `<div class="sc-local">&#8776; ${localRate}${isWow ? ` / ${unitLabel}` : ' / M'}</div>`
       : '';
 
-    // Determina color del badge según estado
-    let estadoBadgeHtml = '';
-    let badgeColor = '#10b981'; // verde
-    let badgeText = estado;
-    if (estado === 'Agotado') {
-      badgeColor = '#ef4444'; // rojo
-    } else if (estado === 'Stock Lleno') {
-      badgeColor = '#f97316'; // naranja
-      badgeText = 'No compramos';
+    // Determina badges para COMPRA y VENTA
+    let estadoBadgesHtml = '';
+    const estadoVenta = serverData?.estado_venta || 'DISPONIBLE';
+    const estadoCompra = serverData?.estado_compra || 'DISPONIBLE';
+
+    // Badge VENTA
+    let ventaColor = '#10b981'; // verde
+    let ventaText = '✅ Disponible';
+    let ventaDisabled = false;
+    if (estadoVenta === 'STOCK AGOTADO') {
+      ventaColor = '#ef4444'; // rojo
+      ventaText = '❌ Agotado';
+      ventaDisabled = true;
     }
 
-    if (estado) {
-      estadoBadgeHtml = `<div class="sc-estado-badge" style="background-color:${badgeColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;margin-bottom:8px;text-align:center;">${badgeText}</div>`;
+    // Badge COMPRA
+    let compraColor = '#10b981'; // verde
+    let compraText = '✅ Compramos';
+    let compraDisabled = false;
+    if (estadoCompra === 'FULL STOCK') {
+      compraColor = '#f97316'; // naranja
+      compraText = '🔒 No compramos';
+      compraDisabled = true;
     }
+
+    estadoBadgesHtml = `
+      <div style="display:flex;gap:4px;margin-bottom:8px;">
+        <div class="sc-estado-badge" style="background-color:${ventaColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:0.7rem;font-weight:600;flex:1;text-align:center;">${ventaText}</div>
+        <div class="sc-estado-badge" style="background-color:${compraColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:0.7rem;font-weight:600;flex:1;text-align:center;">${compraText}</div>
+      </div>`;
+
+    const cardClickHandler = ventaDisabled ? '' : `onclick="selectServer('${server.replace(/'/g, "\\'")}')`;
+    const cardStyle = ventaDisabled ? 'opacity:0.6;cursor:not-allowed;' : '';
 
     return `
-      <div class="server-card" data-game-id="${g.id}" onclick="selectServer('${server.replace(/'/g, "\\'")}')">
+      <div class="server-card" data-game-id="${g.id}" style="${cardStyle}" ${cardClickHandler}>
         <img class="sc-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
         <div class="sc-game-badge">${g.name}</div>
         <div class="sc-name">${server}</div>
-        ${estadoBadgeHtml}
+        ${estadoBadgesHtml}
         <div class="sc-price">${priceDisplay}</div>
         ${localDisplay}
         <div class="sc-delivery">&#9889; ${g.delivery}</div>
@@ -313,6 +332,12 @@ function renderPurchaseForm() {
   if (!grid) return;
 
   const g = currentGame;
+  const serverData = g.server_prices?.[currentServer];
+  const estadoVenta = serverData?.estado_venta || 'DISPONIBLE';
+  const estadoCompra = serverData?.estado_compra || 'DISPONIBLE';
+  const puedoComprar = estadoVenta !== 'STOCK AGOTADO';
+  const puedoVender = estadoCompra !== 'FULL STOCK';
+
   const isWow = !!g.unit_label;
   const unitLabel = g.unit_label || `M ${g.currency_name}`;
   const defaultM = g.min_millions || 1;
@@ -327,6 +352,32 @@ function renderPurchaseForm() {
   const wowNote = isWow
     ? `<div class="pf-wow-note">&#128279; Precio de referencia: <a href="${g.price_reference || 'https://undermine.exchange'}" target="_blank" rel="noopener">undermine.exchange</a></div>`
     : '';
+
+  // Badge de VENTA
+  let ventaColor = '#10b981';
+  let ventaText = '✅ Disponible';
+  if (estadoVenta === 'STOCK AGOTADO') {
+    ventaColor = '#ef4444';
+    ventaText = '❌ Agotado';
+  }
+
+  // Badge de COMPRA
+  let compraColor = '#10b981';
+  let compraText = '✅ Compramos';
+  if (estadoCompra === 'FULL STOCK') {
+    compraColor = '#f97316';
+    compraText = '🔒 No compramos';
+  }
+
+  const estadoBadgesHtml = `
+    <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;">
+      <div style="background-color:${ventaColor};color:#fff;padding:6px 12px;border-radius:4px;font-size:0.85rem;font-weight:600;">Estado Venta: ${ventaText}</div>
+      <div style="background-color:${compraColor};color:#fff;padding:6px 12px;border-radius:4px;font-size:0.85rem;font-weight:600;">Estado Compra: ${compraText}</div>
+    </div>`;
+
+  const buyBtnClass = puedoComprar ? 'pf-btn-buy' : 'pf-btn-buy' + (puedoComprar ? '' : ' disabled');
+  const buyBtnStyle = puedoComprar ? '' : 'opacity:0.5;cursor:not-allowed;';
+  const buyBtnDisabled = puedoComprar ? '' : 'disabled';
 
   grid.innerHTML = `
     <div class="purchase-form" style="grid-column:1/-1">
@@ -348,6 +399,8 @@ function renderPurchaseForm() {
           ${rateLocal ? `<div class="pf-rate-local">&#8776; ${rateLocal}</div>` : ''}
         </div>
       </div>
+
+      ${estadoBadgesHtml}
 
       <div class="pf-body">
         <div class="pf-section-label">${qtyLabel}</div>
@@ -375,12 +428,13 @@ function renderPurchaseForm() {
         </div>
 
         <div class="pf-actions">
-          <button class="pf-btn-buy" onclick="buyNow()">🛒 Comprar ahora</button>
+          <button class="pf-btn-buy" onclick="buyNow()" ${buyBtnDisabled} style="${buyBtnStyle}">🛒 Comprar ahora</button>
           <div class="pf-actions-secondary">
-            <button class="pf-btn-cart" onclick="addCustomToCart()">+ Agregar al carrito</button>
+            <button class="pf-btn-cart" onclick="addCustomToCart()" ${buyBtnDisabled} style="${buyBtnStyle}">+ Agregar al carrito</button>
             <button class="pf-btn-wa" onclick="orderViaWhatsApp()">&#128172; Pedir por WhatsApp</button>
           </div>
         </div>
+        ${!puedoComprar ? '<div style="color:#ef4444;font-weight:600;margin-top:12px;text-align:center;">Stock agotado - No es posible comprar en este momento</div>' : ''}
       </div>
     </div>`;
 }
@@ -425,8 +479,20 @@ function updateLivePrice() {
   }
 }
 
+function canBuy() {
+  if (!currentGame || !currentServer) return false;
+  const serverData = currentGame.server_prices?.[currentServer];
+  const estadoVenta = serverData?.estado_venta || 'DISPONIBLE';
+  return estadoVenta !== 'STOCK AGOTADO';
+}
+
 function addCustomToCart() {
   if (!currentGame) return;
+  if (!canBuy()) {
+    showToast('Stock agotado - No es posible comprar en este momento', 'error');
+    return;
+  }
+
   const input = document.getElementById('millions-input');
   if (!input) return;
   let millions = parseInt(input.value) || currentGame.min_millions;
@@ -476,6 +542,11 @@ function addCustomToCart() {
 
 function buyNow() {
   if (!currentGame) return;
+  if (!canBuy()) {
+    showToast('Stock agotado - No es posible comprar en este momento', 'error');
+    return;
+  }
+
   const input = document.getElementById('millions-input');
   if (!input) return;
   let millions = parseInt(input.value) || currentGame.min_millions;

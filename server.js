@@ -98,8 +98,8 @@ app.get('/api/resenas', async (req, res) => {
   }
 });
 
-// GET /api/stock-status → Retorna solo el estado de cada servidor sin precios
-// Respuesta: { "dofus-touch": { "Blair": "Disponible", "Talok": "Agotado", ... }, ... }
+// GET /api/stock-status → Retorna estado compra/venta de cada servidor sin precios
+// Respuesta: { "dofus-touch": { "Blair": { "estado_compra": "DISPONIBLE", "estado_venta": "DISPONIBLE" }, ... }, ... }
 app.get('/api/stock-status', async (req, res) => {
   try {
     const sheetPrices = await withTimeout(sheets.getPricesFromSheet(), 5000);
@@ -113,7 +113,10 @@ app.get('/api/stock-status', async (req, res) => {
       status[gameId] = {};
       for (const [serverName, data] of Object.entries(servers)) {
         if (serverName === '_meta') continue;
-        status[gameId][serverName] = data.estado || 'Disponible';
+        status[gameId][serverName] = {
+          estado_compra: data.estado_compra || 'DISPONIBLE',
+          estado_venta: data.estado_venta || 'DISPONIBLE'
+        };
       }
     }
 
