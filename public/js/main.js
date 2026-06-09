@@ -263,50 +263,33 @@ function renderServerCards() {
       ? `<div class="sc-local">&#8776; ${localRate}${isWow ? ` / ${unitLabel}` : ' / M'}</div>`
       : '';
 
-    // Determina badges para COMPRA y VENTA
-    let estadoBadgesHtml = '';
     const estadoVenta = serverData?.estado_venta || 'DISPONIBLE';
     const estadoCompra = serverData?.estado_compra || 'DISPONIBLE';
+    const ventaAgotada = estadoVenta === 'STOCK AGOTADO';
+    const noCompramos = estadoCompra === 'FULL STOCK';
 
-    // Badge VENTA
-    let ventaColor = '#10b981'; // verde
-    let ventaText = '✅ Disponible';
-    let ventaDisabled = false;
-    if (estadoVenta === 'STOCK AGOTADO') {
-      ventaColor = '#ef4444'; // rojo
-      ventaText = '❌ Agotado';
-      ventaDisabled = true;
+    // Botón de selección: verde si disponible, gris si agotado
+    let btnColor = ventaAgotada ? '#d1d5db' : '#10b981';
+    let btnText = ventaAgotada ? 'Agotado' : 'Seleccionar &rarr;';
+    let btnCursor = ventaAgotada ? 'not-allowed' : 'pointer';
+    const cardClickHandler = ventaAgotada ? '' : `onclick="selectServer('${server.replace(/'/g, "\\'")}')`;
+
+    // Texto sutil si no compramos
+    let compramosHtml = '';
+    if (noCompramos) {
+      compramosHtml = '<div style="font-size:0.75rem;color:#999;margin-top:4px;font-style:italic;">No compramos actualmente</div>';
     }
-
-    // Badge COMPRA
-    let compraColor = '#10b981'; // verde
-    let compraText = '✅ Compramos';
-    let compraDisabled = false;
-    if (estadoCompra === 'FULL STOCK') {
-      compraColor = '#f97316'; // naranja
-      compraText = '🔒 No compramos';
-      compraDisabled = true;
-    }
-
-    estadoBadgesHtml = `
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <div class="sc-estado-badge" style="background-color:${ventaColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:0.7rem;font-weight:600;flex:1;text-align:center;">${ventaText}</div>
-        <div class="sc-estado-badge" style="background-color:${compraColor};color:#fff;padding:4px 8px;border-radius:4px;font-size:0.7rem;font-weight:600;flex:1;text-align:center;">${compraText}</div>
-      </div>`;
-
-    const cardClickHandler = ventaDisabled ? '' : `onclick="selectServer('${server.replace(/'/g, "\\'")}')`;
-    const cardStyle = ventaDisabled ? 'opacity:0.6;cursor:not-allowed;' : '';
 
     return `
-      <div class="server-card" data-game-id="${g.id}" style="${cardStyle}" ${cardClickHandler}>
+      <div class="server-card" data-game-id="${g.id}" ${cardClickHandler} style="${ventaAgotada ? 'cursor:not-allowed;' : ''}">
         <img class="sc-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
         <div class="sc-game-badge">${g.name}</div>
         <div class="sc-name">${server}</div>
-        ${estadoBadgesHtml}
         <div class="sc-price">${priceDisplay}</div>
         ${localDisplay}
+        ${compramosHtml}
         <div class="sc-delivery">&#9889; ${g.delivery}</div>
-        <div class="sc-select-btn">Seleccionar &rarr;</div>
+        <div class="sc-select-btn" style="background-color:${btnColor};cursor:${btnCursor};">${btnText}</div>
       </div>`;
   }).join('');
 
