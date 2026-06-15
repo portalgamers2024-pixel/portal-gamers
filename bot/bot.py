@@ -2,6 +2,11 @@ import discord
 from discord.ext import commands
 import os
 import asyncio
+import sys
+
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -19,19 +24,41 @@ class TicketView(discord.ui.View):
 
     @discord.ui.button(label="🛒 Comprar", style=discord.ButtonStyle.primary, custom_id="ticket_comprar")
     async def comprar(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await crear_ticket(interaction, "compra")
+        await handle_ticket_button(interaction, "compra")
 
-    @discord.ui.button(label="📦 Soporte post-venta", style=discord.ButtonStyle.secondary, custom_id="ticket_soporte")
-    async def soporte(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await crear_ticket(interaction, "soporte")
+    @discord.ui.button(label="💰 Vender", style=discord.ButtonStyle.primary, custom_id="ticket_vender")
+    async def vender(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await handle_ticket_button(interaction, "vender")
 
-    @discord.ui.button(label="⭐ Dejar referencia", style=discord.ButtonStyle.success, custom_id="ticket_referencia")
-    async def referencia(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await crear_ticket(interaction, "referencia")
-
-    @discord.ui.button(label="🔍 Verificación proveedor", style=discord.ButtonStyle.danger, custom_id="ticket_proveedor")
-    async def proveedor(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await crear_ticket(interaction, "proveedor")
+async def handle_ticket_button(interaction: discord.Interaction, tipo: str):
+    try:
+        await interaction.response.defer(ephemeral=True)
+        await crear_ticket(interaction, tipo)
+        msg = await interaction.followup.send(f"✅ Ticket creado!", ephemeral=True)
+        await asyncio.sleep(3)
+        try:
+            await msg.delete()
+        except discord.NotFound:
+            pass
+    except ValueError as ve:
+        print(f"⚠️ Validación en {tipo}: {ve}")
+        msg = await interaction.followup.send(f"⚠️ {str(ve)}", ephemeral=True)
+        await asyncio.sleep(3)
+        try:
+            await msg.delete()
+        except discord.NotFound:
+            pass
+    except Exception as e:
+        print(f"❌ Error en botón {tipo.title()}: {e}")
+        try:
+            msg = await interaction.followup.send(f"❌ Error al crear ticket", ephemeral=True)
+            await asyncio.sleep(3)
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                pass
+        except:
+            pass
 
 async def crear_ticket(interaction: discord.Interaction, tipo: str):
     guild = interaction.guild
@@ -39,8 +66,7 @@ async def crear_ticket(interaction: discord.Interaction, tipo: str):
 
     existing = discord.utils.get(guild.text_channels, name=f"ticket-{member.name.lower()}-{tipo}")
     if existing:
-        await interaction.response.send_message(f"⚠️ Ya tienes un ticket abierto: {existing.mention}", ephemeral=True)
-        return
+        raise ValueError(f"Ya tienes un ticket abierto: {existing.mention}")
 
     cat = guild.get_channel(SOPORTE_CAT_ID)
 
@@ -63,14 +89,11 @@ async def crear_ticket(interaction: discord.Interaction, tipo: str):
 
     mensajes = {
         "compra": f"🛒 **Ticket de Compra**\n\nHola {member.mention}! Un administrador te atenderá pronto.\n\nPor favor indica:\n• Juego y servidor\n• Cantidad que necesitas\n• País de pago\n\n🌐 https://portalgamerslatam.com",
-        "soporte": f"📦 **Ticket de Soporte**\n\nHola {member.mention}! Cuéntanos el problema con tu pedido y lo resolveremos a la brevedad.",
-        "referencia": f"⭐ **Dejar Referencia**\n\nHola {member.mention}! Gracias por confiar en nosotros.\n\nPor favor comparte:\n• Juego y servidor\n• Tu experiencia de compra\n• Calificación del 1 al 5",
-        "proveedor": f"🔍 **Verificación de Proveedor**\n\nHola {member.mention}! Para unirte a nuestra red indica:\n• Juego(s) que ofreces\n• Servidores disponibles\n• Método de contacto"
+        "vender": f"💰 **Ticket de Venta**\n\nHola {member.mention}! Un administrador te atenderá para procesar tu venta.\n\nPor favor indica:\n• Juego y servidor\n• Cantidad que deseas vender\n• Tu método de pago preferido\n\n🌐 https://portalgamerslatam.com"
     }
 
     close_view = CloseView()
     await channel.send(mensajes[tipo], view=close_view)
-    await interaction.response.send_message(f"✅ Tu ticket fue creado: {channel.mention}", ephemeral=True)
 
 class CloseView(discord.ui.View):
     def __init__(self):
@@ -84,14 +107,17 @@ class CloseView(discord.ui.View):
 
 @bot.event
 async def on_ready():
-    print(f"✅ Bot conectado como {bot.user}")
-    bot.add_view(TicketView())
-    bot.add_view(CloseView())
     try:
-        synced = await bot.tree.sync()
-        print(f"✅ {len(synced)} comandos sincronizados")
+        print(f"✅ Bot conectado como {bot.user}")
+        bot.add_view(TicketView())
+        bot.add_view(CloseView())
+        try:
+            synced = await bot.tree.sync()
+            print(f"✅ {len(synced)} comandos sincronizados")
+        except Exception as e:
+            print(f"❌ Error sync: {e}")
     except Exception as e:
-        print(f"❌ Error sync: {e}")
+        print(f"❌ Error en on_ready: {e}")
 
 token = os.environ.get("BOT_TOKEN")
 if not token:
