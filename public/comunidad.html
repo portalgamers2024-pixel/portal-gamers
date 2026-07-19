@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Únete a la comunidad gamer de LATAM</title>
+<meta name="description" content="Únete a la comunidad gamer de LATAM. Más de 10 años acompañando a miles de jugadores en su aventura. Escríbenos por WhatsApp.">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="/images/logo.png" type="image/png">
+<style>
+  :root{
+    --bg:#080B24;
+    --dorado:#FFD700;
+    --orange:#FF8000;
+    --cyan:#00C8FF;
+    --text:#F1F2F8;
+    --text-dim:#B7BAD6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height:1.6;
+    min-height:100vh;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
+
+  /* Header propio y minimo */
+  header.site-header{
+    padding:22px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+  header.site-header img{
+    width:38px;height:38px;border-radius:8px;object-fit:contain;
+  }
+  header.site-header span{
+    font-weight:700;
+    font-size:1.05rem;
+    letter-spacing:.3px;
+    color:var(--text);
+  }
+
+  /* Hero */
+  .hero{
+    text-align:center;
+    padding:36px 0 28px;
+  }
+  .hero h1{
+    font-size:clamp(1.7rem, 5.5vw, 2.6rem);
+    font-weight:800;
+    line-height:1.25;
+    background:linear-gradient(90deg, var(--dorado), var(--orange));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .hero p{
+    margin-top:14px;
+    font-size:clamp(1rem, 3.2vw, 1.2rem);
+    color:var(--text-dim);
+  }
+
+  /* Boton WhatsApp */
+  .btn-wa{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:100%;
+    max-width:420px;
+    margin:26px auto 0;
+    padding:18px 24px;
+    border-radius:14px;
+    background:linear-gradient(90deg, var(--orange), var(--dorado));
+    color:#111;
+    font-weight:800;
+    font-size:1.1rem;
+    text-decoration:none;
+    box-shadow:0 8px 24px rgba(255,128,0,.35);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-wa:hover{transform:translateY(-2px); box-shadow:0 10px 28px rgba(255,215,0,.45)}
+  .btn-wa svg{width:24px;height:24px;flex-shrink:0}
+  .btn-wa-row{display:flex;justify-content:center}
+
+  /* Confianza */
+  .trust{
+    margin-top:52px;
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+  }
+  .trust-item{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(0,200,255,.25);
+    border-radius:14px;
+    padding:20px 14px;
+    text-align:center;
+  }
+  .trust-item .num{
+    display:block;
+    font-size:1.6rem;
+    font-weight:800;
+    color:var(--cyan);
+  }
+  .trust-item .label{
+    display:block;
+    margin-top:4px;
+    font-size:.85rem;
+    color:var(--text-dim);
+  }
+
+  /* Testimonios */
+  .section-title{
+    margin-top:56px;
+    text-align:center;
+    font-size:1.4rem;
+    font-weight:800;
+    color:var(--dorado);
+  }
+  .testimonials{
+    margin-top:24px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .testimonial{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,215,0,.2);
+    border-radius:14px;
+    padding:18px 20px;
+  }
+  .testimonial .stars{color:var(--dorado); font-size:.95rem; letter-spacing:2px}
+  .testimonial p{margin-top:8px; color:var(--text); font-size:.98rem}
+  .testimonial .author{margin-top:10px; color:var(--text-dim); font-size:.85rem; font-weight:600}
+
+  /* Cierre */
+  .closing{
+    margin-top:60px;
+    text-align:center;
+    padding:34px 0 60px;
+  }
+  .closing h2{
+    font-size:clamp(1.2rem, 4vw, 1.6rem);
+    font-weight:800;
+    color:var(--text);
+    margin-bottom:20px;
+  }
+
+  footer.site-footer{
+    text-align:center;
+    padding:20px;
+    color:var(--text-dim);
+    font-size:.8rem;
+    border-top:1px solid rgba(255,255,255,.08);
+  }
+
+  @media (max-width:480px){
+    .trust{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <img src="/images/logo.png" alt="Portal Gamers" loading="eager" onerror="this.style.display='none'">
+  <span>Portal Gamers</span>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>Únete a la comunidad gamer de LATAM</h1>
+    <p>+10 años acompañando a miles de jugadores en su aventura</p>
+    <div class="btn-wa-row">
+      <a class="btn-wa" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.868-2.03-.967-.273-.099-.472-.148-.67.15-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.148-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.46 3.485 1.333 5.003L2 22l5.13-1.322a9.958 9.958 0 0 0 4.874 1.242h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.038-5.18-2.924-7.066a9.935 9.935 0 0 0-7.077-2.854zm0 18.16h-.003a8.15 8.15 0 0 1-4.155-1.138l-.298-.177-3.044.784.812-2.968-.194-.305a8.16 8.16 0 0 1-1.253-4.36c0-4.508 3.669-8.176 8.178-8.176a8.13 8.13 0 0 1 5.782 2.398 8.126 8.126 0 0 1 2.393 5.782c0 4.509-3.669 8.16-8.203 8.16z"/>
+        </svg>
+        Escríbenos por WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <section class="trust">
+    <div class="trust-item"><span class="num">+10</span><span class="label">años de trayectoria</span></div>
+    <div class="trust-item"><span class="num">+1000</span><span class="label">jugadores acompañados</span></div>
+    <div class="trust-item"><span class="num">❤</span><span class="label">atención cercana</span></div>
+    <div class="trust-item"><span class="num">24/7</span><span class="label">soporte disponible</span></div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Lo que dice nuestra comunidad</h2>
+    <div class="testimonials">
+      <!-- Testimonio 1: reemplazar con reseña real -->
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>Espacio reservado para el testimonio de un jugador de la comunidad.</p>
+        <div class="author">— Nombre del jugador</div>
+      </div>
+      <!-- Testimonio 2: reemplazar con reseña real -->
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>Espacio reservado para el testimonio de un jugador de la comunidad.</p>
+        <div class="author">— Nombre del jugador</div>
+      </div>
+      <!-- Testimonio 3: reemplazar con reseña real -->
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>Espacio reservado para el testimonio de un jugador de la comunidad.</p>
+        <div class="author">— Nombre del jugador</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <h2>¿Listo para sumarte a la aventura?</h2>
+    <div class="btn-wa-row">
+      <a class="btn-wa" href="https://wa.me/573223427456" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.868-2.03-.967-.273-.099-.472-.148-.67.15-.198.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.148-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.46 3.485 1.333 5.003L2 22l5.13-1.322a9.958 9.958 0 0 0 4.874 1.242h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.038-5.18-2.924-7.066a9.935 9.935 0 0 0-7.077-2.854zm0 18.16h-.003a8.15 8.15 0 0 1-4.155-1.138l-.298-.177-3.044.784.812-2.968-.194-.305a8.16 8.16 0 0 1-1.253-4.36c0-4.508 3.669-8.176 8.178-8.176a8.13 8.13 0 0 1 5.782 2.398 8.126 8.126 0 0 1 2.393 5.782c0 4.509-3.669 8.16-8.203 8.16z"/>
+        </svg>
+        Escríbenos por WhatsApp
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>&copy; 2026 Portal Gamers</p>
+</footer>
+
+</body>
+</html>
