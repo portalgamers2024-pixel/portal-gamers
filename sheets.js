@@ -209,6 +209,8 @@ async function getPricesFromSheet() {
         const serverName = colB;
         const ventaCOP = parseNum(row[6]);   // G
         const ventaBS = parseNum(row[10]);   // K
+        const compraCOP = parseNum(row[2]);  // C
+        const compraBS = parseNum(row[4]);   // E
 
         if (!result[currentGame]) result[currentGame] = {};
         const serverEstado = estadoMap[serverName.toUpperCase()] || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
@@ -216,13 +218,13 @@ async function getPricesFromSheet() {
           venta_usd: ventaUSD,
           compra_usd: compraUSD,
           venta_cop: ventaCOP || (ventaUSD * rates.venta.cop),
-          compra_cop: compraUSD * rates.compra.cop,
+          compra_cop: compraCOP,
           venta_mex: ventaUSD * rates.venta.mex,
           compra_mex: compraUSD * rates.compra.mex,
           venta_clp: ventaUSD * rates.venta.clp,
           compra_clp: compraUSD * rates.compra.clp,
           venta_bs: ventaBS || (ventaUSD * rates.venta.bs),
-          compra_bs: compraUSD * rates.compra.bs,
+          compra_bs: compraBS,
           estado_compra: serverEstado.estado_compra,
           estado_venta: serverEstado.estado_venta,
           estado: serverEstado.estado_venta,

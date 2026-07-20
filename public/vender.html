@@ -596,9 +596,34 @@ async function applyStockStatus() {
 
     const btn = tr.querySelector('.btn-comprando');
     if (!btn) return;
-    btn.textContent = 'No compramos';
+    btn.textContent = 'Full Stock';
     btn.classList.remove('btn-comprando', 'badge-buying');
     btn.classList.add('badge-full');
+  });
+}
+
+async function applyComprasPrecios() {
+  let games;
+  try {
+    const res  = await fetch('/api/products');
+    const json = await res.json();
+    games = json.games;
+  } catch (err) {
+    return; // Si falla, quedan los precios estaticos actuales como fallback
+  }
+
+  document.querySelectorAll('tr[data-juego][data-servidor]').forEach(tr => {
+    const gameId = GAME_ID_MAP[tr.dataset.juego];
+    const game = games?.find(g => g.id === gameId);
+    const sp = game?.server_prices?.[tr.dataset.servidor];
+    if (!sp) return; // sin datos del Sheet -> se deja el precio estatico actual
+
+    const copCell  = tr.querySelector('.price-val');
+    const usdtCell = tr.querySelector('.price-usdt');
+    const vesCell  = tr.querySelector('.price-ves');
+    if (copCell  && sp.compra_cop != null) copCell.textContent  = '$' + Math.round(sp.compra_cop).toLocaleString('es-CO');
+    if (usdtCell && sp.compra_usd != null) usdtCell.textContent = '$' + Number(sp.compra_usd).toFixed(2);
+    if (vesCell  && sp.compra_bs  != null) vesCell.textContent  = 'Bs. ' + Math.round(sp.compra_bs).toLocaleString('es-CO');
   });
 }
 
@@ -643,6 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
     preseleccionarServidor(juego, servidor);
   }
   applyStockStatus();
+  applyComprasPrecios();
 });
 
 function submitForm() {
