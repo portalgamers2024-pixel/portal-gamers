@@ -154,7 +154,7 @@ async function getPricesFromSheet() {
   // Lee STOCKS para ESTADO COMPRA y ESTADO VENTA
   const stocks = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `📦 Stock Y Cuentas!A1:K100`,
+    range: `Stock Y Cuentas!A1:K100`,
   });
 
   const calcRows = calc.data.values || [];
