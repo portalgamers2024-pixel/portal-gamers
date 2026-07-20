@@ -569,6 +569,39 @@ const SERVERS = {
   'WoW':           ['Americas', 'Europe', 'Otro']
 };
 
+const GAME_ID_MAP = {
+  'Dofus Touch':   'dofus-touch',
+  'Dofus 3.0':     'dofus-3',
+  'Dofus Retro':   'dofus-retro',
+  'Wakfu':         'wakfu',
+  'Albion Online': 'albion',
+};
+
+async function applyStockStatus() {
+  let status;
+  try {
+    const res  = await fetch('/api/stock-status');
+    const json = await res.json();
+    if (!json.success) return;
+    status = json.status;
+  } catch (err) {
+    return; // Si falla, las filas quedan con "Comprando" por defecto
+  }
+
+  document.querySelectorAll('tr[data-juego][data-servidor]').forEach(tr => {
+    const gameId = GAME_ID_MAP[tr.dataset.juego];
+    const server = tr.dataset.servidor;
+    const estadoCompra = status[gameId]?.[server.toUpperCase()]?.estado_compra;
+    if (estadoCompra !== 'FULL STOCK') return;
+
+    const btn = tr.querySelector('.btn-comprando');
+    if (!btn) return;
+    btn.textContent = 'No compramos';
+    btn.classList.remove('btn-comprando', 'badge-buying');
+    btn.classList.add('badge-full');
+  });
+}
+
 function updateServers() {
   const game = document.getElementById('f-game').value;
   const sel  = document.getElementById('f-server');
@@ -609,6 +642,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (juego && servidor) {
     preseleccionarServidor(juego, servidor);
   }
+  applyStockStatus();
 });
 
 function submitForm() {
