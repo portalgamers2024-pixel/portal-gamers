@@ -177,7 +177,7 @@ async function getPricesFromSheet() {
   }
 
   const result = {};
-  let currentGame = null;
+  let currentGame = 'dofus-touch'; // el encabezado "DOFUS TOUCH" (fila 5) queda antes del rango que lee el loop (arranca en fila 8 = Blair); las primeras filas de datos son siempre Dofus Touch
 
   // Row 5: Game headers (B=DOFUS, Q=ALBION, etc)
   // Row 6: Section headers (B=COMPRA, F=VENTA, etc)
