@@ -178,6 +178,11 @@ async function getPricesFromSheet() {
 
   const result = {};
   let currentGame = 'dofus-touch'; // el encabezado "DOFUS TOUCH" (fila 5) queda antes del rango que lee el loop (arranca en fila 8 = Blair); las primeras filas de datos son siempre Dofus Touch
+  let currentAlbionBlock = true; // el header "ALBION" está antes del rango leído por el loop
+  const ALBION_REGIONS = ['BINANCE', 'COLOMBIA', 'VENEZUELA', 'CHILE', 'MEXICO'];
+  // Cada región de Albion ES una moneda única — el valor del Sheet ya está en esa
+  // moneda, no se convierte. BINANCE=USD, COLOMBIA=COP, VENEZUELA=Bs, CHILE=CLP, MEXICO=MXN.
+  const ALBION_CURRENCY = { BINANCE: 'usd', COLOMBIA: 'cop', VENEZUELA: 'bs', CHILE: 'clp', MEXICO: 'mex' };
 
   // Row 5: Game headers (B=DOFUS, Q=ALBION, etc)
   // Row 6: Section headers (B=COMPRA, F=VENTA, etc)
@@ -188,7 +193,54 @@ async function getPricesFromSheet() {
   for (let i = 7; i < calcRows.length; i++) {
     const row = calcRows[i] || [];
     const colB = row[1] ? String(row[1]).trim() : '';
-    const colQ = row[16] ? String(row[16]).trim() : '';
+    const colP = row[15] ? String(row[15]).trim() : '';
+
+    // ALBION block (right side): cols P-X (regiones: BINANCE, COLOMBIA, VENEZUELA, CHILE, MEXICO)
+    // Cada región ya está en su propia moneda nativa (ver ALBION_CURRENCY) — no se convierte nada.
+    // P=Region, S=Compra (moneda nativa de la region), U=Region (repetida), X=Venta (moneda nativa)
+    // Se evalua ANTES del "continue" de deteccion de encabezado de juego, porque la fila de
+    // VENEZUELA comparte fila fisica con el encabezado "DOFUS 3.0" (columna B) y el continue
+    // de esa rama saltearia esta seccion si se ejecutara despues.
+    if (colP && !ALBION_REGIONS.includes(colP.toUpperCase())) {
+      currentAlbionBlock = false; // encabezado de otra sección (ej. "WOW RETAIL...") -> Albion terminó
+    }
+    if (currentAlbionBlock && colP && ALBION_REGIONS.includes(colP.toUpperCase())) {
+      const region = colP.toUpperCase();
+      const currency = ALBION_CURRENCY[region]; // 'usd' | 'cop' | 'bs' | 'clp' | 'mex'
+      const compraRaw = row[18] ? String(row[18]).trim() : ''; // S
+      const ventaRaw  = row[23] ? String(row[23]).trim() : ''; // X
+      const noSeCompra = compraRaw.toUpperCase() === 'NO SE COMPRA';
+      const compraVal = noSeCompra ? null : (compraRaw ? parseNum(compraRaw) : null);
+      const ventaVal  = ventaRaw ? parseNum(ventaRaw) : null;
+
+      if (compraVal != null || ventaVal != null || noSeCompra) {
+        if (!result['albion']) result['albion'] = {};
+        const serverEstado = estadoMap[region] || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
+        const estadoCompra = noSeCompra ? 'FULL STOCK' : serverEstado.estado_compra;
+
+        const entry = {
+          venta_usd: null, compra_usd: null,
+          venta_cop: null, compra_cop: null,
+          venta_mex: null, compra_mex: null,
+          venta_clp: null, compra_clp: null,
+          venta_bs:  null, compra_bs:  null,
+          estado_compra: estadoCompra,
+          estado_venta: serverEstado.estado_venta,
+          estado: serverEstado.estado_venta,
+          // Backward compat (solo tiene sentido si la moneda nativa es USD)
+          venta: currency === 'usd' ? ventaVal : null,
+          compra: currency === 'usd' ? compraVal : null,
+          cop: currency === 'cop' ? ventaVal : null,
+          mxn: currency === 'mex' ? ventaVal : null,
+          clp: currency === 'clp' ? ventaVal : null,
+          ves: currency === 'bs'  ? ventaVal : null,
+        };
+        entry[`venta_${currency}`]  = ventaVal;
+        entry[`compra_${currency}`] = compraVal;
+
+        result['albion'][colP] = entry;
+      }
+    }
 
     // Detect game header rows (all-caps game names, no prices)
     if (colB && colB.toUpperCase() === colB && !parseNum(row[3])) {
@@ -235,40 +287,6 @@ async function getPricesFromSheet() {
           mxn: ventaUSD * rates.venta.mex,
           clp: ventaUSD * rates.venta.clp,
           ves: ventaBS || (ventaUSD * rates.venta.bs),
-        };
-      }
-    }
-
-    // ALBION block (right side): cols Q-Z (regions: BINANCE, COLOMBIA, VENEZUELA, CHILE)
-    // Q=Region, T=Compra USDT, Z=Venta USDT
-    if (colQ && colQ !== 'COMPRA' && colQ !== 'VENTA' && colQ !== 'BINANCE' && !colQ.match(/^[0-9,]+$/)) {
-      const compraUSD = parseNum(row[19]);  // T
-      const ventaUSD = parseNum(row[25]);   // Z
-
-      if (compraUSD > 0 || ventaUSD > 0) {
-        if (!result['albion']) result['albion'] = {};
-        const serverEstado = estadoMap[colQ.toUpperCase()] || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
-        result['albion'][colQ] = {
-          venta_usd: ventaUSD,
-          compra_usd: compraUSD,
-          venta_cop: ventaUSD * rates.venta.cop,
-          compra_cop: compraUSD * rates.compra.cop,
-          venta_mex: ventaUSD * rates.venta.mex,
-          compra_mex: compraUSD * rates.compra.mex,
-          venta_clp: ventaUSD * rates.venta.clp,
-          compra_clp: compraUSD * rates.compra.clp,
-          venta_bs: ventaUSD * rates.venta.bs,
-          compra_bs: compraUSD * rates.compra.bs,
-          estado_compra: serverEstado.estado_compra,
-          estado_venta: serverEstado.estado_venta,
-          estado: serverEstado.estado_venta,
-          // Backward compat
-          venta: ventaUSD,
-          compra: compraUSD,
-          cop: ventaUSD * rates.venta.cop,
-          mxn: ventaUSD * rates.venta.mex,
-          clp: ventaUSD * rates.venta.clp,
-          ves: ventaUSD * rates.venta.bs,
         };
       }
     }
