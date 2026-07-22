@@ -4,15 +4,10 @@ const path = require('path');
 const SHEET_ID = process.env.SHEET_ID;
 const SCOPES   = ['https://www.googleapis.com/auth/spreadsheets'];
 
-// Pestaña "💰 Precios": datos desde fila 6 (después de headers en fila 5)
-// Headers (fila 5):
-//   A=JUEGO, B=SERVIDOR
-//   C=COMPRA USD, D=COMPRA BS, E=COMPRA COP
-//   F=VENTA USD, G=VENTA MEX, H=VENTA CLP, I=VENTA BS, J=VENTA COP
-//   K=ESTADO
-// Tasas desde fila 5 (intercambio dinámico):
-//   P5=Compra MEX, Q5=Compra CLP, R5=Compra COP, S5=Compra Bs
-//   T5=Venta MEX,  U5=Venta CLP,  V5=Venta COP,  W5=Venta Bs
+// Pestaña "💰 Precios", bloque DOFUS (cols B-L, compartido por Dofus Touch/3.0/
+// Retro/Wakfu/Albion): cada moneda se lee tal cual de su columna, sin conversión.
+//   Compra: C=COP, D=USDT, E=BS   (no hay columnas de compra en MEX ni CLP)
+//   Venta:  G=COP, H=MEX, I=CLP, J=USDT, K=BS
 
 const TAB_PRECIOS  = '💰 Precios';
 const TAB_VENTAS   = '📝 Ventas';
@@ -32,6 +27,16 @@ const GAME_NAME_MAP = {
 function parseNum(str) {
   if (!str || typeof str !== 'string') return 0;
   return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+// Lee el valor crudo de una celda de moneda, sin calcular ni convertir nada.
+// Retorna null si la celda está vacía o contiene texto no numérico (ej. "NO SE
+// COMPRA"), en vez de 0 o un valor calculado — así se distingue "no disponible"
+// de "el precio es cero".
+function readCellValue(raw) {
+  const s = raw ? String(raw).trim() : '';
+  if (!s || !/^-?[\d.,]+$/.test(s)) return null;
+  return parseNum(s);
 }
 
 let _auth;
@@ -59,83 +64,9 @@ let cache = { data: null, ts: 0 };
 const TTL = 60_000;
 
 /**
- * NUEVA FUNCIÓN: getExchangeRates()
- *
- * Retorna las tasas de cambio desde fila 5 del Sheet:
- * {
- *   compra: { mex: number, clp: number, cop: number, bs: number },
- *   venta:  { mex: number, clp: number, cop: number, bs: number },
- *   raw: {                                          // datos crudos del Sheet
- *     compra: [mex_str, clp_str, cop_str, bs_str],
- *     venta:  [mex_str, clp_str, cop_str, bs_str]
- *   }
- * }
- */
-async function getExchangeRates() {
-  if (!SHEET_ID) return {
-    compra: { mex: 17.0, clp: 800, cop: 3800, bs: 25.0 },
-    venta:  { mex: 18.5, clp: 850, cop: 4000, bs: 28.0 }
-  };
-
-  try {
-    const sheets = await api();
-
-    // Lee fila 2 completa: P2:W2
-    // P2=Compra MEX, Q2=Compra CLP, R2=Compra COP, S2=Compra Bs
-    // T2=Venta MEX,  U2=Venta CLP,  V2=Venta COP,  W2=Venta Bs
-    const res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: `${TAB_PRECIOS}!P2:W2`,
-    });
-
-    const row = (res.data.values && res.data.values[0]) || [];
-
-    // Parsea valores
-    const compra_mex = parseNum(row[0]); // P2
-    const compra_clp = parseNum(row[1]); // Q2
-    const compra_cop = parseNum(row[2]); // R2
-    const compra_bs  = parseNum(row[3]); // S2
-
-    const venta_mex = parseNum(row[4]); // T2
-    const venta_clp = parseNum(row[5]); // U2
-    const venta_cop = parseNum(row[6]); // V2
-    const venta_bs  = parseNum(row[7]); // W2
-
-    // Validación: si alguna tasa es 0, usa defaults
-    const rates = {
-      compra: {
-        mex: compra_mex || 17.0,
-        clp: compra_clp || 800,
-        cop: compra_cop || 3800,
-        bs:  compra_bs  || 25.0
-      },
-      venta: {
-        mex: venta_mex || 18.5,
-        clp: venta_clp || 850,
-        cop: venta_cop || 4000,
-        bs:  venta_bs  || 28.0
-      },
-      raw: {
-        compra: [row[0], row[1], row[2], row[3]],
-        venta:  [row[4], row[5], row[6], row[7]]
-      }
-    };
-
-    return rates;
-  } catch (e) {
-    console.warn('[Sheets] Error leyendo tasas:', e.message);
-    // Retorna tasas por defecto si falla
-    return {
-      compra: { mex: 17.0, clp: 800, cop: 3800, bs: 25.0 },
-      venta:  { mex: 18.5, clp: 850, cop: 4000, bs: 28.0 }
-    };
-  }
-}
-
-/**
- * FUNCIÓN ACTUALIZADA: getPricesFromSheet()
- * Lee desde CALCULADORA y STOCKS en la nueva estructura migrada.
- * Tasas vienen desde getExchangeRates() que lee desde ⚙️ Configuracion.
+ * getPricesFromSheet()
+ * Lee precios y estado desde "💰 Precios" y "Stock Y Cuentas". Cada moneda se
+ * lee tal cual de su columna en el Sheet — no hay ninguna conversión ni cálculo.
  */
 async function getPricesFromSheet() {
   if (!SHEET_ID) return null;
@@ -143,7 +74,6 @@ async function getPricesFromSheet() {
   if (cache.data && now - cache.ts < TTL) return cache.data;
 
   const sheets = await api();
-  const rates = await getExchangeRates();
 
   // Lee CALCULADORA: estructura con bloques horizontales
   const calc = await sheets.spreadsheets.values.get({
@@ -198,31 +128,34 @@ async function getPricesFromSheet() {
       continue;
     }
 
-    // DOFUS family block (left side): cols B-L
-    // B=Servidor, D=USDT(compra), J=USDT(venta), G=COP(venta), K=BS(venta)
+    // DOFUS family block (left side): cols B-L — compartido por Dofus Touch/3.0/
+    // Retro/Wakfu/Albion. Compra: C=COP, D=USDT, E=BS. Venta: G=COP, H=MEX, I=CLP,
+    // J=USDT, K=BS. No hay columnas de compra en MEX/CLP — quedan en null.
     if (currentGame && colB && !colB.startsWith('COMPRA') && !colB.startsWith('VENTA') && !colB.match(/^[0-9,]+$/)) {
       const compraUSD = parseNum(row[3]);  // D
       const ventaUSD = parseNum(row[9]);   // J
 
       if (compraUSD > 0 || ventaUSD > 0) {
         const serverName = colB;
-        const ventaCOP = parseNum(row[6]);   // G
-        const ventaBS = parseNum(row[10]);   // K
-        const compraCOP = parseNum(row[2]);  // C
-        const compraBS = parseNum(row[4]);   // E
+        const compraCOP = parseNum(row[2]);      // C
+        const compraBS  = parseNum(row[4]);      // E
+        const ventaCOP  = readCellValue(row[6]);  // G
+        const ventaMEX  = readCellValue(row[7]);  // H
+        const ventaCLP  = readCellValue(row[8]);  // I
+        const ventaBS   = readCellValue(row[10]); // K
 
         if (!result[currentGame]) result[currentGame] = {};
         const serverEstado = estadoMap[serverName.toUpperCase()] || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
         result[currentGame][serverName] = {
           venta_usd: ventaUSD,
           compra_usd: compraUSD,
-          venta_cop: ventaCOP || (ventaUSD * rates.venta.cop),
+          venta_cop: ventaCOP,
           compra_cop: compraCOP,
-          venta_mex: ventaUSD * rates.venta.mex,
-          compra_mex: compraUSD * rates.compra.mex,
-          venta_clp: ventaUSD * rates.venta.clp,
-          compra_clp: compraUSD * rates.compra.clp,
-          venta_bs: ventaBS || (ventaUSD * rates.venta.bs),
+          venta_mex: ventaMEX,
+          compra_mex: null, // no existe columna COMPRA MEX en el Sheet
+          venta_clp: ventaCLP,
+          compra_clp: null, // no existe columna COMPRA CLP en el Sheet
+          venta_bs: ventaBS,
           compra_bs: compraBS,
           estado_compra: serverEstado.estado_compra,
           estado_venta: serverEstado.estado_venta,
@@ -230,10 +163,10 @@ async function getPricesFromSheet() {
           // Backward compat
           venta: ventaUSD,
           compra: compraUSD,
-          cop: ventaCOP || (ventaUSD * rates.venta.cop),
-          mxn: ventaUSD * rates.venta.mex,
-          clp: ventaUSD * rates.venta.clp,
-          ves: ventaBS || (ventaUSD * rates.venta.bs),
+          cop: ventaCOP,
+          mxn: ventaMEX,
+          clp: ventaCLP,
+          ves: ventaBS,
         };
       }
     }
@@ -251,8 +184,6 @@ async function getPricesFromSheet() {
       };
     }
   }
-
-  result._rates = rates;
 
   cache = { data: result, ts: now };
   return result;
@@ -431,7 +362,6 @@ async function getDailySalesStats() {
 
 module.exports = {
   getPricesFromSheet,
-  getExchangeRates,
   getWowPricesFromSheet,
   getResenas,
   logSale,
