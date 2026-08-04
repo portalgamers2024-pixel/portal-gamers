@@ -242,6 +242,20 @@ function setGame(gameId) {
 }
 
 // ─── Step 1: Server Cards ──────────────────────────────────
+// Etiqueta de juego que espera el dropdown de comprar.html (distinta del g.id interno)
+const CARD_GAME_LABEL = {
+  'dofus-touch': 'Dofus Touch',
+  'dofus-3':     'Dofus 3.0',
+  'dofus-retro': 'Dofus Retro',
+  'wakfu':       'Wakfu',
+  'albion':      'Albion Online',
+  'wow-retail':  'WoW',
+};
+
+function goToComprarForm(juego, servidor) {
+  window.location.href = '/comprar.html?juego=' + encodeURIComponent(juego) + '&servidor=' + encodeURIComponent(servidor);
+}
+
 function renderServerCards() {
   if (!currentGame) return;
   const grid = document.getElementById('products-grid');
@@ -272,7 +286,8 @@ function renderServerCards() {
     let btnColor = ventaAgotada ? '#d1d5db' : '#10b981';
     let btnText = ventaAgotada ? 'Agotado' : 'Seleccionar &rarr;';
     let btnCursor = ventaAgotada ? 'not-allowed' : 'pointer';
-    const cardClickHandler = ventaAgotada ? '' : `onclick="selectServer('${server.replace(/'/g, "\\'")}')`;
+    const gameLabel = CARD_GAME_LABEL[g.id] || g.name;
+    const cardClickHandler = ventaAgotada ? '' : `onclick="goToComprarForm('${gameLabel.replace(/'/g, "\\'")}', '${server.replace(/'/g, "\\'")}')"`;
 
     // Texto sutil si no compramos
     let compramosHtml = '';
