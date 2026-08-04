@@ -278,9 +278,7 @@ function renderServerCards() {
       : '';
 
     const estadoVenta = serverData?.estado_venta || 'DISPONIBLE';
-    const estadoCompra = serverData?.estado_compra || 'DISPONIBLE';
     const ventaAgotada = estadoVenta === 'STOCK AGOTADO';
-    const noCompramos = estadoCompra === 'FULL STOCK';
 
     // Botón de selección: verde si disponible, gris si agotado
     let btnColor = ventaAgotada ? '#d1d5db' : '#10b981';
@@ -289,11 +287,8 @@ function renderServerCards() {
     const gameLabel = CARD_GAME_LABEL[g.id] || g.name;
     const cardClickHandler = ventaAgotada ? '' : `onclick="goToComprarForm('${gameLabel.replace(/'/g, "\\'")}', '${server.replace(/'/g, "\\'")}')"`;
 
-    // Texto sutil si no compramos
-    let compramosHtml = '';
-    if (noCompramos) {
-      compramosHtml = '<div style="font-size:0.75rem;color:#999;margin-top:4px;font-style:italic;">No compramos actualmente</div>';
-    }
+    // Esta tarjeta es para que el cliente COMPRE, no aplica texto de "no compramos" aquí
+    const compramosHtml = '';
 
     return `
       <div class="server-card" data-game-id="${g.id}" ${cardClickHandler} style="${ventaAgotada ? 'cursor:not-allowed;' : ''}">
