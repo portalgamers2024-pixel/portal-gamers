@@ -119,8 +119,11 @@ async function getPricesFromSheet() {
     const row = calcRows[i] || [];
     const colB = row[1] ? String(row[1]).trim() : '';
 
-    // Detect game header rows (all-caps game names, no prices)
-    if (colB && colB.toUpperCase() === colB && !parseNum(row[3])) {
+    // Detect game header rows (all-caps game names, celda de precio C vacía).
+    // OJO: se usa "sin nada escrito en C" en vez de "precio D parsea a 0", porque
+    // una fila de datos real puede tener precio 0 (ej. WOW RETAIL, que aún no
+    // tiene precios cargados) y no debe confundirse con un encabezado de sección.
+    if (colB && colB.toUpperCase() === colB && !row[2]) {
       const mapped = Object.entries(GAME_NAME_MAP).find(([k]) => colB.toUpperCase().includes(k));
       if (mapped) {
         currentGame = mapped[1];
@@ -134,9 +137,13 @@ async function getPricesFromSheet() {
     if (currentGame && colB && !colB.startsWith('COMPRA') && !colB.startsWith('VENTA') && !colB.match(/^[0-9,]+$/)) {
       const compraUSD = parseNum(row[3]);  // D
       const ventaUSD = parseNum(row[9]);   // J
+      const serverName = colB;
+      // Si el precio está en 0 en ambos lados pero hay un estado real configurado
+      // en "Stock Y Cuentas" (ej. WOW RETAIL, que aún no tiene precios cargados),
+      // no descartamos la fila — igual necesitamos reflejar ese estado en el sitio.
+      const serverEstadoLookup = estadoMap[serverName.toUpperCase()];
 
-      if (compraUSD > 0 || ventaUSD > 0) {
-        const serverName = colB;
+      if (compraUSD > 0 || ventaUSD > 0 || serverEstadoLookup) {
         const compraCOP = parseNum(row[2]);      // C
         const compraBS  = parseNum(row[4]);      // E
         const ventaCOP  = readCellValue(row[6]);  // G
@@ -145,7 +152,7 @@ async function getPricesFromSheet() {
         const ventaBS   = readCellValue(row[10]); // K
 
         if (!result[currentGame]) result[currentGame] = {};
-        const serverEstado = estadoMap[serverName.toUpperCase()] || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
+        const serverEstado = serverEstadoLookup || { estado_compra: 'DISPONIBLE', estado_venta: 'DISPONIBLE' };
         result[currentGame][serverName] = {
           venta_usd: ventaUSD,
           compra_usd: compraUSD,

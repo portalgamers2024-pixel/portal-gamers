@@ -66,7 +66,17 @@ app.get('/api/products', async (req, res) => {
               k.toLowerCase().includes(productServer.toLowerCase())
             )
           );
-          if (match) serverPrices[productServer] = match[1];
+          if (match) {
+            serverPrices[productServer] = match[1];
+            continue;
+          }
+          // Si el juego tiene una sola fila en el Sheet (sin granularidad por
+          // servidor, ej. WOW RETAIL representando "Americas"/"Europe"), esa
+          // fila aplica a todos los servidores de products.json para ese juego.
+          const gameKeys = Object.keys(gameData).filter(k => k !== '_meta');
+          if (gameKeys.length === 1) {
+            serverPrices[productServer] = gameData[gameKeys[0]];
+          }
         }
 
         const meta = gameData._meta || {};

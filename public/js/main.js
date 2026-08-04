@@ -290,13 +290,17 @@ function renderServerCards() {
     // Esta tarjeta es para que el cliente COMPRE, no aplica texto de "no compramos" aquí
     const compramosHtml = '';
 
+    // Si esta agotado no mostramos ningun precio (ni real ni de referencia) — solo "Agotado"
+    const priceBlockHtml = ventaAgotada ? '' : `
+        <div class="sc-price">${priceDisplay}</div>
+        ${localDisplay}`;
+
     return `
       <div class="server-card" data-game-id="${g.id}" ${cardClickHandler} style="${ventaAgotada ? 'cursor:not-allowed;' : ''}">
         <img class="sc-icon" src="${g.icon_img}" alt="${g.name}" onerror="this.style.display='none'">
         <div class="sc-game-badge">${g.name}</div>
         <div class="sc-name">${server}</div>
-        <div class="sc-price">${priceDisplay}</div>
-        ${localDisplay}
+        ${priceBlockHtml}
         ${compramosHtml}
         <div class="sc-delivery">&#9889; ${g.delivery}</div>
         <div class="sc-select-btn" style="background-color:${btnColor};cursor:${btnCursor};">${btnText}</div>
