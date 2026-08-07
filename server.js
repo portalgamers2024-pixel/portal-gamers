@@ -41,6 +41,39 @@ function adminAuth(req, res, next) {
 const withTimeout = (promise, ms) =>
   Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 
+// Dado gameData (crudo de sheets.js, claves = nombre de servidor tal cual está
+// en el Sheet) y la lista de servidores de products.json, devuelve un objeto
+// { servidor: dataDelSheet } usando: match exacto, match parcial (substring,
+// case-insensitive), o — si el juego solo tiene una fila en el Sheet sin
+// granularidad por servidor (ej. ALBION, WOW RETAIL) — esa fila aplicada a
+// todos los servidores del juego. Usado por /api/products y /api/stock-status
+// para que ambos endpoints resuelvan los mismos nombres de servidor.
+function matchServerData(gameData, servers) {
+  const result = {};
+  for (const productServer of servers) {
+    const exact = gameData[productServer];
+    if (exact) {
+      result[productServer] = exact;
+      continue;
+    }
+    const match = Object.entries(gameData).find(([k]) =>
+      k !== '_meta' && (
+        productServer.toLowerCase().includes(k.toLowerCase()) ||
+        k.toLowerCase().includes(productServer.toLowerCase())
+      )
+    );
+    if (match) {
+      result[productServer] = match[1];
+      continue;
+    }
+    const gameKeys = Object.keys(gameData).filter(k => k !== '_meta');
+    if (gameKeys.length === 1) {
+      result[productServer] = gameData[gameKeys[0]];
+    }
+  }
+  return result;
+}
+
 app.get('/api/products', async (req, res) => {
   const data = readData();
   try {
@@ -50,34 +83,7 @@ app.get('/api/products', async (req, res) => {
         const gameData = sheetPrices[g.id];
         if (!gameData) return g;
 
-        // Construir mapa server_prices usando el nombre de servidor de products.json como clave
-        // Soporta match exacto y parcial (ej. "Global" ↔ "Global (Todos los servidores)")
-        const serverPrices = {};
-        for (const productServer of g.servers) {
-          const exact = gameData[productServer];
-          if (exact) {
-            serverPrices[productServer] = exact;
-            continue;
-          }
-          // Match parcial (case-insensitive)
-          const match = Object.entries(gameData).find(([k]) =>
-            k !== '_meta' && (
-              productServer.toLowerCase().includes(k.toLowerCase()) ||
-              k.toLowerCase().includes(productServer.toLowerCase())
-            )
-          );
-          if (match) {
-            serverPrices[productServer] = match[1];
-            continue;
-          }
-          // Si el juego tiene una sola fila en el Sheet (sin granularidad por
-          // servidor, ej. WOW RETAIL representando "Americas"/"Europe"), esa
-          // fila aplica a todos los servidores de products.json para ese juego.
-          const gameKeys = Object.keys(gameData).filter(k => k !== '_meta');
-          if (gameKeys.length === 1) {
-            serverPrices[productServer] = gameData[gameKeys[0]];
-          }
-        }
+        const serverPrices = matchServerData(gameData, g.servers);
 
         const meta = gameData._meta || {};
         return {
@@ -112,20 +118,23 @@ app.get('/api/resenas', async (req, res) => {
 // Respuesta: { "dofus-touch": { "Blair": { "estado_compra": "DISPONIBLE", "estado_venta": "DISPONIBLE" }, ... }, ... }
 app.get('/api/stock-status', async (req, res) => {
   try {
+    const data = readData();
     const sheetPrices = await withTimeout(sheets.getPricesFromSheet(), 5000);
     if (!sheetPrices) {
       return res.json({ success: false, error: 'No prices from sheet' });
     }
 
     const status = {};
-    for (const [gameId, servers] of Object.entries(sheetPrices)) {
-      if (gameId.startsWith('_')) continue;
-      status[gameId] = {};
-      for (const [serverName, data] of Object.entries(servers)) {
-        if (serverName === '_meta') continue;
-        status[gameId][serverName] = {
-          estado_compra: data.estado_compra || 'DISPONIBLE',
-          estado_venta: data.estado_venta || 'DISPONIBLE'
+    for (const g of data.games) {
+      const gameData = sheetPrices[g.id];
+      if (!gameData) continue;
+      const matched = matchServerData(gameData, g.servers);
+      status[g.id] = {};
+      for (const [serverName, sd] of Object.entries(matched)) {
+        // vender.html busca con server.toUpperCase() — mantener esa convención
+        status[g.id][serverName.toUpperCase()] = {
+          estado_compra: sd.estado_compra || 'DISPONIBLE',
+          estado_venta: sd.estado_venta || 'DISPONIBLE'
         };
       }
     }
