@@ -566,8 +566,17 @@ footer ul li a:hover { color: var(--gold); }
 .footer-bottom { border-top: 1px solid var(--border); padding-top: 20px; text-align: center; color: var(--text-d); font-size: 12px; }
 
 /* ─── WhatsApp flotante ──────────────────────────── */
-.wa-float { position: fixed; bottom: 24px; right: 24px; background: var(--green); color: #fff; border-radius: 50px; padding: 12px 20px; font-weight: 700; font-size: 14px; z-index: 999; box-shadow: 0 4px 16px rgba(37,211,102,.4); transition: var(--trans); }
+/* bottom:100px para no superponerse con la burbuja de Tawk.to, que ocupa
+   la esquina inferior derecha por defecto (~60px de alto, ~20px de margen) */
+.wa-float { position: fixed; bottom: 100px; right: 24px; background: var(--green); color: #fff; border-radius: 50px; padding: 12px 20px; font-weight: 700; font-size: 14px; z-index: 999; box-shadow: 0 4px 16px rgba(37,211,102,.4); transition: var(--trans); display: flex; align-items: center; gap: 8px; }
 .wa-float:hover { background: var(--green-d); color: #fff; transform: translateY(-2px); }
+
+/* ─── Ícono WhatsApp (imagen oficial) ─────────────── */
+.wa-icon { width: 18px; height: 18px; vertical-align: middle; flex-shrink: 0; display: inline-block; }
+/* Chip blanco circular detrás del ícono verde: usar sobre fondos de color.
+   (Nota: se prefiere esto a filter:invert() porque el ícono es de trazo fino
+   y al reducirlo de tamaño el filtro lo colapsaba en un bloque blanco solido.) */
+.wa-icon-badge { display: inline-flex; align-items: center; justify-content: center; background: #fff; border-radius: 50%; padding: 3px; flex-shrink: 0; line-height: 0; }
 
 /* ─── Loader ─────────────────────────────────────── */
 .loader { display: flex; justify-content: center; align-items: center; padding: 60px; gap: 8px; grid-column: 1/-1; }

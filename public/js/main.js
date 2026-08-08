@@ -428,7 +428,7 @@ function renderPurchaseForm() {
           <button class="pf-btn-buy" onclick="buyNow()" ${buyBtnDisabled} style="${buyBtnStyle}">🛒 Comprar ahora</button>
           <div class="pf-actions-secondary">
             <button class="pf-btn-cart" onclick="addCustomToCart()" ${buyBtnDisabled} style="${buyBtnStyle}">+ Agregar al carrito</button>
-            <button class="pf-btn-wa" onclick="orderViaWhatsApp()">&#128172; Pedir por WhatsApp</button>
+            <button class="pf-btn-wa" onclick="orderViaWhatsApp()"><span class="wa-icon-badge"><img src="/images/whatsapp-icon.png" alt="WhatsApp" class="wa-icon" style="width:14px;height:14px"></span> Pedir por WhatsApp</button>
           </div>
         </div>
         ${!puedoComprar ? '<div style="color:#ef4444;font-weight:600;margin-top:12px;text-align:center;">Stock agotado - No es posible comprar en este momento</div>' : ''}
@@ -829,7 +829,7 @@ function getPaymentMethodsHTML(country) {
         <a href="https://wa.me/573223427456?text=${waMsg}"
            target="_blank" rel="noopener"
            class="pm-qr-wa-btn"
-           onclick="event.stopPropagation()">&#128172; Enviar comprobante por WhatsApp</a>
+           onclick="event.stopPropagation()"><span class="wa-icon-badge"><img src="/images/whatsapp-icon.png" alt="WhatsApp" class="wa-icon" style="width:14px;height:14px"></span> Enviar comprobante por WhatsApp</a>
       </div>` : '';
     return `
       <div class="pm-card${mi === 0 ? ' selected' : ''}"
