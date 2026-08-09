@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
@@ -8,6 +9,18 @@ const { handleMessage } = require('./whatsapp/bot');
 const { sendDailySummary } = require('./whatsapp/sender');
 
 const app = express();
+
+// Headers de seguridad HTTP. CSP se maneja aparte (requiere mapear todos los
+// dominios externos ya en uso — Tawk.to, GA, Meta Pixel — antes de activarla).
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginResourcePolicy: false,
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: false },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+}));
+
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 const noCache = { setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate') };
