@@ -10,10 +10,31 @@ const { sendDailySummary } = require('./whatsapp/sender');
 
 const app = express();
 
-// Headers de seguridad HTTP. CSP se maneja aparte (requiere mapear todos los
-// dominios externos ya en uso — Tawk.to, GA, Meta Pixel — antes de activarla).
+// Headers de seguridad HTTP.
+// CSP va en modo report-only (no bloquea nada, solo reporta a la consola del
+// navegador) hasta que confirmemos que no hay dominios externos sin mapear —
+// el sitio usa mucho onclick/style inline, así que necesita 'unsafe-inline'
+// en script-src/style-src para no romper el sitio; eso limita cuánto protege
+// esta CSP contra XSS, pero sí acota a qué dominios externos se puede cargar
+// script/conectar.
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    useDefaults: false,
+    reportOnly: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://www.googletagmanager.com', 'https://connect.facebook.net', 'https://embed.tawk.to', 'https://*.tawk.to'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https://www.facebook.com', 'https://*.tawk.to', 'https://www.googletagmanager.com', 'https://*.google-analytics.com'],
+      connectSrc: ["'self'", 'https://ipapi.co', 'https://www.google-analytics.com', 'https://*.google-analytics.com', 'https://region1.google-analytics.com', 'https://*.tawk.to', 'wss://*.tawk.to', 'https://www.facebook.com', 'https://connect.facebook.net'],
+      frameSrc: ['https://*.tawk.to'],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'self'"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
   crossOriginOpenerPolicy: false,
   crossOriginResourcePolicy: false,
