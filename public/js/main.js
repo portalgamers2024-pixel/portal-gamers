@@ -822,8 +822,11 @@ function getPaymentMethodsHTML(country) {
     const isBinance = method.name === 'Binance';
     const binanceQR = isBinance ? `
       <div class="pm-binance-qr">
-        <img src="/images/qr-binance-portal.png" alt="QR Binance Pay" class="pm-qr-img"
-             onerror="this.style.opacity='.4'">
+        <picture>
+          <source srcset="/images/qr-binance-portal.webp" type="image/webp">
+          <img src="/images/qr-binance-portal.png" alt="QR Binance Pay" class="pm-qr-img"
+               onerror="this.style.opacity='.4'">
+        </picture>
         <div class="pm-qr-amount">Monto a pagar: <strong>$${total.toFixed(2)} USDT</strong></div>
         <div class="pm-qr-note">Binance app &rarr; Pay &rarr; Scan QR &rarr; ingresa monto exacto</div>
         <a href="https://wa.me/573223427456?text=${waMsg}"

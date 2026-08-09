@@ -35,7 +35,7 @@
   <meta property="og:url" content="https://portalgamerslatam.com/como-pagar-binance.html">
   <meta property="og:type" content="article">
   <link rel="icon" href="/images/logo.png" type="image/png">
-  <link rel="stylesheet" href="/css/style.css?v=20260813">
+  <link rel="stylesheet" href="/css/style.css?v=20260814">
   <style>
     /* ─── Hero ───────────────────────────────────────────── */
     .bp-hero {
@@ -404,12 +404,15 @@
       <!-- QR centrado con glow dorado -->
       <div class="bp-qr-wrap">
         <div class="bp-qr-container qr-zoom-wrap" onclick="openQrLightbox('/images/qr-binance-portal.png')" title="Clic para ampliar">
-          <img
-            src="/images/qr-binance-portal.png"
-            alt="QR Binance Pay — Portal Gamers LATAM"
-            class="bp-qr-img"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-          >
+          <picture>
+            <source srcset="/images/qr-binance-portal.webp" type="image/webp">
+            <img
+              src="/images/qr-binance-portal.png"
+              alt="QR Binance Pay — Portal Gamers LATAM"
+              class="bp-qr-img"
+              onerror="this.parentElement.style.display='none';this.parentElement.nextElementSibling.style.display='flex'"
+            >
+          </picture>
           <div style="display:none;width:280px;height:220px;border-radius:16px;background:rgba(245,166,35,.08);align-items:center;justify-content:center;flex-direction:column;gap:8px">
             <span style="font-size:48px">&#8383;</span>
             <span style="color:var(--gold);font-size:14px;font-weight:700;text-align:center">QR Binance Pay<br>Portal Gamers</span>

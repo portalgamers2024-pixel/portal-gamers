@@ -42,7 +42,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Portal Gamers LATAM","url":"https://portalgamerslatam.com","logo":"https://portalgamerslatam.com/images/logo.png","foundingDate":"2010","foundingLocation":"Santa Marta, Colombia","contactPoint":{"@type":"ContactPoint","contactType":"customer service","availableLanguage":"Spanish"}}</script>
   <link rel="icon" href="/images/logo.png" type="image/png">
-  <link rel="stylesheet" href="/css/style.css?v=20260813">
+  <link rel="stylesheet" href="/css/style.css?v=20260814">
 </head>
 <body>
 
@@ -857,12 +857,15 @@
     </div>
     <p class="modal-sub">Escanea el QR desde la app Binance</p>
     <div class="qr-zoom-wrap" style="justify-content:center;width:100%" onclick="openQrLightbox('/images/qr-binance-portal.png')" title="Clic para ampliar">
-      <img
-        src="/images/qr-binance-portal.png"
-        alt="QR Binance Pay — Portal Gamers"
-        class="binance-modal-img"
-        onerror="this.style.opacity='.4'"
-      >
+      <picture>
+        <source srcset="/images/qr-binance-portal.webp" type="image/webp">
+        <img
+          src="/images/qr-binance-portal.png"
+          alt="QR Binance Pay — Portal Gamers"
+          class="binance-modal-img"
+          onerror="this.style.opacity='.4'"
+        >
+      </picture>
     </div>
     <p class="binance-modal-amount">Ingresa el monto exacto en <strong style="color:var(--gold)">USDT</strong> que te indicamos</p>
     <p class="binance-modal-note">Binance app &rarr; Pay &rarr; Scan QR</p>
@@ -879,8 +882,8 @@
   </div>
 </div>
 
-<script src="/js/geo.js?v=20260813"></script>
-<script src="/js/main.js?v=20260813"></script>
+<script src="/js/geo.js?v=20260814"></script>
+<script src="/js/main.js?v=20260814"></script>
 <script>
 function toggleNav() {
   document.getElementById('nav-links').classList.toggle('open');
