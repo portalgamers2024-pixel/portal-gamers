@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
+const compression = require('compression');
 const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
@@ -9,6 +10,11 @@ const { handleMessage } = require('./whatsapp/bot');
 const { sendDailySummary } = require('./whatsapp/sender');
 
 const app = express();
+
+// Compresión gzip/deflate de todas las respuestas (HTML, CSS, JS, JSON de las
+// APIs). Va primero en la cadena para que envuelva cualquier respuesta que
+// generen los middlewares/rutas de abajo.
+app.use(compression());
 
 // Headers de seguridad HTTP.
 // CSP va en modo report-only (no bloquea nada, solo reporta a la consola del
