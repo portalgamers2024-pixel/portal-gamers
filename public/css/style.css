@@ -1050,7 +1050,7 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
 .pgb-cyan  span { color: var(--cyan); }
 .pgb-green { background: linear-gradient(90deg,#0d2a1a,#0f3520); border-top: 3px solid var(--green); }
 .pgb-green span { color: var(--green); }
-.price-table-wrap { border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.price-table-wrap { border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); overflow-x: auto; }
 .price-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .price-table thead tr { background: var(--bg2); }
 .price-table thead th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-d); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
@@ -1061,6 +1061,7 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
 .price-table td:first-child { font-weight: 600; }
 .price-val  { color: var(--gold); font-weight: 700; font-size: 13px; }
 .price-usdt { color: var(--cyan); font-weight: 700; font-size: 13px; }
+.price-eur  { color: var(--orange); font-weight: 700; font-size: 13px; }
 .price-ves  { color: var(--text-m); font-size: 13px; }
 .badge-buying { display: inline-block; background: rgba(37,211,102,.12); color: var(--green); border: 1px solid rgba(37,211,102,.3); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
 button.badge-buying { cursor: pointer; font-family: inherit; transition: var(--trans); }
