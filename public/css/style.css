@@ -945,6 +945,12 @@ nav { border-bottom: 1px solid rgba(245,166,35,.2); }
 }
 .nav-links li { display: flex; }
 
+/* Ofertas: sección desactivada (ver #ofertas en index.html) — este es el
+   único cambio necesario para reactivar el link en TODAS las páginas.
+   Reactivar: borrar/comentar esta regla.
+   (selector con .nav-links por especificidad: .nav-links li ya fija display:flex) */
+.nav-links .nav-item-ofertas { display: none; }
+
 .nav-link {
   padding: 7px 13px;
   color: var(--text-m);
