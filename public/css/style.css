@@ -60,6 +60,13 @@ nav {
 .nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-logo img { width: 44px; height: 44px; object-fit: contain; border-radius: 8px; }
 .nav-logo-text { font-size: 18px; font-weight: 800; color: var(--gold); white-space: nowrap; }
+/* Wordmark del header (incluye el texto "Portal Gamers" dibujado en la imagen,
+   por eso ya no hay .nav-logo-text al lado) — es un logo ancho, no un ícono
+   cuadrado, así que se limita por altura y el ancho queda automático. */
+.nav-logo .nav-logo-img { width: auto; height: 44px; max-width: none; object-fit: contain; border-radius: 0; }
+@media (max-width: 480px) {
+  .nav-logo .nav-logo-img { height: 34px; }
+}
 .nav-spacer { flex: 1; }
 
 /* Mini iconos en navbar */
