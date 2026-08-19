@@ -120,6 +120,12 @@
         <img src="/images/banner-wakfu.jpg" alt="Wakfu — Portal Gamers">
       </picture>
     </a>
+    <a class="hs-slide" href="#tienda" onclick="event.preventDefault();setGame('dofus-3')">
+      <picture>
+        <source srcset="/images/banner-dofus-3.webp" type="image/webp">
+        <img src="/images/banner-dofus-3.jpg" alt="Kamas Dofus 3.0 — Portal Gamers">
+      </picture>
+    </a>
   </div>
 
   <!-- Flechas -->
@@ -135,6 +141,7 @@
     <button class="hs-dot"        data-i="4" aria-label="Slide 5"></button>
     <button class="hs-dot"        data-i="5" aria-label="Slide 6"></button>
     <button class="hs-dot"        data-i="6" aria-label="Slide 7"></button>
+    <button class="hs-dot"        data-i="7" aria-label="Slide 8"></button>
   </div>
 
 </section>
@@ -143,7 +150,7 @@
 (function(){
   var track  = document.getElementById('hs-track');
   var dots   = document.querySelectorAll('.hs-dot');
-  var total  = 7;
+  var total  = 8;
   var cur    = 0;
   var timer;
 
